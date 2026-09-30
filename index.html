@@ -5,6 +5,8 @@
 <title>Sushi Train Track</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f2a2b">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCA2NCA2NCc+CjxyZWN0IHdpZHRoPSc2NCcgaGVpZ2h0PSc2NCcgcng9JzE0JyBmaWxsPScjMGYyYTJiJy8+CjxlbGxpcHNlIGN4PSczMicgY3k9JzM5JyByeD0nMjgnIHJ5PScxNScgZmlsbD0nIzAwMCcgb3BhY2l0eT0nLjM1Jy8+CjxlbGxpcHNlIGN4PSczMicgY3k9JzM2JyByeD0nMjgnIHJ5PScxNScgZmlsbD0nIzNlOGVmNycvPgo8ZWxsaXBzZSBjeD0nMzInIGN5PSczNicgcng9JzE4LjUnIHJ5PSc5JyBmaWxsPSdub25lJyBzdHJva2U9JyNmZmYnIHN0cm9rZS1vcGFjaXR5PScuNCcgc3Ryb2tlLXdpZHRoPScyJy8+CjxlbGxpcHNlIGN4PSczMicgY3k9JzM4JyByeD0nMTEnIHJ5PSc0LjYnIGZpbGw9JyMxNjIxMWUnLz4KPHJlY3QgeD0nMjEnIHk9JzIwJyB3aWR0aD0nMjInIGhlaWdodD0nMTgnIGZpbGw9JyMxNjIxMWUnLz4KPGVsbGlwc2UgY3g9JzMyJyBjeT0nMjAnIHJ4PScxMScgcnk9JzQuNicgZmlsbD0nIzE2MjExZScvPgo8ZWxsaXBzZSBjeD0nMzInIGN5PScyMCcgcng9JzguNCcgcnk9JzMuNCcgZmlsbD0nI2Y2ZjFlNCcvPgo8ZWxsaXBzZSBjeD0nMzInIGN5PScyMCcgcng9JzMuOCcgcnk9JzEuNicgZmlsbD0nI2YwODY2YScvPgo8L3N2Zz4=">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Sushi Train Track">
@@ -13,6 +15,8 @@
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;800&display=swap" rel="stylesheet">
 <style>
 :root{
+  --bar:60px;   /* height of the docked restaurant-name bar */
+  --tab:34px;   /* height of the pull-up tab */
   --nori:#0f2a2b;        /* page background */
   --belt:#183a3b;        /* raised surfaces */
   --belt-2:#21494a;
@@ -24,14 +28,14 @@
   --font:'M PLUS Rounded 1c', ui-rounded, 'Hiragino Maru Gothic ProN', system-ui, sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;margin:0}
+html,body{height:100%;margin:0;overflow:hidden}
 body{
   background:var(--nori);color:var(--rice);font-family:var(--font);font-size:16px;
   overscroll-behavior:none;touch-action:manipulation;
 }
 button,input{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none}
-#app{position:relative;height:100%;display:flex;flex-direction:column;max-width:1100px;margin:0 auto;
+#app{position:relative;overflow:hidden;height:100%;display:flex;flex-direction:column;max-width:1100px;margin:0 auto;
   padding-top:env(safe-area-inset-top,0px)}
 
 /* ---------- shared ---------- */
@@ -76,6 +80,7 @@ input::placeholder{color:#6d8d88}
 .select-wrap::after{content:'';position:absolute;right:22px;top:50%;width:10px;height:10px;
   border-right:3px solid var(--rice);border-bottom:3px solid var(--rice);transform:translateY(-70%) rotate(45deg);pointer-events:none}
 .picker .intro{color:var(--mute);line-height:1.5;margin:0 2px 16px;font-size:17px}
+.ver{text-align:center;color:var(--mute);opacity:.55;font-size:12px;margin-top:18px}
 .btn.big{width:100%;padding:18px;font-size:21px;border-radius:18px}
 @media (prefers-reduced-motion:reduce){.belt::before{animation:none}}
 
@@ -89,15 +94,15 @@ input::placeholder{color:#6d8d88}
 .banner{margin:6px 16px 0;padding:10px 14px;background:var(--danger);color:#3a0f08;border-radius:14px;
   display:flex;align-items:center;justify-content:space-between;font-weight:800}
 .banner button{background:rgba(0,0,0,.15);border-radius:10px;padding:6px 12px;font-weight:800}
-.plates{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:22px 16px;padding:18px 16px 24px}
-@media (max-width:440px){.plates{grid-template-columns:repeat(2,1fr);gap:18px 14px}}
-.plate-btn{display:flex;flex-direction:column;align-items:center;gap:8px;user-select:none;-webkit-user-select:none}
+.plates{--rg:22px;--pv:32px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--rg) 16px;padding:14px 16px 18px}
+@media (max-width:440px){.plates{--rg:14px;--pv:26px;grid-template-columns:repeat(2,1fr);gap:var(--rg) 10px;padding:12px 12px 14px}}
+.plate-btn{padding:0;display:flex;flex-direction:column;align-items:center;gap:8px;user-select:none;-webkit-user-select:none}
 .plate{
   --c:#fff;--ink:#111;
   width:100%;max-width:190px;aspect-ratio:1;border-radius:50%;position:relative;
   display:grid;place-items:center;
   background:
-    radial-gradient(circle at 50% 50%, transparent 0 40%, rgba(0,0,0,.22) 40% 42.5%, rgba(255,255,255,.3) 42.5% 45%, transparent 45%),
+    radial-gradient(circle at 50% 50%, transparent 0 36%, rgba(0,0,0,.22) 36% 38.5%, rgba(255,255,255,.3) 38.5% 41%, transparent 41%),
     radial-gradient(circle at 35% 28%, rgba(255,255,255,.35), transparent 45%),
     var(--c);
   box-shadow:0 7px 0 rgba(0,0,0,.35), inset 0 0 0 4px rgba(255,255,255,.2);
@@ -108,7 +113,8 @@ input::placeholder{color:#6d8d88}
 .plate .n.zero{opacity:.35}
 .plate.pop{animation:pop .22s ease-out}
 @keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.09)}100%{transform:scale(1)}}
-.price{font-weight:800;font-size:19px;font-variant-numeric:tabular-nums}
+.plate .price{position:absolute;left:0;right:0;bottom:7%;text-align:center;font-weight:800;font-size:15px;line-height:1;
+  color:var(--ink);font-variant-numeric:tabular-nums;pointer-events:none}
 .removing .plate-btn.has .plate{animation:wiggle .35s ease-in-out infinite;outline:3px dashed var(--danger);outline-offset:4px}
 .removing .plate-btn.has:nth-child(even) .plate{animation-delay:-.17s}
 .removing .plate-btn:not(.has){opacity:.3;pointer-events:none}
@@ -117,7 +123,7 @@ input::placeholder{color:#6d8d88}
   .removing .plate-btn.has .plate{animation:none}
   .total b.bump,.plate.pop{animation:none}
 }
-.extras{background:var(--belt);border-radius:22px 22px 0 0;padding:12px 14px 0}
+.extras{padding:6px 0 calc(16px + env(safe-area-inset-bottom,0px))}
 .extras form{display:flex;gap:8px}
 .extras .amt{width:104px;flex:none;position:relative}
 .extras .amt span{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--mute)}
@@ -126,7 +132,36 @@ input::placeholder{color:#6d8d88}
 .extras .add{flex:none;background:var(--wasabi);color:#1c2a0a;border-radius:12px;padding:0 16px;font-weight:800}
 .extras .add:active{transform:scale(.96)}
 .extras label{display:block;font-size:15px;color:var(--mute);margin:0 0 8px 2px}
-.venue{padding:2px 2px 12px;font-weight:800;color:var(--rice);font-size:26px}
+.venue{height:calc(var(--bar) + env(safe-area-inset-bottom,0px));box-sizing:border-box;padding-bottom:env(safe-area-inset-bottom,0px);display:flex;align-items:center;font-weight:800;color:var(--rice);font-size:26px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px}
+.dock-space{flex:none;height:calc(var(--bar) + var(--tab) + env(safe-area-inset-bottom,0px))}
+.dock-scrim{position:absolute;inset:0;z-index:5;background:rgba(0,0,0,.42);opacity:0;pointer-events:none;transition:opacity .3s}
+.dock-scrim.on{opacity:1;pointer-events:auto}
+.dock{position:absolute;left:0;right:0;bottom:var(--kb,0px);z-index:6;margin-inline:auto;width:min(640px,calc(100% - 24px));
+  background:var(--belt);border-radius:22px 22px 0 0;padding:0 16px;
+  box-shadow:0 -10px 28px rgba(0,0,0,.5),0 -1px 0 rgba(255,255,255,.07);
+  transform:translateY(calc(100% - var(--bar) - env(safe-area-inset-bottom,0px)));
+  transition:transform .34s cubic-bezier(.2,.85,.25,1),bottom .2s ease-out}
+html.kb .extras{padding-bottom:16px}
+.dock.open{transform:translateY(0)}
+.dock-tab{position:absolute;left:50%;bottom:calc(100% - 1px);translate:-50% 0;height:calc(var(--tab) + 1px);padding:0 20px;
+  display:flex;align-items:center;gap:10px;background:var(--belt);border-radius:16px 16px 0 0;
+  font-weight:800;font-size:15px;white-space:nowrap;box-shadow:0 -6px 16px rgba(0,0,0,.35),0 -1px 0 rgba(255,255,255,.07)}
+.dock-tab::before{content:'';position:absolute;inset:-10px -10px 0}
+.dock-tab i{width:8px;height:8px;border-left:2.5px solid var(--wasabi);border-top:2.5px solid var(--wasabi);
+  transform:translateY(2px) rotate(45deg);transition:transform .3s}
+.dock.open .dock-tab i{transform:translateY(-2px) rotate(225deg)}
+@media (prefers-reduced-motion:reduce){.dock,.dock-scrim,.dock-tab i{transition:none}}
+
+/* Size plates from the space available: up to 3 rows fit without scrolling.
+   Needs container query units, so it is skipped on older browsers. */
+@supports (height:1cqh){
+  .scroll.fit{container-type:size}
+  .plates{--cap:max(96px, calc((100cqh - var(--pv) - (var(--rows,3) - 1) * var(--rg)) / var(--rows,3) - 2px))}
+  .plate{width:min(100%,190px,var(--cap));container-type:inline-size}
+  .plate .n{font-size:31cqw}
+  .plate .price{font-size:10.5cqw}
+}
 
 /* ---------- add-item suggestions ---------- */
 .formwrap{position:relative}
@@ -137,7 +172,7 @@ input::placeholder{color:#6d8d88}
 .suggest button:active{background:rgba(255,255,255,.08)}
 .suggest b{font-variant-numeric:tabular-nums;color:var(--ginger)}
 .suggest .hint{padding:10px 12px;color:var(--mute);font-size:14px}
-#toast{position:fixed;left:50%;bottom:calc(160px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);
+#toast{position:fixed;left:50%;bottom:calc(var(--bar) + var(--tab) + 18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);
   background:var(--rice);color:var(--nori);padding:10px 16px;border-radius:12px;font-weight:800;opacity:0;
   pointer-events:none;transition:opacity .2s,transform .2s;z-index:20;max-width:90vw;text-align:center}
 #toast.show{opacity:1;transform:translate(-50%,0)}
@@ -184,6 +219,7 @@ input::placeholder{color:#6d8d88}
 <script>
 /* ============ config ============ */
 const CURRENCY = '$';
+const BUILD = '30 Sep 2026 · bigger plates';   // shown on the landing page so you can tell which copy is running
 const KEY = 'plateTally.v1';
 const SWATCHES = ['#e5484d','#f5a524','#f2d74a','#4cb782','#3e8ef7','#8b5cf6','#e8e2d4','#2b2b2b'];
 
@@ -192,7 +228,7 @@ const fresh = () => ({ restaurants: [], bills: {}, current: null });
 function load(){ try { return Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY))); } catch { return fresh(); } }
 function persist(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} }
 let S = load();
-const ui = { view: 'pick', menu: false, removing: false, draft: null };
+const ui = { view: 'pick', menu: false, removing: false, dock: false, draft: null };
 
 const uid = () => Math.random().toString(36).slice(2, 9);
 const money = c => (c < 0 ? '-' : '') + CURRENCY + (Math.abs(c) / 100).toFixed(2);
@@ -213,7 +249,7 @@ const ICON = {
   back:'<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
   pencil:'<svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/></svg>',
 };
-function go(view){ ui.view = view; ui.menu = false; ui.removing = false; render(); }
+function go(view){ ui.view = view; ui.menu = false; ui.removing = false; ui.dock = false; render(); }
 
 /* ============ views ============ */
 function sushiPlate(cx, cy, colour, kind){
@@ -257,8 +293,8 @@ function soyFish(x, y, rot, flip){
     <path d="M-16,0 Q-12,-11 4,-11 Q20,-10 24,-3 L24,3 Q20,10 4,11 Q-12,11 -16,0Z" fill="#150b08" stroke="rgba(255,255,255,.28)" stroke-width="1.2"/>
     <path d="M-8,-6 Q4,-9.5 16,-5.5" stroke="rgba(255,255,255,.25)" stroke-width="2" fill="none" stroke-linecap="round"/>
     <path d="M-6,-1 q3,3 6,0 M0,-1 q3,3 6,0 M6,-1 q3,3 6,0 M-3,4 q3,3 6,0 M3,4 q3,3 6,0" stroke="rgba(255,255,255,.14)" stroke-width="1" fill="none"/>
-    <rect x="23" y="-5.5" width="11" height="11" rx="2.6" fill="#d62f36"/>
-    <path d="M26.5,-5.5 v11 M30,-5.5 v11" stroke="rgba(0,0,0,.22)" stroke-width="1"/>
+    <rect x="23.5" y="-4" width="8" height="8" rx="2.2" fill="#d62f36"/>
+    <path d="M26.2,-4 v8 M28.8,-4 v8" stroke="rgba(0,0,0,.22)" stroke-width="1"/>
   </g>`;
 }
 const HERO_PLATES = `<svg class="hero-plates" viewBox="0 0 340 206" role="img" aria-label="Plates of sushi and soy sauce fish on a conveyor belt">
@@ -291,11 +327,11 @@ function viewPick(){
     </div>`;
   } else {
     picker = `<div class="picker">
-      <p class="intro">Add the sushi train you're at, set the colour and price of each plate, then tap as they go by.</p>
+      <p class="intro">Add the sushi train you're at, set the colour and price of each plate, then tap as you grab them.</p>
       <button class="btn primary big" data-act="new">Get started</button>
     </div>`;
   }
-  return `<div class="screen narrow"><div class="scroll"><div class="landing">${hero}${picker}</div></div></div>`;
+  return `<div class="screen narrow"><div class="scroll"><div class="landing">${hero}<div>${picker}<div class="ver">Build ${BUILD}</div></div></div></div></div>`;
 }
 
 function viewBill(){
@@ -303,8 +339,7 @@ function viewBill(){
   const plates = r.plates.map(p => {
     const n = b.counts[p.id] || 0;
     return `<button class="plate-btn ${n ? 'has' : ''}" data-act="plate" data-id="${p.id}" aria-label="${esc(p.colour)} plate, ${money(p.price)}, ${n} taken">
-      <div class="plate" data-plate="${p.id}" style="--c:${p.colour};--ink:${inkFor(p.colour)}"><span class="n ${n ? '' : 'zero'}">${n}</span></div>
-      <span class="price">${money(p.price)}</span>
+      <div class="plate" data-plate="${p.id}" style="--c:${p.colour};--ink:${inkFor(p.colour)}"><span class="n ${n ? '' : 'zero'}">${n}</span><span class="price">${money(p.price)}</span></div>
     </button>`;
   }).join('');
   return `<div class="screen ${ui.removing ? 'removing' : ''}">
@@ -313,19 +348,23 @@ function viewBill(){
       <button class="icon-btn" data-act="menu" aria-label="Menu">${ICON.menu}</button>
     </div>
     ${ui.removing ? `<div class="banner"><span>Tap a plate to remove one</span><button data-act="cancel-remove">Cancel</button></div>` : ''}
-    <div class="scroll"><div class="plates">${plates || '<p class="muted" style="grid-column:1/-1;text-align:center">This restaurant has no plates yet. Use the menu to edit it.</p>'}</div></div>
-    <div class="extras">
+    <div class="scroll fit"><div class="plates" style="--rows:${Math.min(3, Math.max(1, Math.ceil(r.plates.length / 2)))}">${plates || '<p class="muted" style="grid-column:1/-1;text-align:center">This restaurant has no plates yet. Use the menu to edit it.</p>'}</div></div>
+    <div class="dock-space"></div>
+    <div class="dock-scrim ${ui.dock ? 'on' : ''}" id="dock-scrim" data-act="dock-close"></div>
+    <div class="dock ${ui.dock ? 'open' : ''}" id="dock">
+      <button class="dock-tab" data-act="dock-toggle" aria-expanded="${ui.dock}" aria-controls="dock-body"><span class="lbl">${ui.dock ? 'Close' : 'Add menu item'}</span><i></i></button>
       <div class="venue">${esc(r.name)}</div>
-      <label for="xdesc">Add item</label>
-      <div class="formwrap">
-        <div class="suggest" id="suggest" hidden></div>
-        <form id="extra-form" autocomplete="off">
-          <input id="xdesc" type="text" placeholder="${(r.items || []).length ? 'Pick or type an item' : 'Description (optional)'}" aria-label="Description" autocomplete="off">
-          <div class="amt"><span>${CURRENCY}</span><input id="xprice" type="text" inputmode="decimal" placeholder="0.00" aria-label="Price"></div>
-          <button class="add" type="submit">Add</button>
-        </form>
+      <div class="extras" id="dock-body" ${ui.dock ? '' : 'inert'}>
+        <label for="xdesc">Add item</label>
+        <div class="formwrap">
+          <div class="suggest" id="suggest" hidden></div>
+          <form id="extra-form" autocomplete="off">
+            <input id="xdesc" type="text" placeholder="${(r.items || []).length ? 'Pick or type an item' : 'Description (optional)'}" aria-label="Description" autocomplete="off">
+            <div class="amt"><span>${CURRENCY}</span><input id="xprice" type="text" inputmode="decimal" placeholder="0.00" aria-label="Price"></div>
+            <button class="add" type="submit">Add</button>
+          </form>
+        </div>
       </div>
-      <div class="safe"></div>
     </div>
     ${ui.menu ? `<div class="scrim" data-act="menu-close"></div>
       <div class="menu">
@@ -408,6 +447,38 @@ function render(){
   lastView = ui.view;
 }
 
+/* slide the add-item drawer up/down without re-rendering (keeps what's typed, and the animation) */
+function setDock(open){
+  ui.dock = open;
+  const dock = document.getElementById('dock'); if (!dock) return;
+  dock.classList.toggle('open', open);
+  document.getElementById('dock-scrim').classList.toggle('on', open);
+  dock.querySelector('#dock-body').toggleAttribute('inert', !open);
+  const tab = dock.querySelector('.dock-tab');
+  tab.setAttribute('aria-expanded', open);
+  tab.querySelector('.lbl').textContent = open ? 'Close' : 'Add menu item';
+  if (!open) { if (document.activeElement) document.activeElement.blur(); hideSuggest(); }
+  syncKeyboard();
+}
+
+/* Chrome keeps the page at full height when the keyboard opens, which would leave the drawer hidden
+   underneath it. Measure the keyboard via the visual viewport and lift the drawer by that much. */
+function syncKeyboard(){
+  const vv = window.visualViewport; if (!vv) return;
+  const a = document.activeElement;
+  const typing = ui.dock && a && a.closest && a.closest('#dock') && /^(INPUT|TEXTAREA)$/.test(a.tagName);
+  const kb = typing ? Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)) : 0;
+  const root = document.documentElement;
+  root.style.setProperty('--kb', kb + 'px');
+  root.classList.toggle('kb', kb > 0);
+}
+if (window.visualViewport) {
+  visualViewport.addEventListener('resize', syncKeyboard);
+  visualViewport.addEventListener('scroll', syncKeyboard);
+}
+document.addEventListener('focusin', () => setTimeout(syncKeyboard, 0));
+document.addEventListener('focusout', () => setTimeout(syncKeyboard, 0));
+
 /* in-place update so taps feel instant */
 function refreshTotal(){
   const el = document.getElementById('total'); if (!el) return;
@@ -476,6 +547,8 @@ document.addEventListener('click', e => {
     case 'new': startDraft(null); break;
     case 'edit': startDraft(id); break;
     case 'edit-back': ui.draft = null; go(ui.prevView === 'bill' && rest() ? 'bill' : 'pick'); break;
+    case 'dock-toggle': setDock(!ui.dock); break;
+    case 'dock-close': setDock(false); break;
     case 'menu': ui.menu = true; render(); break;
     case 'menu-close': ui.menu = false; render(); break;
     case 'itemised': go('itemised'); break;
@@ -569,7 +642,7 @@ document.addEventListener('submit', e => {
   }
   persist();
   priceEl.value = ''; descEl.value = ''; priceEl.style.borderColor = '';
-  priceEl.blur(); descEl.blur(); hideSuggest();
+  setDock(false);
   descEl.placeholder = r.items.length ? 'Pick or type an item' : 'Description (optional)';
   refreshTotal();
   if (note) toast(note);
@@ -588,6 +661,7 @@ function showSuggest(){
   box.hidden = !html;
 }
 function hideSuggest(){ const b = document.getElementById('suggest'); if (b) b.hidden = true; }
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && ui.dock) setDock(false); });
 document.addEventListener('focusin', e => { if (e.target.id === 'xdesc') showSuggest(); });
 document.addEventListener('focusout', e => { if (e.target.id === 'xdesc') setTimeout(hideSuggest, 250); });
 document.addEventListener('mousedown', e => { if (e.target.closest('#suggest')) e.preventDefault(); });
