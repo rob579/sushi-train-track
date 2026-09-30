@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sushi Train Track</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f2a2b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Sushi Train Track">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --nori:#0f2a2b;        /* page background */
+  --belt:#183a3b;        /* raised surfaces */
+  --belt-2:#21494a;
+  --rice:#f4efe3;        /* main text */
+  --mute:#93b0ab;        /* secondary text */
+  --ginger:#f7a8b8;      /* total */
+  --wasabi:#b9dc6a;      /* primary actions */
+  --danger:#ff8a78;
+  --font:'M PLUS Rounded 1c', ui-rounded, 'Hiragino Maru Gothic ProN', system-ui, sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{
+  background:var(--nori);color:var(--rice);font-family:var(--font);font-size:16px;
+  overscroll-behavior:none;touch-action:manipulation;
+}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+#app{position:relative;height:100%;display:flex;flex-direction:column;max-width:1100px;margin:0 auto;
+  padding-top:env(safe-area-inset-top,0px)}
+
+/* ---------- shared ---------- */
+.btn{background:var(--belt-2);border-radius:14px;padding:12px 18px;font-weight:500}
+.btn.primary{background:var(--wasabi);color:#1c2a0a;font-weight:800}
+.btn.danger{color:var(--danger)}
+.btn:active{transform:scale(.97)}
+.icon-btn{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--belt)}
+.icon-btn svg{width:22px;height:22px;stroke:var(--rice);fill:none;stroke-width:2;stroke-linecap:round}
+.screen{flex:1;min-height:0;display:flex;flex-direction:column}
+.narrow{width:100%;max-width:640px;margin:0 auto}
+.scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.pad{padding:16px}
+h1{font-size:26px;font-weight:800;margin:0}
+.topbar{display:flex;align-items:center;gap:12px;padding:14px 16px}
+.topbar h1{flex:1}
+.muted{color:var(--mute)}
+input[type=text],input[type=number]{
+  background:var(--belt);border:2px solid transparent;border-radius:12px;padding:12px 14px;width:100%;min-width:0;
+  outline:none}
+input:focus{border-color:var(--wasabi)}
+input::placeholder{color:#6d8d88}
+
+/* ---------- landing page ---------- */
+.landing{min-height:100%;display:flex;flex-direction:column;justify-content:space-between;gap:28px;
+  padding:22px 20px calc(24px + env(safe-area-inset-bottom,0px))}
+.hero-title{font-size:clamp(34px,10vw,52px);font-weight:800;line-height:1.05;text-align:center;margin:6px 0 0;letter-spacing:-.5px}
+.hero-title span{color:var(--wasabi)}
+.belt{position:relative;overflow:hidden;height:30px;margin:18px 0 0;border-block:3px solid var(--belt-2)}
+.belt::before{content:'';position:absolute;top:0;bottom:0;left:-48px;width:calc(100% + 96px);
+  background:repeating-linear-gradient(90deg,transparent 0 16px,var(--belt-2) 16px 24px);
+  transform:skewX(-25deg);animation:belt 1.4s linear infinite}
+@keyframes belt{to{transform:skewX(-25deg) translateX(24px)}}
+.hero-plates{display:block;width:100%;max-width:400px;height:auto;margin:22px auto 0}
+.pick-label{display:block;font-size:24px;font-weight:800;margin:0 0 12px 2px}
+.select-wrap{position:relative}
+.select-wrap select{appearance:none;-webkit-appearance:none;width:100%;background:var(--belt);color:var(--rice);
+  border:2px solid var(--belt-2);border-radius:16px;padding:17px 52px 17px 18px;font-size:19px;font-family:var(--font);
+  color-scheme:dark;outline:none;text-overflow:ellipsis}
+.select-wrap select:focus{border-color:var(--wasabi)}
+.select-wrap select option{background:var(--belt);color:var(--rice)}
+.select-wrap::after{content:'';position:absolute;right:22px;top:50%;width:10px;height:10px;
+  border-right:3px solid var(--rice);border-bottom:3px solid var(--rice);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+.picker .intro{color:var(--mute);line-height:1.5;margin:0 2px 16px;font-size:17px}
+.btn.big{width:100%;padding:18px;font-size:21px;border-radius:18px}
+@media (prefers-reduced-motion:reduce){.belt::before{animation:none}}
+
+/* ---------- bill screen ---------- */
+.bill-head{display:flex;align-items:center;gap:12px;padding:10px 16px 6px}
+.total{flex:1;display:flex;align-items:baseline;gap:10px;line-height:1}
+.total .lbl{color:var(--mute);font-size:20px}
+.total b{font-size:50px;font-weight:800;color:var(--ginger);font-variant-numeric:tabular-nums;letter-spacing:-.5px;display:inline-block}
+.total b.bump{animation:bump .25s ease-out}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(1)}}
+.banner{margin:6px 16px 0;padding:10px 14px;background:var(--danger);color:#3a0f08;border-radius:14px;
+  display:flex;align-items:center;justify-content:space-between;font-weight:800}
+.banner button{background:rgba(0,0,0,.15);border-radius:10px;padding:6px 12px;font-weight:800}
+.plates{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:22px 16px;padding:18px 16px 24px}
+@media (max-width:440px){.plates{grid-template-columns:repeat(2,1fr);gap:18px 14px}}
+.plate-btn{display:flex;flex-direction:column;align-items:center;gap:8px;user-select:none;-webkit-user-select:none}
+.plate{
+  --c:#fff;--ink:#111;
+  width:100%;max-width:190px;aspect-ratio:1;border-radius:50%;position:relative;
+  display:grid;place-items:center;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 0 40%, rgba(0,0,0,.22) 40% 42.5%, rgba(255,255,255,.3) 42.5% 45%, transparent 45%),
+    radial-gradient(circle at 35% 28%, rgba(255,255,255,.35), transparent 45%),
+    var(--c);
+  box-shadow:0 7px 0 rgba(0,0,0,.35), inset 0 0 0 4px rgba(255,255,255,.2);
+  transition:transform .08s;
+}
+.plate-btn:active .plate{transform:translateY(3px) scale(.97);box-shadow:0 3px 0 rgba(0,0,0,.35), inset 0 0 0 4px rgba(255,255,255,.2)}
+.plate .n{font-size:52px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1}
+.plate .n.zero{opacity:.35}
+.plate.pop{animation:pop .22s ease-out}
+@keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.09)}100%{transform:scale(1)}}
+.price{font-weight:800;font-size:19px;font-variant-numeric:tabular-nums}
+.removing .plate-btn.has .plate{animation:wiggle .35s ease-in-out infinite;outline:3px dashed var(--danger);outline-offset:4px}
+.removing .plate-btn.has:nth-child(even) .plate{animation-delay:-.17s}
+.removing .plate-btn:not(.has){opacity:.3;pointer-events:none}
+@keyframes wiggle{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+@media (prefers-reduced-motion:reduce){
+  .removing .plate-btn.has .plate{animation:none}
+  .total b.bump,.plate.pop{animation:none}
+}
+.extras{background:var(--belt);border-radius:22px 22px 0 0;padding:12px 14px 0}
+.extras form{display:flex;gap:8px}
+.extras .amt{width:104px;flex:none;position:relative}
+.extras .amt span{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--mute)}
+.extras .amt input{padding-left:28px}
+.extras .safe{height:calc(14px + env(safe-area-inset-bottom,0px))}
+.extras .add{flex:none;background:var(--wasabi);color:#1c2a0a;border-radius:12px;padding:0 16px;font-weight:800}
+.extras .add:active{transform:scale(.96)}
+.extras label{display:block;font-size:15px;color:var(--mute);margin:0 0 8px 2px}
+.venue{padding:2px 2px 12px;font-weight:800;color:var(--rice);font-size:26px}
+
+/* ---------- add-item suggestions ---------- */
+.formwrap{position:relative}
+.suggest{position:absolute;left:0;right:0;bottom:calc(100% + 8px);max-height:min(40vh,320px);overflow-y:auto;
+  background:var(--belt-2);border-radius:16px;box-shadow:0 12px 30px rgba(0,0,0,.45);padding:6px;z-index:5}
+.suggest[hidden]{display:none}
+.suggest button{display:flex;justify-content:space-between;gap:12px;width:100%;text-align:left;padding:13px 12px;border-radius:12px}
+.suggest button:active{background:rgba(255,255,255,.08)}
+.suggest b{font-variant-numeric:tabular-nums;color:var(--ginger)}
+.suggest .hint{padding:10px 12px;color:var(--mute);font-size:14px}
+#toast{position:fixed;left:50%;bottom:calc(160px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);
+  background:var(--rice);color:var(--nori);padding:10px 16px;border-radius:12px;font-weight:800;opacity:0;
+  pointer-events:none;transition:opacity .2s,transform .2s;z-index:20;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- menu ---------- */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10}
+.menu{position:absolute;top:calc(env(safe-area-inset-top,0px) + 62px);right:12px;z-index:11;background:var(--belt-2);
+  border-radius:18px;padding:8px;min-width:230px;box-shadow:0 12px 30px rgba(0,0,0,.4)}
+.menu button{display:block;width:100%;text-align:left;padding:14px 14px;border-radius:12px;font-weight:500}
+.menu button:active{background:rgba(255,255,255,.08)}
+.menu hr{border:0;border-top:1px solid rgba(255,255,255,.1);margin:6px 8px}
+.menu .danger{color:var(--danger)}
+
+/* ---------- itemised ---------- */
+.line{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.line .chip{width:26px;height:26px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 3px rgba(255,255,255,.28)}
+.line .chip.extra{background:var(--belt-2);display:grid;place-items:center;font-size:14px;box-shadow:none}
+.line .desc{flex:1;min-width:0}
+.line .desc small{display:block;color:var(--mute)}
+.line .amt{font-weight:800;font-variant-numeric:tabular-nums}
+.line .x{width:34px;height:34px;border-radius:10px;background:var(--belt);color:var(--danger);font-size:20px;line-height:1}
+.grand{display:flex;justify-content:space-between;align-items:baseline;padding:20px 0 8px;font-weight:800}
+.grand b{font-size:38px;color:var(--ginger);font-variant-numeric:tabular-nums}
+
+/* ---------- editor ---------- */
+.field-label{font-weight:800;margin:18px 0 8px}
+.prow{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.prow input[type=color]{width:56px;height:48px;padding:0;border:0;background:none;flex:none;border-radius:12px}
+.prow input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+.prow input[type=color]::-webkit-color-swatch{border:3px solid rgba(255,255,255,.3);border-radius:50%}
+.prow input[type=color]::-moz-color-swatch{border:3px solid rgba(255,255,255,.3);border-radius:50%}
+.prow .money{position:relative;flex:1}
+.prow .money span{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--mute)}
+.prow .money input{padding-left:28px}
+.prow .x{width:44px;height:48px;border-radius:12px;background:var(--belt);color:var(--danger);font-size:22px}
+.footer-actions{display:flex;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));background:var(--belt)}
+.footer-actions .btn{flex:1}
+.footer-actions .primary{flex:2}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ============ config ============ */
+const CURRENCY = '$';
+const KEY = 'plateTally.v1';
+const SWATCHES = ['#e5484d','#f5a524','#f2d74a','#4cb782','#3e8ef7','#8b5cf6','#e8e2d4','#2b2b2b'];
+
+/* ============ state ============ */
+const fresh = () => ({ restaurants: [], bills: {}, current: null });
+function load(){ try { return Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY))); } catch { return fresh(); } }
+function persist(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} }
+let S = load();
+const ui = { view: 'pick', menu: false, removing: false, draft: null };
+
+const uid = () => Math.random().toString(36).slice(2, 9);
+const money = c => (c < 0 ? '-' : '') + CURRENCY + (Math.abs(c) / 100).toFixed(2);
+const esc = s => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const toCents = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) && n >= 0 ? Math.round(n * 100) : null; };
+const rest = () => S.restaurants.find(r => r.id === S.current);
+const billOf = id => (S.bills[id] ||= { counts: {}, extras: [] });
+function totalOf(r){
+  const b = S.bills[r.id]; if (!b) return 0;
+  return r.plates.reduce((s, p) => s + (b.counts[p.id] || 0) * p.price, 0) + b.extras.reduce((s, e) => s + e.price, 0);
+}
+function inkFor(hex){
+  const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  return (0.299 * r + 0.587 * g + 0.114 * b) > 165 ? '#1b1b1b' : '#ffffff';
+}
+const ICON = {
+  menu:'<svg viewBox="0 0 24 24" style="fill:var(--rice);stroke:none"><circle cx="12" cy="5" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="12" cy="19" r="2.2"/></svg>',
+  back:'<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
+  pencil:'<svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/></svg>',
+};
+function go(view){ ui.view = view; ui.menu = false; ui.removing = false; render(); }
+
+/* ============ views ============ */
+function sushiPlate(cx, cy, colour, kind){
+  const maki = (x, filling) => `<g transform="translate(${x},${cy + 6})">
+      <ellipse cx="0" cy="0" rx="13" ry="5" fill="#16211e"/>
+      <rect x="-13" y="-16" width="26" height="16" fill="#16211e"/>
+      <ellipse cx="0" cy="-16" rx="13" ry="5" fill="#16211e"/>
+      <ellipse cx="0" cy="-16" rx="10" ry="3.8" fill="#f6f1e4"/>
+      <ellipse cx="0" cy="-16" rx="4.5" ry="1.9" fill="${filling}"/>
+    </g>`;
+  const prawn = `<g transform="translate(${cx - 2},${cy + 8})">
+      <rect x="-16" y="-12" width="32" height="13" rx="6" fill="#f6f1e4"/>
+      <path d="M-21,-9 Q-20,-23 0,-23 Q20,-23 21,-9 Q21,-3 14,-6 Q0,-3 -14,-6 Q-21,-3 -21,-9Z" fill="#f4a38a"/>
+      <path d="M-11,-21 Q-8,-14 -11,-8 M-3,-22 Q0,-14 -3,-7 M5,-22 Q8,-14 5,-7 M13,-20 Q15,-14 13,-9" stroke="#e5714e" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path d="M19,-11 Q29,-16 32,-7 Q27,-9 25,-4 Q22,-7 19,-6Z" fill="#e8643f"/>
+    </g>`;
+  const inari = `<g transform="translate(${cx},${cy + 8})">
+      <path d="M-17,0 Q-20,-14 -11,-19 L11,-19 Q20,-14 17,0 Q0,4 -17,0Z" fill="#c98a2b" stroke="#a86d1c" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M-13,-12 Q-15,-6 -13,-3" stroke="rgba(255,255,255,.3)" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <ellipse cx="0" cy="-19" rx="11" ry="4" fill="#f6f1e4"/>
+      <circle cx="-4" cy="-19.5" r="1.1" fill="#9a8a5f"/><circle cx="1" cy="-18.5" r="1.1" fill="#9a8a5f"/><circle cx="5" cy="-20" r="1.1" fill="#9a8a5f"/>
+    </g>`;
+  const fills = ['#f0866a', '#8fce6b'];
+  const items = {
+    maki: maki(cx, fills[0]),
+    maki2: maki(cx - 20, fills[0]) + maki(cx + 20, fills[1]),
+    prawn, inari
+  };
+  return `<ellipse cx="${cx}" cy="${cy + 6}" rx="70" ry="23" fill="rgba(0,0,0,.35)"/>
+    <ellipse cx="${cx}" cy="${cy}" rx="70" ry="23" fill="${colour}"/>
+    <ellipse cx="${cx}" cy="${cy}" rx="47" ry="13.5" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2.5"/>
+    ${items[kind]}`;
+}
+function soyFish(x, y, rot, flip){
+  const k = 0.72;   // overall size
+  return `<g transform="translate(${x},${y}) rotate(${rot}) scale(${(flip ? -1 : 1) * k},${k})">
+    <path d="M-20,-3 L-13,-5 L-13,5 L-20,3Z" fill="rgba(238,234,244,.7)"/>
+    <path d="M-19,0 L-33,-9 Q-28,0 -33,9Z" fill="rgba(238,234,244,.75)" stroke="rgba(255,255,255,.35)" stroke-width="1"/>
+    <path d="M-3,9 Q4,16 13,9Z" fill="#c9761f"/>
+    <path d="M-3,-9 Q3,-15 9,-9Z" fill="#c9761f"/>
+    <path d="M-16,0 Q-12,-11 4,-11 Q20,-10 24,-3 L24,3 Q20,10 4,11 Q-12,11 -16,0Z" fill="#150b08" stroke="rgba(255,255,255,.28)" stroke-width="1.2"/>
+    <path d="M-8,-6 Q4,-9.5 16,-5.5" stroke="rgba(255,255,255,.25)" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M-6,-1 q3,3 6,0 M0,-1 q3,3 6,0 M6,-1 q3,3 6,0 M-3,4 q3,3 6,0 M3,4 q3,3 6,0" stroke="rgba(255,255,255,.14)" stroke-width="1" fill="none"/>
+    <rect x="23" y="-5.5" width="11" height="11" rx="2.6" fill="#d62f36"/>
+    <path d="M26.5,-5.5 v11 M30,-5.5 v11" stroke="rgba(0,0,0,.22)" stroke-width="1"/>
+  </g>`;
+}
+const HERO_PLATES = `<svg class="hero-plates" viewBox="0 0 340 206" role="img" aria-label="Plates of sushi and soy sauce fish on a conveyor belt">
+  ${sushiPlate(90, 62, '#3e8ef7', 'maki')}${sushiPlate(250, 62, '#f5a524', 'maki2')}
+  ${sushiPlate(90, 148, '#e7d24f', 'prawn')}${sushiPlate(250, 148, '#b9bec2', 'inari')}
+  ${soyFish(132, 110, -7, false)}${soyFish(208, 110, 7, true)}
+</svg>`;
+
+function viewPick(){
+  const hero = `<div class="hero">
+      <h1 class="hero-title">Sushi Train <span>Track</span></h1>
+      <div class="belt" aria-hidden="true"></div>
+      ${HERO_PLATES}
+    </div>`;
+  let picker;
+  if (S.restaurants.length) {
+    const opts = S.restaurants.map(r => {
+      const t = totalOf(r);
+      return `<option value="${r.id}">${esc(r.name)}${t ? ` · ${money(t)} so far` : ''}</option>`;
+    }).join('');
+    picker = `<div class="picker">
+      <label class="pick-label" for="rest-select">Pick your restaurant</label>
+      <div class="select-wrap">
+        <select id="rest-select">
+          <option value="" disabled selected>Choose…</option>
+          ${opts}
+          <option value="__new">+ Add new restaurant</option>
+        </select>
+      </div>
+    </div>`;
+  } else {
+    picker = `<div class="picker">
+      <p class="intro">Add the sushi train you're at, set the colour and price of each plate, then tap as they go by.</p>
+      <button class="btn primary big" data-act="new">Get started</button>
+    </div>`;
+  }
+  return `<div class="screen narrow"><div class="scroll"><div class="landing">${hero}${picker}</div></div></div>`;
+}
+
+function viewBill(){
+  const r = rest(), b = billOf(r.id);
+  const plates = r.plates.map(p => {
+    const n = b.counts[p.id] || 0;
+    return `<button class="plate-btn ${n ? 'has' : ''}" data-act="plate" data-id="${p.id}" aria-label="${esc(p.colour)} plate, ${money(p.price)}, ${n} taken">
+      <div class="plate" data-plate="${p.id}" style="--c:${p.colour};--ink:${inkFor(p.colour)}"><span class="n ${n ? '' : 'zero'}">${n}</span></div>
+      <span class="price">${money(p.price)}</span>
+    </button>`;
+  }).join('');
+  return `<div class="screen ${ui.removing ? 'removing' : ''}">
+    <div class="bill-head">
+      <div class="total"><span class="lbl">Total:</span><b id="total">${money(totalOf(r))}</b></div>
+      <button class="icon-btn" data-act="menu" aria-label="Menu">${ICON.menu}</button>
+    </div>
+    ${ui.removing ? `<div class="banner"><span>Tap a plate to remove one</span><button data-act="cancel-remove">Cancel</button></div>` : ''}
+    <div class="scroll"><div class="plates">${plates || '<p class="muted" style="grid-column:1/-1;text-align:center">This restaurant has no plates yet. Use the menu to edit it.</p>'}</div></div>
+    <div class="extras">
+      <div class="venue">${esc(r.name)}</div>
+      <label for="xdesc">Add item</label>
+      <div class="formwrap">
+        <div class="suggest" id="suggest" hidden></div>
+        <form id="extra-form" autocomplete="off">
+          <input id="xdesc" type="text" placeholder="${(r.items || []).length ? 'Pick or type an item' : 'Description (optional)'}" aria-label="Description" autocomplete="off">
+          <div class="amt"><span>${CURRENCY}</span><input id="xprice" type="text" inputmode="decimal" placeholder="0.00" aria-label="Price"></div>
+          <button class="add" type="submit">Add</button>
+        </form>
+      </div>
+      <div class="safe"></div>
+    </div>
+    ${ui.menu ? `<div class="scrim" data-act="menu-close"></div>
+      <div class="menu">
+        <button data-act="itemised">See itemised bill</button>
+        <button data-act="start-remove">Remove a plate</button>
+        <hr>
+        <button data-act="edit" data-id="${r.id}">Edit this restaurant</button>
+        <button data-act="new">Add a new restaurant</button>
+        <button data-act="pick">Switch restaurant</button>
+        <hr>
+        <button class="danger" data-act="reset">Start a new bill</button>
+      </div>` : ''}
+  </div>`;
+}
+
+function viewItemised(){
+  const r = rest(), b = billOf(r.id);
+  const plateLines = r.plates.filter(p => (b.counts[p.id] || 0) > 0).map(p => {
+    const n = b.counts[p.id];
+    return `<div class="line"><span class="chip" style="background:${p.colour}"></span>
+      <div class="desc">${n} × plate<small>${money(p.price)} each</small></div>
+      <span class="amt">${money(n * p.price)}</span></div>`;
+  }).join('');
+  const extraLines = b.extras.map(e => `<div class="line"><span class="chip extra">+</span>
+      <div class="desc">${e.desc ? esc(e.desc) : 'Other item'}</div>
+      <span class="amt">${money(e.price)}</span>
+      <button class="x" data-act="del-extra" data-id="${e.id}" aria-label="Remove item">×</button></div>`).join('');
+  return `<div class="screen narrow">
+    <div class="topbar"><button class="icon-btn" data-act="bill" aria-label="Back">${ICON.back}</button><h1>${esc(r.name)}</h1></div>
+    <div class="scroll pad">
+      ${plateLines || extraLines ? plateLines + extraLines : '<p class="muted">Nothing on the bill yet.</p>'}
+      <div class="grand"><span>Total</span><b>${money(totalOf(r))}</b></div>
+    </div>
+  </div>`;
+}
+
+function viewEdit(){
+  const d = ui.draft;
+  const rows = d.plates.map((p, i) => `<div class="prow">
+      <input type="color" value="${p.colour}" data-field="colour" data-i="${i}" aria-label="Plate colour">
+      <div class="money"><span>${CURRENCY}</span><input type="text" inputmode="decimal" value="${esc(p.price)}" placeholder="0.00" data-field="price" data-i="${i}" aria-label="Price per plate"></div>
+      <button class="x" data-act="del-plate" data-i="${i}" aria-label="Remove plate">×</button>
+    </div>`).join('');
+  const irows = d.items.map((it, i) => `<div class="prow">
+      <input type="text" value="${esc(it.desc)}" placeholder="e.g. Green tea" data-field="idesc" data-i="${i}" aria-label="Item description">
+      <div class="money" style="flex:none;width:112px"><span>${CURRENCY}</span><input type="text" inputmode="decimal" value="${esc(it.price)}" placeholder="0.00" data-field="iprice" data-i="${i}" aria-label="Item price"></div>
+      <button class="x" data-act="del-item" data-i="${i}" aria-label="Remove menu item">×</button>
+    </div>`).join('');
+  return `<div class="screen narrow">
+    <div class="topbar"><button class="icon-btn" data-act="edit-back" aria-label="Back">${ICON.back}</button>
+      <h1>${d.isNew ? 'New restaurant' : 'Edit restaurant'}</h1></div>
+    <div class="scroll pad">
+      <div class="field-label" style="margin-top:0">Restaurant name</div>
+      <input type="text" value="${esc(d.name)}" placeholder="e.g. Sushi Hub" data-field="name" id="rname">
+      <div class="field-label">Plates</div>
+      <p class="muted" style="margin:-4px 0 12px;font-size:14px">Tap a circle to pick the plate colour, then enter its price.</p>
+      ${rows}
+      <button class="btn" style="width:100%" data-act="add-plate">Add a plate</button>
+      <div class="field-label">Menu items</div>
+      <p class="muted" style="margin:-4px 0 12px;font-size:14px">Drinks and other extras with set prices. You can pick these when adding an item to a bill.</p>
+      ${irows}
+      <button class="btn" style="width:100%" data-act="add-item">Add a menu item</button>
+      ${d.isNew ? '' : '<button class="btn danger" style="width:100%;margin-top:28px" data-act="del-rest">Delete this restaurant</button>'}
+    </div>
+    <div class="footer-actions">
+      <button class="btn" data-act="edit-back">Cancel</button>
+      <button class="btn primary" data-act="save-rest">Save</button>
+    </div>
+  </div>`;
+}
+
+/* ============ render ============ */
+let lastView = null;
+function render(){
+  const v = { pick: viewPick, bill: viewBill, itemised: viewItemised, edit: viewEdit }[ui.view];
+  const old = document.querySelector('.scroll'), top = old ? old.scrollTop : 0;
+  document.getElementById('app').innerHTML = v();
+  const now = document.querySelector('.scroll');
+  if (now && lastView === ui.view) now.scrollTop = top;
+  lastView = ui.view;
+}
+
+/* in-place update so taps feel instant */
+function refreshTotal(){
+  const el = document.getElementById('total'); if (!el) return;
+  el.textContent = money(totalOf(rest()));
+  el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+}
+function refreshPlate(id){
+  const r = rest(), n = billOf(r.id).counts[id] || 0;
+  const plate = document.querySelector(`[data-plate="${id}"]`); if (!plate) return;
+  const num = plate.querySelector('.n');
+  num.textContent = n; num.classList.toggle('zero', !n);
+  plate.parentElement.classList.toggle('has', n > 0);
+  plate.classList.remove('pop'); void plate.offsetWidth; plate.classList.add('pop');
+}
+
+/* ============ editing helpers ============ */
+function startDraft(id){
+  const r = S.restaurants.find(x => x.id === id);
+  ui.draft = r
+    ? { id: r.id, isNew: false, name: r.name, plates: r.plates.map(p => ({ id: p.id, colour: p.colour, price: (p.price / 100).toFixed(2) })),
+      items: (r.items || []).map(it => ({ id: it.id, desc: it.desc, price: (it.price / 100).toFixed(2) })) }
+    : { id: uid(), isNew: true, name: '', plates: [{ id: uid(), colour: SWATCHES[0], price: '' }], items: [] };
+  ui.prevView = ui.view;
+  go('edit');
+}
+function saveDraft(){
+  const d = ui.draft;
+  if (!d.name.trim()) { alert('Give the restaurant a name.'); return; }
+  const plates = [];
+  for (const p of d.plates) {
+    if (p.price.trim() === '') continue;               // ignore blank rows
+    const c = toCents(p.price);
+    if (c === null) { alert('One of the plate prices is not a valid number.'); return; }
+    plates.push({ id: p.id, colour: p.colour, price: c });
+  }
+  if (!plates.length) { alert('Add at least one plate with a price.'); return; }
+  const items = [];
+  for (const it of d.items) {
+    const desc = it.desc.trim(), pr = it.price.trim();
+    if (!desc && !pr) continue;
+    if (!desc) { alert('Each menu item needs a description.'); return; }
+    const c = toCents(pr);
+    if (c === null) { alert(`"${desc}" needs a valid price.`); return; }
+    items.push({ id: it.id, desc, price: c });
+  }
+  const rec = { id: d.id, name: d.name.trim(), plates, items };
+  const i = S.restaurants.findIndex(r => r.id === d.id);
+  if (i >= 0) S.restaurants[i] = rec; else S.restaurants.push(rec);
+  // tidy counts for plates that no longer exist
+  const b = S.bills[d.id];
+  if (b) for (const k of Object.keys(b.counts)) if (!plates.some(p => p.id === k)) delete b.counts[k];
+  persist();
+  ui.draft = null;
+  if (d.isNew) { S.current = d.id; persist(); go('bill'); }
+  else go(S.current === d.id ? 'bill' : 'pick');
+}
+
+/* ============ events ============ */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]'); if (!t) return;
+  const act = t.dataset.act, id = t.dataset.id;
+  switch (act) {
+    case 'open': S.current = id; persist(); go('bill'); break;
+    case 'pick': go('pick'); break;
+    case 'bill': go('bill'); break;
+    case 'new': startDraft(null); break;
+    case 'edit': startDraft(id); break;
+    case 'edit-back': ui.draft = null; go(ui.prevView === 'bill' && rest() ? 'bill' : 'pick'); break;
+    case 'menu': ui.menu = true; render(); break;
+    case 'menu-close': ui.menu = false; render(); break;
+    case 'itemised': go('itemised'); break;
+    case 'start-remove': ui.menu = false; ui.removing = true; render(); break;
+    case 'cancel-remove': ui.removing = false; render(); break;
+    case 'reset':
+      if (confirm('Clear all plates and items and start a new bill?')) { S.bills[S.current] = { counts: {}, extras: [] }; persist(); go('bill'); }
+      else { ui.menu = false; render(); }
+      break;
+    case 'plate': {
+      const r = rest(), b = billOf(r.id);
+      if (ui.removing) {
+        if (!(b.counts[id] > 0)) return;
+        b.counts[id]--; persist(); ui.removing = false; render(); refreshTotal();
+      } else {
+        b.counts[id] = (b.counts[id] || 0) + 1; persist();
+        refreshPlate(id); refreshTotal();
+        if (navigator.vibrate) navigator.vibrate(8);
+      }
+      break;
+    }
+    case 'del-extra': {
+      const b = billOf(S.current); b.extras = b.extras.filter(x => x.id !== id); persist(); render(); break;
+    }
+    case 'add-plate':
+      ui.draft.plates.push({ id: uid(), colour: SWATCHES[ui.draft.plates.length % SWATCHES.length], price: '' });
+      render();
+      { const inputs = document.querySelectorAll('[data-field="price"]'); inputs[inputs.length - 1]?.focus(); }
+      break;
+    case 'add-item':
+      ui.draft.items.push({ id: uid(), desc: '', price: '' });
+      render();
+      { const f = document.querySelectorAll('[data-field="idesc"]'); f[f.length - 1]?.focus(); }
+      break;
+    case 'del-item': ui.draft.items.splice(+t.dataset.i, 1); render(); break;
+    case 'pick-item': {
+      const it = (rest().items || []).find(x => x.id === id); if (!it) break;
+      document.getElementById('xdesc').value = it.desc;
+      document.getElementById('xprice').value = (it.price / 100).toFixed(2);
+      hideSuggest(); document.getElementById('xdesc').blur();
+      break;
+    }
+    case 'del-plate': ui.draft.plates.splice(+t.dataset.i, 1); render(); break;
+    case 'save-rest': saveDraft(); break;
+    case 'del-rest':
+      if (confirm(`Delete ${ui.draft.name || 'this restaurant'} and its current bill?`)) {
+        S.restaurants = S.restaurants.filter(r => r.id !== ui.draft.id);
+        delete S.bills[ui.draft.id];
+        if (S.current === ui.draft.id) S.current = null;
+        persist(); ui.draft = null; go('pick');
+      }
+      break;
+  }
+});
+
+/* landing page pick list */
+document.addEventListener('change', e => {
+  if (e.target.id !== 'rest-select') return;
+  const v = e.target.value;
+  if (v === '__new') startDraft(null);
+  else if (S.restaurants.some(r => r.id === v)) { S.current = v; persist(); go('bill'); }
+});
+
+/* editor inputs: update draft without re-rendering (keeps keyboard open) */
+document.addEventListener('input', e => {
+  if (e.target.id === 'xdesc') { showSuggest(); return; }
+  const f = e.target.dataset.field; if (!f || !ui.draft) return;
+  const i = +e.target.dataset.i, v = e.target.value;
+  if (f === 'name') ui.draft.name = v;
+  else if (f === 'idesc') ui.draft.items[i].desc = v;
+  else if (f === 'iprice') ui.draft.items[i].price = v;
+  else ui.draft.plates[i][f] = v;
+});
+
+/* add non-plate item */
+document.addEventListener('submit', e => {
+  if (e.target.id !== 'extra-form') return;
+  e.preventDefault();
+  const priceEl = document.getElementById('xprice'), descEl = document.getElementById('xdesc');
+  const c = toCents(priceEl.value);
+  if (c === null || c === 0) { priceEl.focus(); priceEl.style.borderColor = 'var(--danger)'; return; }
+  const desc = descEl.value.trim(), r = rest();
+  billOf(r.id).extras.push({ id: uid(), price: c, desc });
+  // a new description is remembered on this restaurant's menu
+  r.items ||= [];
+  let note = '';
+  if (desc) {
+    const existing = r.items.find(i => i.desc.toLowerCase() === desc.toLowerCase());
+    if (!existing) { r.items.push({ id: uid(), desc, price: c }); note = `Saved "${desc}" to the ${r.name} menu`; }
+    else if (existing.price !== c) { existing.price = c; note = `Updated "${existing.desc}" to ${money(c)} on the ${r.name} menu`; }
+  }
+  persist();
+  priceEl.value = ''; descEl.value = ''; priceEl.style.borderColor = '';
+  priceEl.blur(); descEl.blur(); hideSuggest();
+  descEl.placeholder = r.items.length ? 'Pick or type an item' : 'Description (optional)';
+  refreshTotal();
+  if (note) toast(note);
+});
+
+/* ---- suggestions for the description field ---- */
+function showSuggest(){
+  const box = document.getElementById('suggest'), input = document.getElementById('xdesc');
+  if (!box || !input) return;
+  const items = rest().items || [], raw = input.value.trim(), q = raw.toLowerCase();
+  const matches = items.filter(i => i.desc.toLowerCase().includes(q));
+  const exact = items.some(i => i.desc.toLowerCase() === q);
+  let html = matches.map(i => `<button type="button" data-act="pick-item" data-id="${i.id}"><span>${esc(i.desc)}</span><b>${money(i.price)}</b></button>`).join('');
+  if (raw && !exact) html += `<div class="hint">"${esc(raw)}" is new. It will be saved to this menu when you add it.</div>`;
+  box.innerHTML = html;
+  box.hidden = !html;
+}
+function hideSuggest(){ const b = document.getElementById('suggest'); if (b) b.hidden = true; }
+document.addEventListener('focusin', e => { if (e.target.id === 'xdesc') showSuggest(); });
+document.addEventListener('focusout', e => { if (e.target.id === 'xdesc') setTimeout(hideSuggest, 250); });
+document.addEventListener('mousedown', e => { if (e.target.closest('#suggest')) e.preventDefault(); });
+
+function toast(msg){
+  let t = document.getElementById('toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.className = 'show';
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.className = '', 2400);
+}
+
+render();
+</script>
+</body>
+</html>
