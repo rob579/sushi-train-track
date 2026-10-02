@@ -24,7 +24,7 @@
   --belt-2:#21494a;
   --rice:#f4efe3;        /* main text */
   --mute:#93b0ab;        /* secondary text */
-  --ginger:#f7a8b8;      /* total */
+  --price:#86efac;       /* totals and prices: light green */
   --wasabi:#b9dc6a;      /* primary actions */
   --danger:#ff8a78;
   --font:'M PLUS Rounded 1c', ui-rounded, 'Hiragino Maru Gothic ProN', system-ui, sans-serif;
@@ -88,9 +88,9 @@ input::placeholder{color:#6d8d88}
 
 /* ---------- bill screen ---------- */
 .bill-head{display:flex;align-items:center;gap:12px;padding:10px 16px 6px}
-.total{flex:1;display:flex;align-items:baseline;gap:10px;line-height:1}
+.total{flex:1;min-width:0;display:flex;align-items:baseline;gap:10px;line-height:1}
 .total .lbl{color:var(--mute);font-size:20px}
-.total b{font-size:50px;font-weight:800;color:var(--ginger);font-variant-numeric:tabular-nums;letter-spacing:-.5px;display:inline-block}
+.total b{white-space:nowrap;font-size:50px;font-weight:800;color:var(--price);font-variant-numeric:tabular-nums;letter-spacing:-.5px;display:inline-block}
 .total b.bump{animation:bump .25s ease-out}
 @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(1)}}
 .banner{margin:6px 16px 0;padding:10px 14px;background:var(--danger);color:#3a0f08;border-radius:14px;
@@ -162,7 +162,7 @@ html.kb .extras{padding-bottom:16px}
   .plates{--cap:max(96px, calc((100cqh - var(--pv) - (var(--rows,3) - 1) * var(--rg)) / var(--rows,3) - 2px))}
   .plate{width:min(100%,190px,var(--cap));container-type:inline-size}
   .plate .n{font-size:31cqw}
-  .plate .price{font-size:10.5cqw}
+  .plate .price{font-size:calc(var(--pf,10.5) * 1cqw)}
 }
 
 /* ---------- add-item suggestions ---------- */
@@ -172,7 +172,11 @@ html.kb .extras{padding-bottom:16px}
 .suggest[hidden]{display:none}
 .suggest button{display:flex;justify-content:space-between;gap:12px;width:100%;text-align:left;padding:13px 12px;border-radius:12px}
 .suggest button:active{background:rgba(255,255,255,.08)}
-.suggest b{font-variant-numeric:tabular-nums;color:var(--ginger)}
+.suggest b{font-variant-numeric:tabular-nums;color:var(--price)}
+.suggest small{color:var(--mute);font-size:13px;align-self:center;white-space:nowrap}
+.dwrap{position:relative;flex:1;min-width:0}
+.edit-suggest{bottom:auto;top:calc(100% + 6px);left:0;right:auto;width:min(340px,calc(100vw - 32px));z-index:8}
+.edit-suggest.up{top:auto;bottom:calc(100% + 6px)}
 .suggest .hint{padding:10px 12px;color:var(--mute);font-size:14px}
 #update-banner{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translateX(-50%);z-index:30;
   display:flex;align-items:center;gap:10px;padding:8px 8px 8px 16px;border-radius:14px;background:var(--wasabi);color:#1c2a0a;
@@ -202,7 +206,7 @@ html.kb .extras{padding-bottom:16px}
 .line .amt{font-weight:800;font-variant-numeric:tabular-nums}
 .line .x{width:34px;height:34px;border-radius:10px;background:var(--belt);color:var(--danger);font-size:20px;line-height:1}
 .grand{display:flex;justify-content:space-between;align-items:baseline;padding:20px 0 8px;font-weight:800}
-.grand b{font-size:38px;color:var(--ginger);font-variant-numeric:tabular-nums}
+.grand b{white-space:nowrap;font-size:clamp(24px,9vw,38px);color:var(--price);font-variant-numeric:tabular-nums}
 
 /* ---------- editor ---------- */
 .field-label{font-weight:800;margin:18px 0 8px}
@@ -225,9 +229,8 @@ html.kb .extras{padding-bottom:16px}
 
 <script>
 /* ============ config ============ */
-const CURRENCY = '$';
-const BUILD = '1 Oct 2026 · round swatches';
-const BUILD_ID = 'dev';   // stamped with the git commit by update.sh   // shown on the landing page so you can tell which copy is running
+const BUILD = '2 Oct 2026 · currency symbols';   // shown on the landing page so you can tell which copy is running
+const BUILD_ID = 'dev';   // stamped with the git commit by update.sh
 const KEY = 'plateTally.v1';
 const SWATCHES = ['#e5484d','#f5a524','#f2d74a','#4cb782','#3e8ef7','#8b5cf6','#e8e2d4','#2b2b2b'];
 
@@ -239,10 +242,86 @@ let S = load();
 const ui = { view: 'pick', menu: false, removing: false, dock: false, draft: null };
 
 const uid = () => Math.random().toString(36).slice(2, 9);
-const money = c => (c < 0 ? '-' : '') + CURRENCY + (Math.abs(c) / 100).toFixed(2);
 const esc = s => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const toCents = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) && n >= 0 ? Math.round(n * 100) : null; };
 const rest = () => S.restaurants.find(r => r.id === S.current);
+
+/* ============ currency and number formatting ============
+   Every restaurant has its own currency. Prices are stored as hundredths of the main unit
+   (so 4.80 is 480, and 450 yen is 45000) and shown through Intl, so the symbol, its position and the
+   decimal/thousands marks follow the phone's language and region. */
+const LOCALE = (navigator.languages && navigator.languages[0]) || navigator.language || 'en-US';
+const REGION_CURRENCY = {
+  AU:'AUD', NZ:'NZD', US:'USD', CA:'CAD', GB:'GBP', IE:'EUR', DE:'EUR', FR:'EUR', ES:'EUR', IT:'EUR', NL:'EUR', BE:'EUR',
+  AT:'EUR', PT:'EUR', FI:'EUR', GR:'EUR', LU:'EUR', SK:'EUR', SI:'EUR', EE:'EUR', LV:'EUR', LT:'EUR', MT:'EUR', CY:'EUR', HR:'EUR',
+  JP:'JPY', CN:'CNY', HK:'HKD', TW:'TWD', KR:'KRW', SG:'SGD', MY:'MYR', TH:'THB', ID:'IDR', PH:'PHP', VN:'VND', IN:'INR',
+  CH:'CHF', SE:'SEK', NO:'NOK', DK:'DKK', PL:'PLN', CZ:'CZK', HU:'HUF', AE:'AED', SA:'SAR', IL:'ILS', TR:'TRY', ZA:'ZAR',
+  BR:'BRL', MX:'MXN', AR:'ARS', CL:'CLP', CO:'COP', PE:'PEN'
+};
+const CURRENCIES = ['AED','ARS','AUD','BRL','CAD','CHF','CLP','CNY','COP','CZK','DKK','EUR','GBP','HKD','HUF','IDR','ILS','INR',
+  'JPY','KRW','MXN','MYR','NOK','NZD','PEN','PHP','PLN','SAR','SEK','SGD','THB','TRY','TWD','USD','VND','ZAR'];
+function defaultCurrency(){
+  let region = '';
+  try { region = new Intl.Locale(LOCALE).maximize().region || ''; } catch {}
+  return REGION_CURRENCY[region] || 'USD';
+}
+/* Short symbols (€, ¥, £) are used wherever there is one. Some locales, such as Australian English, would
+   otherwise spell foreign currencies as codes ("EUR 3.00"). Dollar currencies other than the phone's own,
+   and the yuan, keep a longer form ("US$", "CN¥") because a bare "$" or "¥" would be ambiguous. */
+const _nf = {};
+const mkNf = (cur, display) => {
+  try { return new Intl.NumberFormat(LOCALE, { style: 'currency', currency: cur, currencyDisplay: display }); }
+  catch { return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', currencyDisplay: display }); }
+};
+/* if a locale still spells a currency as its bare code, use the conventional symbol instead */
+const SYMBOL_FALLBACK = { USD:'US$', CAD:'CA$', NZD:'NZ$', AUD:'A$', HKD:'HK$', SGD:'S$', TWD:'NT$', MXN:'MX$', CNY:'CN¥', EUR:'€', GBP:'£',
+  JPY:'¥', KRW:'₩', INR:'₹', ILS:'₪', VND:'₫', PHP:'₱', THB:'฿', BRL:'R$', TRY:'₺', PLN:'zł', CZK:'Kč', SEK:'kr', NOK:'kr', DKK:'kr' };
+function withFallback(f, cur){
+  const sym = SYMBOL_FALLBACK[cur], part = f.formatToParts(0).find(x => x.type === 'currency');
+  if (!sym || !part || part.value !== cur) return f;
+  const tight = !/\p{L}$/u.test(sym);   // "US$4.80" and "€4.80" read better without the gap that goes with "USD 4.80"
+  const swap = parts => parts.flatMap((p, i) => p.type === 'currency' ? [{ ...p, value: sym }]
+    : (tight && p.type === 'literal' && i > 0 && parts[i - 1].type === 'currency' && /^\s+$/.test(p.value)) ? [] : [p]);
+  return { format: v => swap(f.formatToParts(v)).map(p => p.value).join(''), formatToParts: v => swap(f.formatToParts(v)), resolvedOptions: () => f.resolvedOptions() };
+}
+const narrowOf = cur => { const p = mkNf(cur, 'narrowSymbol').formatToParts(0).find(x => x.type === 'currency'); return p ? p.value : cur; };
+function nf(cur){
+  if (_nf[cur]) return _nf[cur];
+  const home = defaultCurrency(), narrow = narrowOf(cur);
+  const ambiguous = cur !== home && (narrow === '$' || narrow === narrowOf(home) || cur === 'CNY');
+  return (_nf[cur] = withFallback(mkNf(cur, ambiguous ? 'symbol' : 'narrowSymbol'), cur));
+}
+const curOf = r => (r && r.currency) || defaultCurrency();       // restaurants saved before currencies existed
+const digitsOf = cur => nf(cur).resolvedOptions().maximumFractionDigits === 0 ? 0 : 2;
+const money = (c, r = rest()) => nf(curOf(r)).format(c / 100);   // "$4.80", "4,80 €", "¥450" ...
+const symOf = cur => { const p = nf(cur).formatToParts(0).find(x => x.type === 'currency'); return p ? p.value : cur; };
+const symPad = cur => Math.round(20 + symOf(cur).length * 8.5);   // room for the symbol inside a price box
+/* a plain number for an input box, in the phone's own style (4.80, 4,80 or 450) */
+const plain = (c, cur) => new Intl.NumberFormat(LOCALE, { minimumFractionDigits: digitsOf(cur), maximumFractionDigits: digitsOf(cur),
+  useGrouping: false, numberingSystem: 'latn' }).format(c / 100);
+/* read what someone typed: accepts 4.50 / 4,50 / 1,234.50 / 1.234,50 / 1,200 (yen) and ignores symbols */
+function toCents(v, cur){
+  let t = String(v).trim();
+  if (!t || /-/.test(t)) return null;
+  t = t.replace(/[٠-٩]/g, d => d.charCodeAt(0) - 0x660).replace(/[۰-۹]/g, d => d.charCodeAt(0) - 0x6F0)
+       .replace(/٫/g, '.').replace(/٬/g, ',').replace(/[^\d.,]/g, '');
+  if (!/\d/.test(t)) return null;
+  const digits = digitsOf(cur), lc = t.lastIndexOf(','), ld = t.lastIndexOf('.');
+  const groups = sep => t.split(sep).slice(1).every(x => x.length === 3);
+  if (lc > -1 && ld > -1) t = lc > ld ? t.replace(/\./g, '').replace(',', '.') : t.replace(/,/g, '');
+  else if (lc > -1) t = (t.split(',').length > 2 || (digits === 0 && groups(','))) ? t.replace(/,/g, '') : t.replace(',', '.');
+  else if (ld > -1 && (t.split('.').length > 2 || (digits === 0 && groups('.')))) t = t.replace(/\./g, '');
+  const n = parseFloat(t);
+  if (!isFinite(n) || n < 0) return null;
+  return digits === 0 ? Math.round(n) * 100 : Math.round(n * 100);
+}
+function currencyOptions(sel){
+  let names = null;
+  try { names = new Intl.DisplayNames([LOCALE], { type: 'currency' }); } catch {}
+  return [...new Set([...CURRENCIES, sel])].sort().map(c => {
+    let n = ''; try { n = names ? names.of(c) : ''; } catch {}
+    return `<option value="${c}"${c === sel ? ' selected' : ''}>${c}${n && n !== c ? ' · ' + esc(n) : ''}</option>`;
+  }).join('');
+}
 const billOf = id => (S.bills[id] ||= { counts: {}, extras: [] });
 function totalOf(r){
   const b = S.bills[r.id]; if (!b) return 0;
@@ -321,7 +400,7 @@ function viewPick(){
   if (S.restaurants.length) {
     const opts = S.restaurants.map(r => {
       const t = totalOf(r);
-      return `<option value="${r.id}">${esc(r.name)}${t ? ` · ${money(t)} so far` : ''}</option>`;
+      return `<option value="${r.id}">${esc(r.name)}${t ? ` · ${money(t, r)} so far` : ''}</option>`;
     }).join('');
     picker = `<div class="picker">
       <label class="pick-label" for="rest-select">Pick your restaurant</label>
@@ -346,8 +425,9 @@ function viewBill(){
   const r = rest(), b = billOf(r.id);
   const plates = r.plates.map(p => {
     const n = b.counts[p.id] || 0;
-    return `<button class="plate-btn ${n ? 'has' : ''}" data-act="plate" data-id="${p.id}" aria-label="${esc(p.colour)} plate, ${money(p.price)}, ${n} taken">
-      <div class="plate" data-plate="${p.id}" style="--c:${p.colour};--ink:${inkFor(p.colour)}"><span class="n ${n ? '' : 'zero'}">${n}</span><span class="price">${money(p.price)}</span></div>
+    const lbl = money(p.price, r), pf = lbl.length <= 6 ? 10.5 : lbl.length === 7 ? 9.5 : lbl.length <= 9 ? 8 : 6.8;   // longer labels get smaller type
+    return `<button class="plate-btn ${n ? 'has' : ''}" data-act="plate" data-id="${p.id}" aria-label="${esc(p.colour)} plate, ${lbl}, ${n} taken">
+      <div class="plate" data-plate="${p.id}" style="--c:${p.colour};--ink:${inkFor(p.colour)};--pf:${pf}"><span class="n ${n ? '' : 'zero'}">${n}</span><span class="price">${lbl}</span></div>
     </button>`;
   }).join('');
   return `<div class="screen ${ui.removing ? 'removing' : ''}">
@@ -368,7 +448,7 @@ function viewBill(){
           <div class="suggest" id="suggest" hidden></div>
           <form id="extra-form" autocomplete="off">
             <input id="xdesc" type="text" placeholder="${(r.items || []).length ? 'Pick or type an item' : 'Description (optional)'}" aria-label="Description" autocomplete="off">
-            <div class="amt"><span>${CURRENCY}</span><input id="xprice" type="text" inputmode="decimal" placeholder="0.00" aria-label="Price"></div>
+            <div class="amt"><span>${esc(symOf(curOf(r)))}</span><input id="xprice" type="text" inputmode="decimal" placeholder="${plain(0, curOf(r))}" style="padding-left:${symPad(curOf(r))}px" aria-label="Price"></div>
             <button class="add" type="submit">Add</button>
           </form>
         </div>
@@ -411,14 +491,15 @@ function viewItemised(){
 
 function viewEdit(){
   const d = ui.draft;
+  const cur = d.currency, sym = symOf(cur), pad = symPad(cur), ph = plain(0, cur);
   const rows = d.plates.map((p, i) => `<div class="prow">
       <input type="color" value="${p.colour}" data-field="colour" data-i="${i}" aria-label="Plate colour">
-      <div class="money"><span>${CURRENCY}</span><input type="text" inputmode="decimal" value="${esc(p.price)}" placeholder="0.00" data-field="price" data-i="${i}" aria-label="Price per plate"></div>
+      <div class="money"><span>${esc(sym)}</span><input type="text" inputmode="decimal" value="${esc(p.price)}" placeholder="${ph}" style="padding-left:${pad}px" data-field="price" data-i="${i}" aria-label="Price per plate"></div>
       <button class="x" data-act="del-plate" data-i="${i}" aria-label="Remove plate">×</button>
     </div>`).join('');
   const irows = d.items.map((it, i) => `<div class="prow">
-      <input type="text" value="${esc(it.desc)}" placeholder="e.g. Green tea" data-field="idesc" data-i="${i}" aria-label="Item description">
-      <div class="money" style="flex:none;width:112px"><span>${CURRENCY}</span><input type="text" inputmode="decimal" value="${esc(it.price)}" placeholder="0.00" data-field="iprice" data-i="${i}" aria-label="Item price"></div>
+      <div class="dwrap"><input type="text" value="${esc(it.desc)}" placeholder="e.g. Green tea" data-field="idesc" data-i="${i}" aria-label="Item description" autocomplete="off"><div class="suggest edit-suggest" hidden></div></div>
+      <div class="money" style="flex:none;width:112px"><span>${esc(sym)}</span><input type="text" inputmode="decimal" value="${esc(it.price)}" placeholder="${ph}" style="padding-left:${pad}px" data-field="iprice" data-i="${i}" aria-label="Item price"></div>
       <button class="x" data-act="del-item" data-i="${i}" aria-label="Remove menu item">×</button>
     </div>`).join('');
   return `<div class="screen narrow">
@@ -427,6 +508,9 @@ function viewEdit(){
     <div class="scroll pad">
       <div class="field-label" style="margin-top:0">Restaurant name</div>
       <input type="text" value="${esc(d.name)}" placeholder="e.g. Sushi Hub" data-field="name" id="rname">
+      <div class="field-label">Currency</div>
+      <div class="select-wrap"><select id="cur-select" aria-label="Currency">${currencyOptions(cur)}</select></div>
+      ${d.isNew ? '' : '<p class="muted" style="margin:8px 2px 0;font-size:14px">Changing the currency does not convert the prices.</p>'}
       <div class="field-label">Plates</div>
       <p class="muted" style="margin:-4px 0 12px;font-size:14px">Tap a circle to pick the plate colour, then enter its price.</p>
       ${rows}
@@ -453,6 +537,7 @@ function render(){
   const now = document.querySelector('.scroll');
   if (now && lastView === ui.view) now.scrollTop = top;
   lastView = ui.view;
+  if (ui.view === 'bill') fitTotal();
 }
 
 /* slide the add-item drawer up/down without re-rendering (keeps what's typed, and the animation) */
@@ -487,10 +572,22 @@ if (window.visualViewport) {
 document.addEventListener('focusin', () => setTimeout(syncKeyboard, 0));
 document.addEventListener('focusout', () => setTimeout(syncKeyboard, 0));
 
+/* long amounts (e.g. "CHF 1'234.50") get smaller type so the total never pushes the menu button off screen */
+function fitTotal(){
+  const el = document.getElementById('total'); if (!el) return;
+  const box = el.parentElement, lbl = box.querySelector('.lbl');
+  const avail = box.clientWidth - (lbl ? lbl.offsetWidth : 0) - 10;
+  let size = 50; el.style.fontSize = size + 'px';
+  while (el.scrollWidth > avail && size > 22) { size -= 2; el.style.fontSize = size + 'px'; }
+}
+window.addEventListener('resize', fitTotal);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitTotal);
+
 /* in-place update so taps feel instant */
 function refreshTotal(){
   const el = document.getElementById('total'); if (!el) return;
   el.textContent = money(totalOf(rest()));
+  fitTotal();
   el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
 }
 function refreshPlate(id){
@@ -506,9 +603,11 @@ function refreshPlate(id){
 function startDraft(id){
   const r = S.restaurants.find(x => x.id === id);
   ui.draft = r
-    ? { id: r.id, isNew: false, name: r.name, plates: r.plates.map(p => ({ id: p.id, colour: p.colour, price: (p.price / 100).toFixed(2) })),
-      items: (r.items || []).map(it => ({ id: it.id, desc: it.desc, price: (it.price / 100).toFixed(2) })) }
-    : { id: uid(), isNew: true, name: '', plates: [{ id: uid(), colour: SWATCHES[0], price: '' }], items: [] };
+    ? { id: r.id, isNew: false, name: r.name, currency: curOf(r),
+      plates: r.plates.map(p => ({ id: p.id, colour: p.colour, price: plain(p.price, curOf(r)) })),
+      items: (r.items || []).map(it => ({ id: it.id, desc: it.desc, price: plain(it.price, curOf(r)) })) }
+    : { id: uid(), isNew: true, name: '', currency: S.lastCurrency || defaultCurrency(),
+      plates: [{ id: uid(), colour: SWATCHES[0], price: '' }], items: [] };
   ui.prevView = ui.view;
   go('edit');
 }
@@ -518,7 +617,7 @@ function saveDraft(){
   const plates = [];
   for (const p of d.plates) {
     if (p.price.trim() === '') continue;               // ignore blank rows
-    const c = toCents(p.price);
+    const c = toCents(p.price, d.currency);
     if (c === null) { alert('One of the plate prices is not a valid number.'); return; }
     plates.push({ id: p.id, colour: p.colour, price: c });
   }
@@ -528,11 +627,12 @@ function saveDraft(){
     const desc = it.desc.trim(), pr = it.price.trim();
     if (!desc && !pr) continue;
     if (!desc) { alert('Each menu item needs a description.'); return; }
-    const c = toCents(pr);
+    const c = toCents(pr, d.currency);
     if (c === null) { alert(`"${desc}" needs a valid price.`); return; }
     items.push({ id: it.id, desc, price: c });
   }
-  const rec = { id: d.id, name: d.name.trim(), plates, items };
+  const rec = { id: d.id, name: d.name.trim(), currency: d.currency, plates, items };
+  S.lastCurrency = d.currency;   // the next new restaurant starts with the same currency
   const i = S.restaurants.findIndex(r => r.id === d.id);
   if (i >= 0) S.restaurants[i] = rec; else S.restaurants.push(rec);
   // tidy counts for plates that no longer exist
@@ -592,10 +692,24 @@ document.addEventListener('click', e => {
       { const f = document.querySelectorAll('[data-field="idesc"]'); f[f.length - 1]?.focus(); }
       break;
     case 'del-item': ui.draft.items.splice(+t.dataset.i, 1); render(); break;
+    case 'pick-other': {
+      if (ui.view === 'edit') {
+        const i = +t.dataset.i;
+        ui.draft.items[i].desc = t.dataset.desc;
+        document.querySelector(`[data-field="idesc"][data-i="${i}"]`).value = t.dataset.desc;
+        hideEditSuggest();
+        document.querySelector(`[data-field="iprice"][data-i="${i}"]`).focus();
+      } else {
+        document.getElementById('xdesc').value = t.dataset.desc;
+        hideSuggest();
+        document.getElementById('xprice').focus();   // no price is filled in: it differs between restaurants
+      }
+      break;
+    }
     case 'pick-item': {
       const it = (rest().items || []).find(x => x.id === id); if (!it) break;
       document.getElementById('xdesc').value = it.desc;
-      document.getElementById('xprice').value = (it.price / 100).toFixed(2);
+      document.getElementById('xprice').value = plain(it.price, curOf(rest()));
       hideSuggest(); document.getElementById('xdesc').blur();
       break;
     }
@@ -614,6 +728,12 @@ document.addEventListener('click', e => {
 
 /* landing page pick list */
 document.addEventListener('change', e => {
+  if (e.target.id === 'cur-select' && ui.draft) {
+    const from = ui.draft.currency, to = e.target.value;
+    const conv = x => { const c = x.price.trim() ? toCents(x.price, from) : null; if (c !== null) x.price = plain(c, to); };
+    ui.draft.plates.forEach(conv); ui.draft.items.forEach(conv);
+    ui.draft.currency = to; render(); return;
+  }
   if (e.target.id !== 'rest-select') return;
   const v = e.target.value;
   if (v === '__new') startDraft(null);
@@ -626,7 +746,7 @@ document.addEventListener('input', e => {
   const f = e.target.dataset.field; if (!f || !ui.draft) return;
   const i = +e.target.dataset.i, v = e.target.value;
   if (f === 'name') ui.draft.name = v;
-  else if (f === 'idesc') ui.draft.items[i].desc = v;
+  else if (f === 'idesc') { ui.draft.items[i].desc = v; showEditSuggest(e.target); }
   else if (f === 'iprice') ui.draft.items[i].price = v;
   else ui.draft.plates[i][f] = v;
 });
@@ -636,7 +756,7 @@ document.addEventListener('submit', e => {
   if (e.target.id !== 'extra-form') return;
   e.preventDefault();
   const priceEl = document.getElementById('xprice'), descEl = document.getElementById('xdesc');
-  const c = toCents(priceEl.value);
+  const c = toCents(priceEl.value, curOf(rest()));
   if (c === null || c === 0) { priceEl.focus(); priceEl.style.borderColor = 'var(--danger)'; return; }
   const desc = descEl.value.trim(), r = rest();
   billOf(r.id).extras.push({ id: uid(), price: c, desc });
@@ -657,22 +777,64 @@ document.addEventListener('submit', e => {
 });
 
 /* ---- suggestions for the description field ---- */
+/* descriptions of items on OTHER restaurants' menus (not already on this one), matching what has been typed */
+function otherItems(excludeRestId, takenDescs, q){
+  const seen = new Set(takenDescs.map(d => d.toLowerCase()));
+  const out = [];
+  for (const r of S.restaurants) {
+    if (r.id === excludeRestId) continue;
+    for (const it of (r.items || [])) {
+      const k = it.desc.toLowerCase();
+      if (seen.has(k) || (q && !k.includes(q))) continue;
+      seen.add(k); out.push(it.desc);
+    }
+  }
+  return out.sort((a, b) => a.localeCompare(b));
+}
 function showSuggest(){
   const box = document.getElementById('suggest'), input = document.getElementById('xdesc');
   if (!box || !input) return;
   const items = rest().items || [], raw = input.value.trim(), q = raw.toLowerCase();
-  const matches = items.filter(i => i.desc.toLowerCase().includes(q));
+  const mine = items.filter(i => i.desc.toLowerCase().includes(q));
+  // items from other restaurants appear as soon as something is typed; they never bring a price with them
+  const others = q ? otherItems(S.current, items.map(i => i.desc), q).slice(0, 8) : [];
   const exact = items.some(i => i.desc.toLowerCase() === q);
-  let html = matches.map(i => `<button type="button" data-act="pick-item" data-id="${i.id}"><span>${esc(i.desc)}</span><b>${money(i.price)}</b></button>`).join('');
-  if (raw && !exact) html += `<div class="hint">"${esc(raw)}" is new. It will be saved to this menu when you add it.</div>`;
+  let html = mine.map(i => `<button type="button" data-act="pick-item" data-id="${i.id}"><span>${esc(i.desc)}</span><b>${money(i.price)}</b></button>`).join('');
+  html += others.map(d => `<button type="button" data-act="pick-other" data-desc="${esc(d)}"><span>${esc(d)}</span><small>other menu</small></button>`).join('');
+  if (raw && !exact && !mine.length && !others.length) html += `<div class="hint">"${esc(raw)}" isn't on this menu yet. It will be saved here when you add it.</div>`;
   box.innerHTML = html;
   box.hidden = !html;
 }
+function hideEditSuggest(){ document.querySelectorAll('.edit-suggest').forEach(b => b.hidden = true); }
+function showEditSuggest(input){
+  const d = ui.draft; if (!d) return;
+  const box = input.parentElement.querySelector('.edit-suggest'); if (!box) return;
+  const i = +input.dataset.i, q = input.value.trim().toLowerCase();
+  const taken = d.items.filter((_, j) => j !== i).map(x => x.desc.trim()).filter(Boolean);
+  const list = q ? otherItems(d.isNew ? null : d.id, taken, q).slice(0, 6) : [];
+  if (!list.length) { box.hidden = true; return; }
+  box.innerHTML = list.map(t => `<button type="button" data-act="pick-other" data-i="${i}" data-desc="${esc(t)}"><span>${esc(t)}</span><small>other menu</small></button>`).join('');
+  // open upwards when there is little room below the field (e.g. the keyboard is up)
+  const r = input.getBoundingClientRect(), vvh = window.visualViewport ? window.visualViewport.height : innerHeight;
+  const below = vvh - r.bottom, above = r.top;
+  box.classList.toggle('up', below < list.length * 46 + 16 && above > below);
+  box.hidden = false;
+}
 function hideSuggest(){ const b = document.getElementById('suggest'); if (b) b.hidden = true; }
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && ui.dock) setDock(false); });
-document.addEventListener('focusin', e => { if (e.target.id === 'xdesc') showSuggest(); });
-document.addEventListener('focusout', e => { if (e.target.id === 'xdesc') setTimeout(hideSuggest, 250); });
-document.addEventListener('mousedown', e => { if (e.target.closest('#suggest')) e.preventDefault(); });
+document.addEventListener('focusin', e => {
+  if (e.target.id === 'xdesc') showSuggest();
+  else if (e.target.dataset && e.target.dataset.field === 'idesc') showEditSuggest(e.target);
+});
+document.addEventListener('focusout', e => {
+  const el = e.target;
+  if (el.id === 'xdesc') setTimeout(() => { if (document.activeElement !== el) hideSuggest(); }, 250);
+  else if (el.dataset && el.dataset.field === 'idesc') {
+    const box = el.parentElement && el.parentElement.querySelector('.edit-suggest');
+    setTimeout(() => { if (box && document.activeElement !== el) box.hidden = true; }, 250);
+  }
+});
+document.addEventListener('mousedown', e => { if (e.target.closest('.suggest')) e.preventDefault(); });
 
 function toast(msg){
   let t = document.getElementById('toast');
