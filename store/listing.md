@@ -1,0 +1,97 @@
+# Google Play listing: copy and paste
+
+Everything below is ready to paste into Play Console. Items in [square brackets] are yours to fill in.
+
+## Main store listing
+
+**App name** (max 30): `Sushi Train Track`
+
+**Short description** (max 80): 
+`Tap each plate you take and watch your sushi train bill add up.`
+
+**Full description** (max 4000):
+
+```
+Sushi Train Track keeps a running total while you eat at a sushi train (kaiten-zushi) restaurant, so there are no surprises when the bill arrives.
+
+Set up your restaurant once: choose a colour and a price for each plate. Then, every time you take a plate off the belt, tap its colour. The total at the top goes up straight away.
+
+FREE
+• Tap a plate to add it, with a big running total at the top
+• Colour-coded plates with the price shown on each one
+• Took one by mistake? Remove-a-plate mode takes it off again
+• An itemised bill showing every plate colour and the total
+• Add drinks and other extras with a price and a short description
+• Your bill is saved on your phone, so it is still there if you close the app
+• One restaurant with up to 5 plate colours
+• Works offline, on phones and tablets
+
+PREMIUM (one-time purchase, no subscription)
+• As many restaurants as you like, each with its own bill
+• More than 5 plates per restaurant
+• Saved menu items: pick your usual drink in one tap, with suggestions from your other restaurants
+• A currency for each restaurant, with amounts shown in your phone's own style
+• A quick restaurant picker that shows your bills in progress
+
+PRIVATE AND SIMPLE
+• No ads, no accounts and no tracking
+• Everything you enter stays on your phone
+
+Perfect for solo diners, families, and anyone who has ever lost count of the plates.
+```
+
+**App icon** (512 x 512): `store/play-icon-512.png`
+**Feature graphic** (1024 x 500): `store/feature-graphic-1024x500.png`
+**Phone screenshots** (upload all six, in this order): `store/screenshots/phone-1` to `phone-6`
+**App category**: Food & drink
+**Tags** (pick from Play's list): Restaurants / Food (whatever is closest is fine)
+**Contact email**: [your email, shown publicly on the listing]
+**Website** (optional): https://sushi.robsofficetips.com
+**Privacy policy URL**: https://sushi.robsofficetips.com/privacy.html
+**Default language**: English (Australia)
+
+## In-app product (Monetize > Products > In-app products)
+
+| Field | Value |
+|---|---|
+| Product ID | `premium_unlock` (must match exactly, and cannot be changed afterwards) |
+| Name | Premium |
+| Description | Unlock unlimited restaurants, more than 5 plates, saved menu items and a currency for each restaurant. One-time purchase. |
+| Price | [your choice, for example A$4.99. Play offers to convert to other currencies] |
+| Status | Active |
+
+## Policy forms (Dashboard > "Set up your app")
+
+| Form | Suggested answer |
+|---|---|
+| App access | All functionality is available without special access |
+| Ads | No, the app does not contain ads |
+| Content rating | Category "Utility, Productivity, Communication or Other". Answer No to every question about violence, sexual content, language, gambling, drugs, and user-generated content or sharing. Expect "Everyone". |
+| Target audience | 18 and over. This keeps you clear of the Families policy, which applies if you target children. |
+| News app / COVID-19 / Government / Health / Financial features | No / No / No / No / None |
+| Data safety | Does the app collect or share any user data? No. Is data encrypted in transit? Yes (the app is loaded over HTTPS). See the note below. |
+
+**Data safety note.** The app itself collects nothing: restaurants, prices and bills stay on the phone, there are no accounts, no analytics and no ads, and the font is bundled so there are no third-party requests. The only network traffic is loading the app's own files from your Cloudflare-hosted site, which (like any web host) sees IP addresses, and the Google Play purchase check, which Google handles. The privacy policy says this in plain words. The form is a declaration you make, so read Google's definitions on the form itself and answer the way you are comfortable with. If you later add analytics, accounts or cloud backup, this answer and the privacy policy must change.
+
+## Release notes (first release)
+
+```
+First release. Tap each plate you take and watch your sushi train bill add up.
+```
+
+## Message to send to your 12+ testers
+
+Personal developer accounts must run a closed test with at least 12 testers for 14 days before they can publish. Send each person this (replace the link with the opt-in link Play Console gives you):
+
+```
+Hi! I've made a small app that adds up your plates at sushi train restaurants, and I need 12 people to try it before Google lets me publish it.
+
+You need an Android phone. Please:
+1. Open this link on your phone and tap "Become a tester": [opt-in link]
+2. Install the app from the Play Store page it takes you to
+3. Open it once, and please leave it installed (and stay opted in) for the next 2 weeks. You don't have to use it every day.
+
+If you do go to a sushi train, tell me what's confusing or broken. Thank you!
+```
+
+Tips: the tester must use the Google account whose email you add to the list. Ask for a few extra people in case someone drops out, because the 14 days count only while 12 or more stay opted in.

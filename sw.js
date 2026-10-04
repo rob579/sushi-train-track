@@ -2,14 +2,14 @@
 /* Sushi Train Track service worker.
    - The page itself is "network first": you always get the newest version when there is signal,
      and the saved copy when there is none (or the connection is too slow to wait for).
-   - Icons and the manifest are served from the cache and refreshed in the background.
+   - Icons, fonts and the manifest are served from the cache and refreshed in the background.
    - VERSION is stamped with the git commit by update.sh, so every deploy changes this file and
      phones notice the update. */
 const VERSION = 'dev';
 const APP_CACHE = 'stt-app-' + VERSION;
-const FONT_CACHE = 'stt-fonts-v1';
 const PAGE = './index.html';
-const PRECACHE = [PAGE, './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
+const PRECACHE = [PAGE, './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png',
+  './fonts/m-plus-rounded-1c-latin-400-normal.woff2', './fonts/m-plus-rounded-1c-latin-500-normal.woff2', './fonts/m-plus-rounded-1c-latin-800-normal.woff2'];
 const NAV_TIMEOUT_MS = 3500;
 
 self.addEventListener('install', e => {
@@ -22,7 +22,7 @@ self.addEventListener('install', e => {
 
 self.addEventListener('activate', e => {
   e.waitUntil((async () => {
-    for (const k of await caches.keys()) if (k.startsWith('stt-app-') && k !== APP_CACHE) await caches.delete(k);
+    for (const k of await caches.keys()) if ((k.startsWith('stt-app-') && k !== APP_CACHE) || k === 'stt-fonts-v1') await caches.delete(k);   // old versions, and the old Google Fonts cache
     await self.clients.claim();
     // tell any open page which version is now active, so it can offer a reload if it is out of date
     for (const c of await self.clients.matchAll({ includeUncontrolled: true })) c.postMessage({ type: 'sw-version', version: VERSION });
@@ -59,11 +59,11 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
+  const base = new URL('./', self.location).pathname;   // the folder this service worker lives in (the site root)
   if (req.mode === 'navigate' && url.origin === location.origin) {
-    e.respondWith(pageNetworkFirst());
+    // only the app itself is answered from here; other pages (privacy.html and so on) come straight from the website
+    if (url.pathname === base || url.pathname === base + 'index.html') e.respondWith(pageNetworkFirst());
   } else if (url.origin === location.origin) {
     e.respondWith(staleWhileRevalidate(req, APP_CACHE));
-  } else if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
-    e.respondWith(staleWhileRevalidate(req, FONT_CACHE));   // keeps the rounded font available offline
   }
 });

@@ -12,10 +12,14 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Sushi Train Track">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;800&display=swap" rel="stylesheet">
 <style>
+/* the rounded font is bundled with the app (fonts/), so nothing is loaded from other websites */
+@font-face{font-family:'M PLUS Rounded 1c';font-style:normal;font-display:swap;font-weight:400;src:url(fonts/m-plus-rounded-1c-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'M PLUS Rounded 1c';font-style:normal;font-display:swap;font-weight:500;src:url(fonts/m-plus-rounded-1c-latin-500-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'M PLUS Rounded 1c';font-style:normal;font-display:swap;font-weight:800;src:url(fonts/m-plus-rounded-1c-latin-800-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'M PLUS Rounded 1c';font-style:normal;font-display:swap;font-weight:400;src:url(fonts/m-plus-rounded-1c-latin-ext-400-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'M PLUS Rounded 1c';font-style:normal;font-display:swap;font-weight:500;src:url(fonts/m-plus-rounded-1c-latin-ext-500-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'M PLUS Rounded 1c';font-style:normal;font-display:swap;font-weight:800;src:url(fonts/m-plus-rounded-1c-latin-ext-800-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
 :root{
   --bar:60px;   /* height of the docked restaurant-name bar */
   --tab:34px;   /* height of the pull-up tab */
@@ -183,6 +187,35 @@ html.kb .extras{padding-bottom:16px}
   font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.45);white-space:nowrap}
 #update-banner button{border-radius:10px;padding:8px 12px;font-weight:800;background:rgba(0,0,0,.16)}
 #update-banner .x{padding:8px 10px;font-size:18px;line-height:1}
+/* ---------- editions: premium pill, locks, upgrade sheet ---------- */
+.pro{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;background:var(--wasabi);color:#1c2a0a;
+  font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;vertical-align:middle;white-space:nowrap}
+.btn.ghost{background:transparent;color:var(--mute);width:100%;margin-top:10px;font-weight:500;font-size:15px}
+.select-like{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;
+  background:var(--belt);border:2px solid var(--belt-2);border-radius:16px;padding:17px 18px;font-size:19px;color:var(--mute)}
+.menu .up-entry{color:var(--wasabi);font-weight:800}
+.suggest small.pro-note{color:var(--wasabi)}
+.plate-btn.locked .plate{filter:grayscale(.8) brightness(.72)}
+.plate .n.lock svg{width:40px;height:40px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.75}
+@supports (height:1cqh){ .plate .n.lock svg{width:30cqw;height:30cqw} }
+#upgrade{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center}
+#upgrade .up-scrim{position:absolute;inset:0;background:rgba(0,0,0,.6)}
+#upgrade .up-card{position:relative;width:min(520px,100%);max-height:92%;overflow-y:auto;background:var(--belt);
+  border-radius:24px 24px 0 0;padding:24px 20px calc(20px + env(safe-area-inset-bottom,0px));
+  box-shadow:0 -12px 40px rgba(0,0,0,.5);animation:upIn .28s ease-out}
+@keyframes upIn{from{transform:translateY(40px);opacity:0}}
+#upgrade h2{margin:0 0 6px;font-size:26px;font-weight:800}
+#upgrade .up-why{margin:0 0 14px;color:var(--wasabi);font-weight:500;line-height:1.4}
+#upgrade ul{list-style:none;margin:0 0 14px;padding:0}
+#upgrade li{display:flex;gap:10px;align-items:flex-start;padding:7px 0;line-height:1.35}
+#upgrade li::before{content:'';flex:none;width:7px;height:12px;margin:3px 4px 0 3px;border:solid var(--wasabi);border-width:0 3px 3px 0;transform:rotate(40deg)}
+#upgrade .small{font-size:14px;margin:8px 2px}
+#upgrade .up-msg{min-height:20px;margin:6px 2px;color:var(--danger);font-size:14px}
+#upgrade .up-msg.ok{color:var(--price)}
+#upgrade .up-row{display:flex;gap:10px;margin-top:10px}
+#upgrade .up-row .btn{flex:1}
+#upgrade .btn[disabled]{opacity:.6;pointer-events:none}
+@media (prefers-reduced-motion:reduce){#upgrade .up-card{animation:none}}
 #toast{position:fixed;left:50%;bottom:calc(var(--bar) + var(--tab) + 18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);
   background:var(--rice);color:var(--nori);padding:10px 16px;border-radius:12px;font-weight:800;opacity:0;
   pointer-events:none;transition:opacity .2s,transform .2s;z-index:20;max-width:90vw;text-align:center}
@@ -229,7 +262,7 @@ html.kb .extras{padding-bottom:16px}
 
 <script>
 /* ============ config ============ */
-const BUILD = '2 Oct 2026 · currency symbols';   // shown on the landing page so you can tell which copy is running
+const BUILD = '3 Oct 2026 · free and premium';   // shown on the landing page so you can tell which copy is running
 const BUILD_ID = 'dev';   // stamped with the git commit by update.sh
 const KEY = 'plateTally.v1';
 const SWATCHES = ['#e5484d','#f5a524','#f2d74a','#4cb782','#3e8ef7','#8b5cf6','#e8e2d4','#2b2b2b'];
@@ -249,7 +282,12 @@ const rest = () => S.restaurants.find(r => r.id === S.current);
    Every restaurant has its own currency. Prices are stored as hundredths of the main unit
    (so 4.80 is 480, and 450 yen is 45000) and shown through Intl, so the symbol, its position and the
    decimal/thousands marks follow the phone's language and region. */
-const LOCALE = (navigator.languages && navigator.languages[0]) || navigator.language || 'en-US';
+const LOCALE = (() => {   // the phone's language tag, ignoring anything the browser cannot use
+  for (const l of [...(navigator.languages || []), navigator.language]) {
+    try { if (l) return Intl.getCanonicalLocales(l)[0]; } catch {}
+  }
+  return 'en-US';
+})();
 const REGION_CURRENCY = {
   AU:'AUD', NZ:'NZD', US:'USD', CA:'CAD', GB:'GBP', IE:'EUR', DE:'EUR', FR:'EUR', ES:'EUR', IT:'EUR', NL:'EUR', BE:'EUR',
   AT:'EUR', PT:'EUR', FI:'EUR', GR:'EUR', LU:'EUR', SK:'EUR', SI:'EUR', EE:'EUR', LV:'EUR', LT:'EUR', MT:'EUR', CY:'EUR', HR:'EUR',
@@ -314,6 +352,10 @@ function toCents(v, cur){
   if (!isFinite(n) || n < 0) return null;
   return digits === 0 ? Math.round(n) * 100 : Math.round(n * 100);
 }
+function currencyLabel(c){
+  let n = ''; try { n = new Intl.DisplayNames([LOCALE], { type: 'currency' }).of(c); } catch {}
+  return c + (n && n !== c ? ' · ' + n : '');
+}
 function currencyOptions(sel){
   let names = null;
   try { names = new Intl.DisplayNames([LOCALE], { type: 'currency' }); } catch {}
@@ -333,9 +375,132 @@ function inkFor(hex){
 }
 const ICON = {
   menu:'<svg viewBox="0 0 24 24" style="fill:var(--rice);stroke:none"><circle cx="12" cy="5" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="12" cy="19" r="2.2"/></svg>',
+  lock:'<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
   back:'<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
   pencil:'<svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/></svg>',
 };
+/* ============ editions: free and premium ============
+   - On the website (a normal browser, or the installed website app) everything is unlocked.
+   - Inside the Google Play app (it opens the site with ?app=play) the app starts on the free tier, and
+     Premium is unlocked by a one-time purchase through Google Play Billing.
+   - To test in a browser, add ?edition=free or ?edition=premium to the address (ignored in the Play app;
+     ?edition=reset goes back to normal). */
+const FREE_RESTAURANTS = 1, FREE_PLATES = 5, PREMIUM_SKU = 'premium_unlock';
+const IN_PLAY_APP = (() => {
+  try {
+    const q = new URLSearchParams(location.search);
+    if (q.get('app') === 'play' || document.referrer.startsWith('android-app://')) sessionStorage.setItem('stt-app', 'play');
+    return sessionStorage.getItem('stt-app') === 'play';
+  } catch { return false; }
+})();
+let PREVIEW = (() => {
+  try {
+    if (IN_PLAY_APP) return null;
+    const e = new URLSearchParams(location.search).get('edition');
+    if (e === 'free' || e === 'premium') sessionStorage.setItem('stt-edition', e);
+    if (e === 'reset') sessionStorage.removeItem('stt-edition');
+    return sessionStorage.getItem('stt-edition');
+  } catch { return null; }
+})();
+const ENT_KEY = 'plateTally.entitlement.v1';
+const ENT = { purchased: (() => { try { return JSON.parse(localStorage.getItem(ENT_KEY)).purchased === true; } catch { return false; } })() };
+const isPremium = () => IN_PLAY_APP ? ENT.purchased : PREVIEW !== 'free';
+const editionLabel = () => IN_PLAY_APP ? (ENT.purchased ? 'Premium' : 'Free') : PREVIEW === 'free' ? 'Free (preview)' : PREVIEW === 'premium' ? 'Premium (preview)' : 'Website';
+
+let _billing = null;
+async function getBilling(){
+  if (_billing) return _billing;
+  if (!IN_PLAY_APP || !('getDigitalGoodsService' in window)) return null;
+  try { _billing = await window.getDigitalGoodsService('https://play.google.com/billing'); } catch { _billing = null; }
+  return _billing;
+}
+function setPurchased(v){
+  const changed = ENT.purchased !== v;
+  ENT.purchased = v;
+  try { localStorage.setItem(ENT_KEY, JSON.stringify({ purchased: v, at: Date.now() })); } catch {}
+  return changed;
+}
+/* ask Google Play what this person owns (also restores a purchase on a new phone or after reinstalling) */
+async function refreshEntitlement(){
+  const svc = await getBilling(); if (!svc) return false;
+  try {
+    const owned = (await svc.listPurchases()).find(p => p.itemId === PREMIUM_SKU);
+    if (owned) { try { await svc.acknowledge(owned.purchaseToken, 'onetime'); } catch {} }   // unacknowledged purchases are refunded after ~3 days
+    if (setPurchased(!!owned)) { hideUpgrade(); render(); }
+    return !!owned;
+  } catch { return ENT.purchased; }   // offline or Play unavailable: keep what we had
+}
+async function buyPremium(){
+  if (!IN_PLAY_APP) {   // website preview: pretend the purchase worked
+    PREVIEW = 'premium'; try { sessionStorage.setItem('stt-edition', 'premium'); } catch {}
+    hideUpgrade(); render(); toast('Preview: Premium unlocked (no real purchase)');
+    return;
+  }
+  const svc = await getBilling();
+  if (!svc) { upgradeMsg('Purchases are not available right now. Please try again later.'); return; }
+  upgradeBusy(true); upgradeMsg('');
+  try {
+    const details = await svc.getDetails([PREMIUM_SKU]);
+    const price = details && details[0] && details[0].price;
+    const request = new PaymentRequest(
+      [{ supportedMethods: 'https://play.google.com/billing', data: { sku: PREMIUM_SKU } }],
+      { total: { label: 'Premium', amount: { currency: price ? price.currency : 'USD', value: price ? price.value : '0' } } });   // amount is ignored by Play Billing
+    const response = await request.show();
+    await svc.acknowledge(response.details.purchaseToken, 'onetime');
+    await response.complete('success');
+    setPurchased(true); hideUpgrade(); render(); toast('Premium unlocked. Thank you!');
+  } catch (err) {
+    upgradeBusy(false);
+    if (err && err.name === 'AbortError') return;   // the person closed the Google Play dialog
+    upgradeMsg('The purchase did not complete. If you were charged, tap "Restore purchase".');
+  }
+}
+
+const UP_WHY = {
+  restaurants: 'Premium lets you save as many restaurants as you like.',
+  plates: 'Premium lets you add more than ' + FREE_PLATES + ' plates to a restaurant.',
+  items: 'Premium saves your drinks and extras so you can pick them in one tap.',
+  currency: 'Premium lets you choose a currency for each restaurant.',
+  generic: 'Unlock everything in Sushi Train Track with one purchase.'
+};
+function upgradeMsg(t, ok){ const m = document.getElementById('up-msg'); if (m) { m.textContent = t; m.classList.toggle('ok', !!ok); } }
+function upgradeBusy(b){ const x = document.getElementById('up-buy'); if (x) x.disabled = b; }
+function hideUpgrade(){ const u = document.getElementById('upgrade'); if (u) u.remove(); }
+function showUpgrade(why){
+  hideUpgrade();
+  const u = document.createElement('div');
+  u.id = 'upgrade'; u.setAttribute('role', 'dialog'); u.setAttribute('aria-modal', 'true'); u.setAttribute('aria-labelledby', 'up-title');
+  u.innerHTML = `<div class="up-scrim" data-act="up-close"></div>
+    <div class="up-card">
+      <h2 id="up-title">Unlock Premium</h2>
+      <p class="up-why">${esc(UP_WHY[why] || UP_WHY.generic)}</p>
+      <ul>
+        <li>As many restaurants as you like, each with its own bill</li>
+        <li>More than ${FREE_PLATES} plates per restaurant</li>
+        <li>Saved menu items, with suggestions from your other restaurants</li>
+        <li>A currency for each restaurant</li>
+        <li>A quick restaurant picker that shows bills in progress</li>
+      </ul>
+      <p class="muted small">One-time purchase. No ads and no subscription.</p>
+      <div id="up-msg" class="up-msg" role="status"></div>
+      <button class="btn primary big" id="up-buy" data-act="up-buy"><span id="up-buy-label">Unlock Premium</span></button>
+      <div class="up-row"><button class="btn" data-act="up-restore">Restore purchase</button><button class="btn" data-act="up-close">Not now</button></div>
+      ${IN_PLAY_APP ? '' : '<p class="muted small">Preview: on the website everything is unlocked. The real purchase happens in the Android app.</p>'}
+    </div>`;
+  document.body.appendChild(u);
+  document.getElementById('up-buy').focus({ preventScroll: true });
+  getBilling().then(svc => svc && svc.getDetails([PREMIUM_SKU])).then(d => {   // show the real local price
+    const pr = d && d[0] && d[0].price, lbl = document.getElementById('up-buy-label');
+    if (pr && lbl) { try { lbl.textContent = 'Unlock Premium · ' + new Intl.NumberFormat(LOCALE, { style: 'currency', currency: pr.currency }).format(pr.value); } catch {} }
+  }).catch(() => {});
+}
+async function restorePurchase(){
+  if (!IN_PLAY_APP) { upgradeMsg('Nothing to restore in preview mode.'); return; }
+  upgradeMsg('Checking with Google Play…', true);
+  const owned = await refreshEntitlement();
+  if (document.getElementById('upgrade')) upgradeMsg(owned ? 'Premium restored.' : 'No purchase found for this Google account.', owned);
+}
+
 function go(view){ ui.view = view; ui.menu = false; ui.removing = false; ui.dock = false; render(); }
 
 /* ============ views ============ */
@@ -397,7 +562,12 @@ function viewPick(){
       ${HERO_PLATES}
     </div>`;
   let picker;
-  if (S.restaurants.length) {
+  if (!S.restaurants.length) {
+    picker = `<div class="picker">
+      <p class="intro">Add the sushi train you're at, set the colour and price of each plate, then tap as you grab them.</p>
+      <button class="btn primary big" data-act="new">Get started</button>
+    </div>`;
+  } else if (isPremium()) {
     const opts = S.restaurants.map(r => {
       const t = totalOf(r);
       return `<option value="${r.id}">${esc(r.name)}${t ? ` · ${money(t, r)} so far` : ''}</option>`;
@@ -413,19 +583,29 @@ function viewPick(){
       </div>
     </div>`;
   } else {
+    // free: one restaurant, no picker
+    const first = S.restaurants[0], more = S.restaurants.length - FREE_RESTAURANTS;
     picker = `<div class="picker">
-      <p class="intro">Add the sushi train you're at, set the colour and price of each plate, then tap as you grab them.</p>
-      <button class="btn primary big" data-act="new">Get started</button>
+      <div class="pick-label">Your restaurant</div>
+      <button class="btn primary big" data-act="open" data-id="${first.id}">${esc(first.name)}</button>
+      <button class="btn ghost" data-act="upsell" data-why="restaurants">${more > 0
+        ? `${more} more saved. Unlock Premium to use ${more === 1 ? 'it' : 'them'}`
+        : 'Want more than one restaurant? Unlock Premium'}</button>
     </div>`;
   }
-  return `<div class="screen narrow"><div class="scroll"><div class="landing">${hero}<div>${picker}<div class="ver">Build ${BUILD}${BUILD_ID !== 'dev' ? ' · ' + BUILD_ID : ''}</div></div></div></div></div>`;
+  return `<div class="screen narrow"><div class="scroll"><div class="landing">${hero}<div>${picker}<div class="ver">Build ${BUILD}${BUILD_ID !== 'dev' ? ' · ' + BUILD_ID : ''} · ${editionLabel()}</div></div></div></div></div>`;
 }
 
 function viewBill(){
   const r = rest(), b = billOf(r.id);
-  const plates = r.plates.map(p => {
+  const plates = r.plates.map((p, idx) => {
     const n = b.counts[p.id] || 0;
     const lbl = money(p.price, r), pf = lbl.length <= 6 ? 10.5 : lbl.length === 7 ? 9.5 : lbl.length <= 9 ? 8 : 6.8;   // longer labels get smaller type
+    if (!isPremium() && idx >= FREE_PLATES) {   // free: only the first plates work, the rest are locked (never deleted)
+      return `<button class="plate-btn locked" data-act="upsell" data-why="plates" aria-label="${esc(p.colour)} plate, ${lbl}. Premium feature">
+      <div class="plate" style="--c:${p.colour};--ink:${inkFor(p.colour)};--pf:${pf}"><span class="n lock">${ICON.lock}</span><span class="price">${lbl}</span></div>
+    </button>`;
+    }
     return `<button class="plate-btn ${n ? 'has' : ''}" data-act="plate" data-id="${p.id}" aria-label="${esc(p.colour)} plate, ${lbl}, ${n} taken">
       <div class="plate" data-plate="${p.id}" style="--c:${p.colour};--ink:${inkFor(p.colour)};--pf:${pf}"><span class="n ${n ? '' : 'zero'}">${n}</span><span class="price">${lbl}</span></div>
     </button>`;
@@ -447,7 +627,7 @@ function viewBill(){
         <div class="formwrap">
           <div class="suggest" id="suggest" hidden></div>
           <form id="extra-form" autocomplete="off">
-            <input id="xdesc" type="text" placeholder="${(r.items || []).length ? 'Pick or type an item' : 'Description (optional)'}" aria-label="Description" autocomplete="off">
+            <input id="xdesc" type="text" placeholder="${isPremium() && (r.items || []).length ? 'Pick or type an item' : 'Description (optional)'}" aria-label="Description" autocomplete="off">
             <div class="amt"><span>${esc(symOf(curOf(r)))}</span><input id="xprice" type="text" inputmode="decimal" placeholder="${plain(0, curOf(r))}" style="padding-left:${symPad(curOf(r))}px" aria-label="Price"></div>
             <button class="add" type="submit">Add</button>
           </form>
@@ -460,8 +640,8 @@ function viewBill(){
         <button data-act="start-remove">Remove a plate</button>
         <hr>
         <button data-act="edit" data-id="${r.id}">Edit this restaurant</button>
-        <button data-act="new">Add a new restaurant</button>
-        <button data-act="pick">Switch restaurant</button>
+        <button data-act="new">Add a new restaurant${isPremium() ? '' : '<span class="pro">Premium</span>'}</button>
+        ${isPremium() ? '<button data-act="pick">Switch restaurant</button>' : '<hr><button class="up-entry" data-act="upsell" data-why="generic">Unlock Premium</button>'}
         <hr>
         <button class="danger" data-act="reset">Start a new bill</button>
       </div>` : ''}
@@ -509,16 +689,20 @@ function viewEdit(){
       <div class="field-label" style="margin-top:0">Restaurant name</div>
       <input type="text" value="${esc(d.name)}" placeholder="e.g. Sushi Hub" data-field="name" id="rname">
       <div class="field-label">Currency</div>
-      <div class="select-wrap"><select id="cur-select" aria-label="Currency">${currencyOptions(cur)}</select></div>
-      ${d.isNew ? '' : '<p class="muted" style="margin:8px 2px 0;font-size:14px">Changing the currency does not convert the prices.</p>'}
+      ${isPremium()
+        ? `<div class="select-wrap"><select id="cur-select" aria-label="Currency">${currencyOptions(cur)}</select></div>
+      ${d.isNew ? '' : '<p class="muted" style="margin:8px 2px 0;font-size:14px">Changing the currency does not convert the prices.</p>'}`
+        : `<button class="select-like" data-act="upsell" data-why="currency"><span>${esc(currencyLabel(cur))}</span><span class="pro">Premium</span></button>`}
       <div class="field-label">Plates</div>
-      <p class="muted" style="margin:-4px 0 12px;font-size:14px">Tap a circle to pick the plate colour, then enter its price.</p>
+      <p class="muted" style="margin:-4px 0 12px;font-size:14px">Tap a circle to pick the plate colour, then enter its price.${isPremium() ? '' : ` The free version has up to ${FREE_PLATES} plates.`}</p>
       ${rows}
-      <button class="btn" style="width:100%" data-act="add-plate">Add a plate</button>
-      <div class="field-label">Menu items</div>
-      <p class="muted" style="margin:-4px 0 12px;font-size:14px">Drinks and other extras with set prices. You can pick these when adding an item to a bill.</p>
+      <button class="btn" style="width:100%" data-act="add-plate">Add a plate${!isPremium() && d.plates.length >= FREE_PLATES ? '<span class="pro">Premium</span>' : ''}</button>
+      <div class="field-label">Menu items${isPremium() ? '' : '<span class="pro">Premium</span>'}</div>
+      ${isPremium() ? `<p class="muted" style="margin:-4px 0 12px;font-size:14px">Drinks and other extras with set prices. You can pick these when adding an item to a bill.</p>
       ${irows}
-      <button class="btn" style="width:100%" data-act="add-item">Add a menu item</button>
+      <button class="btn" style="width:100%" data-act="add-item">Add a menu item</button>`
+      : `<p class="muted" style="margin:-4px 0 12px;font-size:14px">Save drinks and other extras with set prices, then pick them in one tap.${d.items.length ? ` Your ${d.items.length} saved item${d.items.length === 1 ? ' is' : 's are'} kept safe and will be back when you unlock Premium.` : ''}</p>
+      <button class="btn" style="width:100%" data-act="upsell" data-why="items">Unlock Premium</button>`}
       ${d.isNew ? '' : '<button class="btn danger" style="width:100%;margin-top:28px" data-act="del-rest">Delete this restaurant</button>'}
     </div>
     <div class="footer-actions">
@@ -606,7 +790,7 @@ function startDraft(id){
     ? { id: r.id, isNew: false, name: r.name, currency: curOf(r),
       plates: r.plates.map(p => ({ id: p.id, colour: p.colour, price: plain(p.price, curOf(r)) })),
       items: (r.items || []).map(it => ({ id: it.id, desc: it.desc, price: plain(it.price, curOf(r)) })) }
-    : { id: uid(), isNew: true, name: '', currency: S.lastCurrency || defaultCurrency(),
+    : { id: uid(), isNew: true, name: '', currency: (isPremium() && S.lastCurrency) || defaultCurrency(),
       plates: [{ id: uid(), colour: SWATCHES[0], price: '' }], items: [] };
   ui.prevView = ui.view;
   go('edit');
@@ -614,6 +798,7 @@ function startDraft(id){
 function saveDraft(){
   const d = ui.draft;
   if (!d.name.trim()) { alert('Give the restaurant a name.'); return; }
+  if (d.isNew && !isPremium() && S.restaurants.length >= FREE_RESTAURANTS) { showUpgrade('restaurants'); return; }
   const plates = [];
   for (const p of d.plates) {
     if (p.price.trim() === '') continue;               // ignore blank rows
@@ -649,14 +834,24 @@ document.addEventListener('click', e => {
   const t = e.target.closest('[data-act]'); if (!t) return;
   const act = t.dataset.act, id = t.dataset.id;
   switch (act) {
-    case 'open': S.current = id; persist(); go('bill'); break;
+    case 'open': {
+      const r = S.restaurants.find(x => x.id === id);
+      if (!r || (!isPremium() && S.restaurants.indexOf(r) >= FREE_RESTAURANTS)) { showUpgrade('restaurants'); break; }
+      S.current = id; persist(); go('bill'); break;
+    }
     case 'pick': go('pick'); break;
     case 'bill': go('bill'); break;
-    case 'new': startDraft(null); break;
+    case 'new':
+      if (!isPremium() && S.restaurants.length >= FREE_RESTAURANTS) { if (ui.menu) { ui.menu = false; render(); } showUpgrade('restaurants'); break; }
+      startDraft(null); break;
     case 'edit': startDraft(id); break;
     case 'edit-back': ui.draft = null; go(ui.prevView === 'bill' && rest() ? 'bill' : 'pick'); break;
     case 'dock-toggle': setDock(!ui.dock); break;
     case 'dock-close': setDock(false); break;
+    case 'upsell': if (ui.menu) { ui.menu = false; render(); } showUpgrade(t.dataset.why); break;
+    case 'up-close': hideUpgrade(); break;
+    case 'up-buy': buyPremium(); break;
+    case 'up-restore': restorePurchase(); break;
     case 'menu': ui.menu = true; render(); break;
     case 'menu-close': ui.menu = false; render(); break;
     case 'itemised': go('itemised'); break;
@@ -682,6 +877,7 @@ document.addEventListener('click', e => {
       const b = billOf(S.current); b.extras = b.extras.filter(x => x.id !== id); persist(); render(); break;
     }
     case 'add-plate':
+      if (!isPremium() && ui.draft.plates.length >= FREE_PLATES) { showUpgrade('plates'); break; }
       ui.draft.plates.push({ id: uid(), colour: SWATCHES[ui.draft.plates.length % SWATCHES.length], price: '' });
       render();
       { const inputs = document.querySelectorAll('[data-field="price"]'); inputs[inputs.length - 1]?.focus(); }
@@ -760,10 +956,10 @@ document.addEventListener('submit', e => {
   if (c === null || c === 0) { priceEl.focus(); priceEl.style.borderColor = 'var(--danger)'; return; }
   const desc = descEl.value.trim(), r = rest();
   billOf(r.id).extras.push({ id: uid(), price: c, desc });
-  // a new description is remembered on this restaurant's menu
-  r.items ||= [];
+  // Premium: a new description is remembered on this restaurant's menu
   let note = '';
-  if (desc) {
+  if (isPremium() && desc) {
+    r.items ||= [];
     const existing = r.items.find(i => i.desc.toLowerCase() === desc.toLowerCase());
     if (!existing) { r.items.push({ id: uid(), desc, price: c }); note = `Saved "${desc}" to the ${r.name} menu`; }
     else if (existing.price !== c) { existing.price = c; note = `Updated "${existing.desc}" to ${money(c)} on the ${r.name} menu`; }
@@ -771,7 +967,7 @@ document.addEventListener('submit', e => {
   persist();
   priceEl.value = ''; descEl.value = ''; priceEl.style.borderColor = '';
   setDock(false);
-  descEl.placeholder = r.items.length ? 'Pick or type an item' : 'Description (optional)';
+  descEl.placeholder = isPremium() && (r.items || []).length ? 'Pick or type an item' : 'Description (optional)';
   refreshTotal();
   if (note) toast(note);
 });
@@ -794,6 +990,12 @@ function otherItems(excludeRestId, takenDescs, q){
 function showSuggest(){
   const box = document.getElementById('suggest'), input = document.getElementById('xdesc');
   if (!box || !input) return;
+  if (!isPremium()) {   // free: no saved items, just a nudge while the box is empty
+    const typed = input.value.trim();
+    box.innerHTML = typed ? '' : '<button type="button" data-act="upsell" data-why="items"><span>Save items for next time</span><small class="pro-note">Premium</small></button>';
+    box.hidden = !!typed;
+    return;
+  }
   const items = rest().items || [], raw = input.value.trim(), q = raw.toLowerCase();
   const mine = items.filter(i => i.desc.toLowerCase().includes(q));
   // items from other restaurants appear as soon as something is typed; they never bring a price with them
@@ -821,7 +1023,10 @@ function showEditSuggest(input){
   box.hidden = false;
 }
 function hideSuggest(){ const b = document.getElementById('suggest'); if (b) b.hidden = true; }
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && ui.dock) setDock(false); });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (document.getElementById('upgrade')) hideUpgrade(); else if (ui.dock) setDock(false);
+});
 document.addEventListener('focusin', e => {
   if (e.target.id === 'xdesc') showSuggest();
   else if (e.target.dataset && e.target.dataset.field === 'idesc') showEditSuggest(e.target);
@@ -844,6 +1049,8 @@ function toast(msg){
 }
 
 render();
+refreshEntitlement();   // inside the Play app: ask Google Play whether Premium is owned
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshEntitlement(); });
 
 /* ---- installable app: offline support and update prompt ---- */
 function showUpdateBanner(){
