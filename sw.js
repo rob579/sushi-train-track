@@ -7,17 +7,28 @@
      phones notice the update. */
 const VERSION = 'dev';
 const APP_CACHE = 'stt-app-' + VERSION;
-const PAGE = './index.html';
-const PRECACHE = [PAGE, './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png',
+const PAGE = './index.html';   // the name the app page is stored under in the cache
+const PAGE_URL = './';         // what is actually fetched: the site root (hosts such as Cloudflare Pages redirect /index.html to /)
+const PRECACHE = ['./manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png',
   './fonts/m-plus-rounded-1c-latin-400-normal.woff2', './fonts/m-plus-rounded-1c-latin-500-normal.woff2', './fonts/m-plus-rounded-1c-latin-800-normal.woff2'];
 const NAV_TIMEOUT_MS = 3500;
 
+/* A browser refuses to show a page visit that is answered with a response which came through a redirect,
+   so take such a response apart and rebuild it as a plain one. */
+async function cleanCopy(res) {
+  if (!res.redirected) return res;
+  return new Response(await res.blob(), { status: res.status, statusText: res.statusText, headers: res.headers });
+}
+
 self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(APP_CACHE)
-      .then(c => c.addAll(PRECACHE.map(u => new Request(u, { cache: 'reload' }))))
-      .then(() => self.skipWaiting())
-  );
+  e.waitUntil((async () => {
+    const c = await caches.open(APP_CACHE);
+    await c.addAll(PRECACHE.map(u => new Request(u, { cache: 'reload' })));
+    const page = await fetch(new URL(PAGE_URL, self.location).href, { cache: 'reload' });
+    if (!page.ok) throw new Error('could not fetch the app page');
+    await c.put(PAGE, await cleanCopy(page));
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', e => {
@@ -31,7 +42,8 @@ self.addEventListener('activate', e => {
 
 async function pageNetworkFirst() {
   const cache = await caches.open(APP_CACHE);
-  const net = fetch(new URL(PAGE, self.location).href, { cache: 'no-cache' }).then(res => {
+  const net = fetch(new URL(PAGE_URL, self.location).href, { cache: 'no-cache' }).then(async fetched => {
+    const res = await cleanCopy(fetched);
     if (res.ok) cache.put(PAGE, res.clone());
     return res;
   });

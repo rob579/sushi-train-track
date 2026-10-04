@@ -47,7 +47,7 @@ Perfect for solo diners, families, and anyone who has ever lost count of the pla
 **Tags** (pick from Play's list): Restaurants / Food (whatever is closest is fine)
 **Contact email**: [your email, shown publicly on the listing]
 **Website** (optional): https://sushi.robsofficetips.com
-**Privacy policy URL**: https://sushi.robsofficetips.com/privacy.html
+**Privacy policy URL**: https://sushi.robsofficetips.com/privacy
 **Default language**: English (Australia)
 
 ## In-app product (Monetize > Products > In-app products)

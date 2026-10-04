@@ -70,7 +70,7 @@ A private repository is fine. Cloudflare can read it through its GitHub connecti
 5. Click **Save and Deploy**. The first build takes about a minute.
 6. Open `https://<name>.pages.dev` and check:
    - the app loads (the small grey line at the bottom of the first screen shows `Build ... · a1b2c3d · Website`);
-   - `https://<name>.pages.dev/privacy.html` shows your policy;
+   - `https://<name>.pages.dev/privacy` shows your policy (Cloudflare drops the `.html`, so `/privacy.html` just redirects there);
    - `https://<name>.pages.dev/.well-known/assetlinks.json` shows some JSON. I could not test whether Cloudflare serves hidden folders, so there is a backup: if that address gives an error, try `https://<name>.pages.dev/assetlinks.json`. The build adds a rewrite so both should work.
    - `https://<name>.pages.dev/?edition=free` shows the free version (the line at the bottom says `Free (preview)`). `?edition=premium` and `?edition=reset` do what you would expect. These links are the easy way to try both versions in a browser.
 
@@ -82,6 +82,15 @@ From now on, every push to `main` redeploys the site automatically, in about a m
 
 Nothing changes for your friends: same address, and the data they have saved stays on their phones.
 
+**Before you change DNS, update the old home server once.** Phones that visited the site recently have an older helper script (the service worker) that cannot cope with Cloudflare's address handling, and they would see a "This site can't be reached" error on their first visit after the move. Giving them the fixed version first avoids that. On the Linux server:
+```
+cd ~/docker/sushi-tracker
+git -C repo pull
+cp repo/update.sh .
+./update.sh
+```
+Then ask your friends to open the app once while online (they do not need to do anything else). Anyone who skips this just sees the error once; reloading fixes it.
+
 1. In your Cloudflare Pages project open **Custom domains**, choose **Set up a custom domain**, and enter `sushi.robsofficetips.com`.
 2. Because your DNS is at Enom, Cloudflare will show a CNAME target, which is `<name>.pages.dev`.
 3. In Enom, open the Host Records for `robsofficetips.com` (the screen you showed me). Edit the **`sushi`** row:
@@ -90,7 +99,7 @@ Nothing changes for your friends: same address, and the data they have saved sta
 
    Save. Leave every other row alone.
 4. Wait. It is usually minutes, sometimes an hour or two. Cloudflare's status for the domain changes to **Active** and it issues the HTTPS certificate by itself. Until then you may see certificate errors on `sushi.robsofficetips.com`. That is normal for a friends-only beta.
-5. Check `https://sushi.robsofficetips.com`, `/privacy.html` and `/.well-known/assetlinks.json`.
+5. Check `https://sushi.robsofficetips.com`, `/privacy` and `/.well-known/assetlinks.json`.
 6. Tidy up (no hurry, a day or two later): in Nginx Proxy Manager disable the `sushi.robsofficetips.com` proxy host, and in `~/docker/sushi-tracker` run `docker compose down` to stop the old container.
 
 If the domain sits on "Verifying" for hours, the usual cause is a wrong or missing CNAME value. Re-check the row in Enom.
@@ -99,13 +108,13 @@ If the domain sits on "Verifying" for hours, the usual cause is a wrong or missi
 
 ## Part D: build the Android app file
 
-You are building a thin wrapper that opens your website. Everything happens on your own computer, in a **new folder outside your website repository** (it will hold your signing key).
+You are building a thin wrapper that opens your website. Everything happens on the computer you develop on (your Mac; the Linux server is not involved), in a **new folder outside your website repository**, for example `~/sushi-android`. It will hold your signing key.
 
 ### What to install
 
-1. **Node.js** (you have it).
-2. **JDK 17**. Install "Temurin 17" from https://adoptium.net, or use your package manager. After installing, `keytool -help` should work in a new terminal window.
-3. **Bubblewrap**: `npm install -g @bubblewrap/cli`
+1. **Node.js** (this also gives you `npm`). On a Mac, download the **LTS** installer from https://nodejs.org, or run `brew install node` if you use Homebrew. Then close Terminal, open a new window, and check that `node -v` and `npm -v` both print a version number.
+2. **JDK 17**. Bubblewrap needs version 17 specifically. On a Mac run `/usr/libexec/java_home -V` to see which JDKs you have. If 17 is not listed, install "Temurin 17" from https://adoptium.net (or `brew install --cask temurin@17`), or let `bubblewrap doctor` download its own JDK when it offers. After installing, `keytool -help` should work in a new Terminal window.
+3. **Bubblewrap**: `npm install -g @bubblewrap/cli` (add `sudo` if you get a permission error).
 
 ### Steps
 
@@ -120,7 +129,7 @@ You are building a thin wrapper that opens your website. Everything happens on y
    ```
    bubblewrap doctor
    ```
-   When it asks where the JDK is, give it your JDK 17 folder. When it asks about the Android command-line tools, let it download them. Answer yes to licence prompts. Run `bubblewrap doctor` again until it reports no problems.
+   When it asks where the JDK is, give it your JDK 17 folder. On a Mac, `/usr/libexec/java_home -v 17` prints it. When it asks about the Android command-line tools, let it download them. Answer yes to licence prompts. Run `bubblewrap doctor` again until it reports no problems.
 
 3. Create your **upload key**. This is the file that proves updates come from you:
    ```
@@ -242,6 +251,7 @@ Your friends and family beta can run on the website the whole time. It does not 
 | Cloudflare build fails or says no files uploaded | Build command must be `sh build.sh` and output directory `dist`. Open the build log. If it says `build.sh` is missing, the files are in a subfolder; set Root directory to that folder. |
 | Cloudflare custom domain stays on "Verifying" | The `sushi` CNAME row in Enom is wrong or has not spread yet. |
 | Friends see an old version | Open the app once while online. A "New version ready" prompt appears, or reopen it. |
+| "This site can't be reached" (`ERR_FAILED`) on the main address, but `/privacy` still works | A phone or browser is stuck on an old service worker. Reload once or twice and it replaces itself. On your own computer you can clear it at once: DevTools (Cmd+Option+I), **Application**, **Service workers**, **Unregister**, then reload. A private window also bypasses it. |
 
 ---
 
