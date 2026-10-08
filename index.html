@@ -216,6 +216,55 @@ html.kb .extras{padding-bottom:16px}
 #upgrade .up-row .btn{flex:1}
 #upgrade .btn[disabled]{opacity:.6;pointer-events:none}
 @media (prefers-reduced-motion:reduce){#upgrade .up-card{animation:none}}
+/* itemised bill: a quiet icon for extras (not a button) */
+.line .chip.extra{background:none;box-shadow:none;color:var(--mute);display:grid;place-items:center}
+.line .chip.extra svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+/* tapping the collapsed drawer (or its name) opens it */
+.venue{cursor:pointer}
+.dock:not(.open){cursor:pointer}
+/* the empty dotted circle that adds a plate */
+.plate-btn.add-plate .plate{background:none;box-shadow:none;border:3px dashed rgba(147,176,171,.65)}
+.plate-btn.add-plate:active .plate{box-shadow:none}
+.plate .plus{font-size:44px;line-height:1;color:var(--mute);font-weight:500}
+@supports (height:1cqh){ .plate .plus{font-size:34cqw} }
+.plate-btn{-webkit-touch-callout:none}
+/* round plate colour button in the setup screen */
+.cdot{width:48px;height:48px;border-radius:50%;flex:none;background:var(--c);box-shadow:inset 0 0 0 3px rgba(255,255,255,.3)}
+.cdot:active{transform:scale(.95)}
+/* modal dialogs */
+#modal{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
+#modal .m-scrim{position:absolute;inset:0;background:rgba(0,0,0,.62)}
+#modal .m-card{position:relative;width:min(420px,100%);max-height:92%;overflow-y:auto;background:var(--belt);border-radius:24px;
+  padding:22px 20px 18px;box-shadow:0 20px 50px rgba(0,0,0,.55);animation:upIn .22s ease-out}
+#modal h2{margin:0 0 4px;font-size:24px;font-weight:800}
+#modal .m-sub{margin:0 0 14px;color:var(--mute);line-height:1.4}
+#modal .m-row{display:flex;gap:10px;margin-top:18px}
+#modal .m-row .btn{flex:1}
+#modal .btn.danger-fill{background:var(--danger);color:#3a0f08;font-weight:800}
+#modal .m-preview{--cap:104px;display:flex;justify-content:center;margin:4px 0 6px}
+#modal input[type=text]{background:var(--belt-2)}
+#modal .m-err{min-height:18px;color:var(--danger);font-size:14px;margin:6px 2px 0}
+#modal .money{position:relative}
+#modal .money span{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--mute);pointer-events:none}
+@media (prefers-reduced-motion:reduce){#modal .m-card{animation:none}}
+/* colour chooser */
+.cc-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:6px}
+.cc-sw{aspect-ratio:1;border-radius:50%;background:var(--c);box-shadow:inset 0 0 0 3px rgba(255,255,255,.28)}
+.cc-sw.sel{box-shadow:inset 0 0 0 3px rgba(255,255,255,.28),0 0 0 3px var(--belt),0 0 0 6px var(--wasabi)}
+.cc-custom{background:conic-gradient(#ff3b30,#ffcc00,#34c759,#00c7be,#0a84ff,#bf5af2,#ff3b30)}
+.cc-custom.has-colour{background:radial-gradient(circle,var(--c) 0 52%,transparent 54%),conic-gradient(#ff3b30,#ffcc00,#34c759,#00c7be,#0a84ff,#bf5af2,#ff3b30)}
+.cc-panel{margin-top:16px}
+.cc-panel[hidden]{display:none}
+.cc-row{display:grid;grid-template-columns:96px 1fr;align-items:center;gap:10px;margin:6px 0}
+.cc-row span{color:var(--mute);font-size:14px}
+.cc-row input[type=range]{width:100%;height:30px;-webkit-appearance:none;appearance:none;background:transparent;margin:0}
+.cc-row input[type=range]::-webkit-slider-runnable-track{height:14px;border-radius:7px;background:var(--track)}
+.cc-row input[type=range]::-moz-range-track{height:14px;border-radius:7px;background:var(--track)}
+.cc-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-7px;border-radius:50%;background:#fff;border:3px solid var(--belt-2);box-shadow:0 1px 5px rgba(0,0,0,.5)}
+.cc-row input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--belt-2)}
+.cc-hex{display:flex;align-items:center;gap:10px;margin-top:8px}
+.cc-hex span{color:var(--mute);font-size:14px;width:96px}
+.cc-hex input{width:130px}
 #toast{position:fixed;left:50%;bottom:calc(var(--bar) + var(--tab) + 18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);
   background:var(--rice);color:var(--nori);padding:10px 16px;border-radius:12px;font-weight:800;opacity:0;
   pointer-events:none;transition:opacity .2s,transform .2s;z-index:20;max-width:90vw;text-align:center}
@@ -233,7 +282,7 @@ html.kb .extras{padding-bottom:16px}
 /* ---------- itemised ---------- */
 .line{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.08)}
 .line .chip{width:26px;height:26px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 3px rgba(255,255,255,.28)}
-.line .chip.extra{background:var(--belt-2);display:grid;place-items:center;font-size:14px;box-shadow:none}
+
 .line .desc{flex:1;min-width:0}
 .line .desc small{display:block;color:var(--mute)}
 .line .amt{font-weight:800;font-variant-numeric:tabular-nums}
@@ -262,7 +311,7 @@ html.kb .extras{padding-bottom:16px}
 
 <script>
 /* ============ config ============ */
-const BUILD = '4 Oct 2026 · production';   // shown on the landing page so you can tell which copy is running
+const BUILD = '7 Oct 2026 · plate tools';   // shown on the landing page so you can tell which copy is running
 const BUILD_ID = 'dev';   // stamped with the git commit by update.sh
 const KEY = 'plateTally.v1';
 const SWATCHES = ['#e5484d','#f5a524','#f2d74a','#4cb782','#3e8ef7','#8b5cf6','#e8e2d4','#2b2b2b'];
@@ -376,6 +425,7 @@ function inkFor(hex){
 const ICON = {
   menu:'<svg viewBox="0 0 24 24" style="fill:var(--rice);stroke:none"><circle cx="12" cy="5" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="12" cy="19" r="2.2"/></svg>',
   lock:'<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+  cup:'<svg viewBox="0 0 24 24"><path d="M5 10h11v4.5a4.5 4.5 0 0 1-4.5 4.5h-2A4.5 4.5 0 0 1 5 14.5z"/><path d="M16 12h1.4a2.3 2.3 0 0 1 0 4.6H16"/><path d="M8.5 4.5c0 1.4 1.4 1.4 1.4 2.8M12.5 4.5c0 1.4 1.4 1.4 1.4 2.8"/></svg>',
   back:'<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
   pencil:'<svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/></svg>',
 };
@@ -501,7 +551,122 @@ async function restorePurchase(){
   if (document.getElementById('upgrade')) upgradeMsg(owned ? 'Premium restored.' : 'No purchase found for this Google account.', owned);
 }
 
-function go(view){ ui.view = view; ui.menu = false; ui.removing = false; ui.dock = false; render(); }
+/* ============ modal dialogs ============ */
+function hideModal(){ const m = document.getElementById('modal'); if (m) m.remove(); }
+function showModal(html){
+  hideModal();
+  const m = document.createElement('div');
+  m.id = 'modal'; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true');
+  m.innerHTML = `<div class="m-scrim" data-act="m-close"></div><div class="m-card">${html}</div>`;
+  document.body.appendChild(m);
+  return m;
+}
+
+/* ============ colour chooser (predefined colours plus a custom mixer that starts from the chosen colour) ============ */
+const PALETTE = ['#e5484d','#f5a524','#f2d74a','#4cb782','#2bb5b0','#3e8ef7','#8b5cf6','#ec6fb0','#ffffff','#9aa3a8','#2b2b2b','#a2673a'];
+const CC = { value: '#e5484d', custom: false };
+function hexToHsl(hex){
+  const n = parseInt(hex.slice(1), 16);
+  const r = (n >> 16 & 255) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn, l = (mx + mn) / 2;
+  let h = 0, s = 0;
+  if (d) {
+    s = d / (1 - Math.abs(2 * l - 1));
+    h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    h = (h * 60 + 360) % 360;
+  }
+  return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
+}
+function hslToHex(h, s, l){
+  s /= 100; l /= 100;
+  const k = n => (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
+  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  const x = v => Math.round(v * 255).toString(16).padStart(2, '0');
+  return '#' + x(f(0)) + x(f(8)) + x(f(4));
+}
+function ccInit(hex){ CC.value = String(hex).toLowerCase(); CC.custom = !PALETTE.includes(CC.value); }
+function ccHtml(){
+  const sw = PALETTE.map(c => `<button type="button" class="cc-sw" data-act="cc-pick" data-c="${c}" style="--c:${c}" aria-label="Colour ${c}"></button>`).join('');
+  return `<div class="cc" id="cc">
+    <div class="cc-grid">${sw}<button type="button" class="cc-sw cc-custom" data-act="cc-custom" aria-label="Custom colour"></button></div>
+    <div class="cc-panel" id="cc-panel" hidden>
+      <div class="cc-row"><span>Hue</span><input type="range" id="cc-h" min="0" max="360" aria-label="Hue"></div>
+      <div class="cc-row"><span>Saturation</span><input type="range" id="cc-s" min="0" max="100" aria-label="Saturation"></div>
+      <div class="cc-row"><span>Lightness</span><input type="range" id="cc-l" min="0" max="100" aria-label="Lightness"></div>
+      <div class="cc-hex"><span>Hex code</span><input type="text" id="cc-hex" maxlength="7" autocapitalize="off" autocomplete="off" spellcheck="false" aria-label="Hex colour code"></div>
+    </div>
+  </div>`;
+}
+/* from: 'hsl' when the sliders were just moved, 'hex' when the code was just typed, nothing otherwise */
+function ccRefresh(from){
+  const root = document.getElementById('cc'); if (!root) return;
+  const h = document.getElementById('cc-h'), sa = document.getElementById('cc-s'), li = document.getElementById('cc-l'), hx = document.getElementById('cc-hex');
+  const hsl = hexToHsl(CC.value);
+  if (from !== 'hsl') { h.value = hsl.h; sa.value = hsl.s; li.value = hsl.l; }   // the mixer always starts from the colour already chosen
+  if (from !== 'hex') hx.value = CC.value;
+  root.querySelectorAll('.cc-sw[data-c]').forEach(b => b.classList.toggle('sel', !CC.custom && b.dataset.c === CC.value));
+  const cu = root.querySelector('.cc-custom');
+  cu.classList.toggle('sel', CC.custom); cu.classList.toggle('has-colour', CC.custom); cu.style.setProperty('--c', CC.value);
+  document.getElementById('cc-panel').hidden = !CC.custom;
+  const hh = +h.value, ss = +sa.value, ll = +li.value;
+  h.style.setProperty('--track', 'linear-gradient(90deg,hsl(0 ' + ss + '% ' + ll + '%),hsl(60 ' + ss + '% ' + ll + '%),hsl(120 ' + ss + '% ' + ll + '%),hsl(180 ' + ss + '% ' + ll + '%),hsl(240 ' + ss + '% ' + ll + '%),hsl(300 ' + ss + '% ' + ll + '%),hsl(360 ' + ss + '% ' + ll + '%))');
+  sa.style.setProperty('--track', 'linear-gradient(90deg,hsl(' + hh + ' 0% ' + ll + '%),hsl(' + hh + ' 100% ' + ll + '%))');
+  li.style.setProperty('--track', 'linear-gradient(90deg,#000,hsl(' + hh + ' ' + ss + '% 50%),#fff)');
+  document.querySelectorAll('[data-cc-preview]').forEach(el => { el.style.setProperty('--c', CC.value); el.style.setProperty('--ink', inkFor(CC.value)); });
+}
+
+/* ============ add a plate from the main screen ============ */
+function openAddPlate(){
+  const r = rest(), cur = curOf(r), used = new Set(r.plates.map(p => p.colour.toLowerCase()));
+  ccInit(PALETTE.find(c => !used.has(c)) || PALETTE[0]);
+  showModal(`<h2>Add a plate</h2>
+    <p class="m-sub">Choose its colour and price.</p>
+    <div class="m-preview"><div class="plate" data-cc-preview style="--c:${CC.value};--ink:${inkFor(CC.value)}"><span class="n zero">0</span></div></div>
+    ${ccHtml()}
+    <div class="field-label" style="margin-top:18px">Price</div>
+    <div class="money"><span>${esc(symOf(cur))}</span><input id="np-price" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" placeholder="${plain(0, cur)}" style="padding-left:${symPad(cur)}px" aria-label="Price per plate"></div>
+    <div class="m-err" id="np-err" role="alert"></div>
+    <div class="m-row"><button class="btn" data-act="m-close">Cancel</button><button class="btn primary" data-act="np-save">Add plate</button></div>`);
+  ccRefresh();
+}
+function saveNewPlate(){
+  const r = rest(), err = document.getElementById('np-err'), input = document.getElementById('np-price');
+  const c = toCents(input.value, curOf(r));
+  if (c === null) { err.textContent = 'Enter the price, for example ' + plain(450, curOf(r)) + '.'; input.focus(); return; }
+  if (r.plates.some(p => p.colour.toLowerCase() === CC.value)) { err.textContent = 'You already have a plate in this colour. Pick a different one.'; return; }
+  if (!isPremium() && r.plates.length >= FREE_PLATES) { hideModal(); showUpgrade('plates'); return; }
+  r.plates.push({ id: uid(), colour: CC.value, price: c });
+  persist(); hideModal(); render(); toast('Plate added');
+}
+
+/* ============ remove one plate by pressing and holding it ============ */
+const lp = { timer: null, x: 0, y: 0, suppressUntil: 0 };
+function lpCancel(){ clearTimeout(lp.timer); lp.timer = null; }
+function confirmRemovePlate(id){
+  const r = rest(), p = r.plates.find(x => x.id === id), n = p ? (billOf(r.id).counts[id] || 0) : 0;
+  if (!p || !n) { toast('None of those have been taken'); return; }
+  const lbl = money(p.price, r), pf = lbl.length <= 6 ? 10.5 : lbl.length === 7 ? 9.5 : lbl.length <= 9 ? 8 : 6.8;
+  showModal(`<h2>Remove one plate?</h2>
+    <p class="m-sub">This takes ${esc(lbl)} off your bill.</p>
+    <div class="m-preview"><div class="plate" style="--c:${p.colour};--ink:${inkFor(p.colour)};--pf:${pf}"><span class="n">${n}</span><span class="price">${esc(lbl)}</span></div></div>
+    <div class="m-row"><button class="btn" data-act="m-close">Cancel</button><button class="btn danger-fill" data-act="m-remove" data-id="${p.id}">Remove one</button></div>`);
+}
+document.addEventListener('pointerdown', e => {
+  const b = e.target.closest && e.target.closest('.plate-btn[data-act="plate"]');
+  if (!b || ui.removing || e.button > 0) return;
+  lpCancel(); lp.x = e.clientX; lp.y = e.clientY;
+  lp.timer = setTimeout(() => {
+    lp.timer = null; lp.suppressUntil = Date.now() + 700;   // the click that follows letting go is ignored
+    if (navigator.vibrate) navigator.vibrate(15);
+    confirmRemovePlate(b.dataset.id);
+  }, 550);
+});
+document.addEventListener('pointermove', e => { if (lp.timer && Math.hypot(e.clientX - lp.x, e.clientY - lp.y) > 10) lpCancel(); });
+['pointerup', 'pointercancel', 'dragstart'].forEach(ev => document.addEventListener(ev, lpCancel, true));
+document.addEventListener('scroll', lpCancel, true);
+document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('.plate-btn')) e.preventDefault(); });
+
+function go(view){ hideModal(); ui.view = view; ui.menu = false; ui.removing = false; ui.dock = false; render(); }
 
 /* ============ views ============ */
 function sushiPlate(cx, cy, colour, kind){
@@ -615,20 +780,20 @@ function viewBill(){
       <div class="total"><span class="lbl">Total:</span><b id="total">${money(totalOf(r))}</b></div>
       <button class="icon-btn" data-act="menu" aria-label="Menu">${ICON.menu}</button>
     </div>
-    ${ui.removing ? `<div class="banner"><span>Tap a plate to remove one</span><button data-act="cancel-remove">Cancel</button></div>` : ''}
-    <div class="scroll fit"><div class="plates" style="--rows:${Math.min(3, Math.max(1, Math.ceil(r.plates.length / 2)))}">${plates || '<p class="muted" style="grid-column:1/-1;text-align:center">This restaurant has no plates yet. Use the menu to edit it.</p>'}</div></div>
+    ${ui.removing ? `<div class="banner"><span>Tap a plate to remove one</span><button data-act="cancel-remove">Done</button></div>` : ''}
+    <div class="scroll fit"><div class="plates" style="--rows:${Math.min(3, Math.max(1, Math.ceil((r.plates.length + 1) / 2)))}">${r.plates.length ? '' : '<p class="muted" style="grid-column:1/-1;text-align:center">No plates yet. Tap the + to add one.</p>'}${plates}<button class="plate-btn add-plate" data-act="add-plate-modal" aria-label="Add a plate"><div class="plate"><span class="plus">+</span></div></button></div></div>
     <div class="dock-space"></div>
     <div class="dock-scrim ${ui.dock ? 'on' : ''}" id="dock-scrim" data-act="dock-close"></div>
     <div class="dock ${ui.dock ? 'open' : ''}" id="dock">
       <button class="dock-tab" data-act="dock-toggle" aria-expanded="${ui.dock}" aria-controls="dock-body"><span class="lbl">${ui.dock ? 'Close' : 'Add menu item'}</span><i></i></button>
-      <div class="venue">${esc(r.name)}</div>
+      <div class="venue" data-act="dock-toggle">${esc(r.name)}</div>
       <div class="extras" id="dock-body" ${ui.dock ? '' : 'inert'}>
         <label for="xdesc">Add item</label>
         <div class="formwrap">
           <div class="suggest" id="suggest" hidden></div>
           <form id="extra-form" autocomplete="off">
-            <input id="xdesc" type="text" placeholder="${isPremium() && (r.items || []).length ? 'Pick or type an item' : 'Description (optional)'}" aria-label="Description" autocomplete="off">
-            <div class="amt"><span>${esc(symOf(curOf(r)))}</span><input id="xprice" type="text" inputmode="decimal" placeholder="${plain(0, curOf(r))}" style="padding-left:${symPad(curOf(r))}px" aria-label="Price"></div>
+            <input id="xdesc" type="text" enterkeyhint="next" placeholder="${isPremium() && (r.items || []).length ? 'Pick or type an item' : 'Description (optional)'}" aria-label="Description" autocomplete="off">
+            <div class="amt"><span>${esc(symOf(curOf(r)))}</span><input id="xprice" type="text" inputmode="decimal" enterkeyhint="go" placeholder="${plain(0, curOf(r))}" style="padding-left:${symPad(curOf(r))}px" aria-label="Price"></div>
             <button class="add" type="submit">Add</button>
           </form>
         </div>
@@ -656,7 +821,7 @@ function viewItemised(){
       <div class="desc">${n} × plate<small>${money(p.price)} each</small></div>
       <span class="amt">${money(n * p.price)}</span></div>`;
   }).join('');
-  const extraLines = b.extras.map(e => `<div class="line"><span class="chip extra">+</span>
+  const extraLines = b.extras.map(e => `<div class="line"><span class="chip extra" aria-hidden="true">${ICON.cup}</span>
       <div class="desc">${e.desc ? esc(e.desc) : 'Other item'}</div>
       <span class="amt">${money(e.price)}</span>
       <button class="x" data-act="del-extra" data-id="${e.id}" aria-label="Remove item">×</button></div>`).join('');
@@ -673,13 +838,13 @@ function viewEdit(){
   const d = ui.draft;
   const cur = d.currency, sym = symOf(cur), pad = symPad(cur), ph = plain(0, cur);
   const rows = d.plates.map((p, i) => `<div class="prow">
-      <input type="color" value="${p.colour}" data-field="colour" data-i="${i}" aria-label="Plate colour">
-      <div class="money"><span>${esc(sym)}</span><input type="text" inputmode="decimal" value="${esc(p.price)}" placeholder="${ph}" style="padding-left:${pad}px" data-field="price" data-i="${i}" aria-label="Price per plate"></div>
+      <button type="button" class="cdot" data-act="edit-colour" data-i="${i}" style="--c:${p.colour}" aria-label="Plate colour, tap to change"></button>
+      <div class="money"><span>${esc(sym)}</span><input type="text" inputmode="decimal" enterkeyhint="next" value="${esc(p.price)}" placeholder="${ph}" style="padding-left:${pad}px" data-field="price" data-i="${i}" aria-label="Price per plate"></div>
       <button class="x" data-act="del-plate" data-i="${i}" aria-label="Remove plate">×</button>
     </div>`).join('');
   const irows = d.items.map((it, i) => `<div class="prow">
-      <div class="dwrap"><input type="text" value="${esc(it.desc)}" placeholder="e.g. Green tea" data-field="idesc" data-i="${i}" aria-label="Item description" autocomplete="off"><div class="suggest edit-suggest" hidden></div></div>
-      <div class="money" style="flex:none;width:112px"><span>${esc(sym)}</span><input type="text" inputmode="decimal" value="${esc(it.price)}" placeholder="${ph}" style="padding-left:${pad}px" data-field="iprice" data-i="${i}" aria-label="Item price"></div>
+      <div class="dwrap"><input type="text" enterkeyhint="next" value="${esc(it.desc)}" placeholder="e.g. Green tea" data-field="idesc" data-i="${i}" aria-label="Item description" autocomplete="off"><div class="suggest edit-suggest" hidden></div></div>
+      <div class="money" style="flex:none;width:112px"><span>${esc(sym)}</span><input type="text" inputmode="decimal" enterkeyhint="next" value="${esc(it.price)}" placeholder="${ph}" style="padding-left:${pad}px" data-field="iprice" data-i="${i}" aria-label="Item price"></div>
       <button class="x" data-act="del-item" data-i="${i}" aria-label="Remove menu item">×</button>
     </div>`).join('');
   return `<div class="screen narrow">
@@ -687,14 +852,14 @@ function viewEdit(){
       <h1>${d.isNew ? 'New restaurant' : 'Edit restaurant'}</h1></div>
     <div class="scroll pad">
       <div class="field-label" style="margin-top:0">Restaurant name</div>
-      <input type="text" value="${esc(d.name)}" placeholder="e.g. Sushi Hub" data-field="name" id="rname">
+      <input type="text" enterkeyhint="next" value="${esc(d.name)}" placeholder="e.g. Sushi Hub" data-field="name" id="rname">
       <div class="field-label">Currency</div>
       ${isPremium()
         ? `<div class="select-wrap"><select id="cur-select" aria-label="Currency">${currencyOptions(cur)}</select></div>
       ${d.isNew ? '' : '<p class="muted" style="margin:8px 2px 0;font-size:14px">Changing the currency does not convert the prices.</p>'}`
         : `<button class="select-like" data-act="upsell" data-why="currency"><span>${esc(currencyLabel(cur))}</span><span class="pro">Premium</span></button>`}
       <div class="field-label">Plates</div>
-      <p class="muted" style="margin:-4px 0 12px;font-size:14px">Tap a circle to pick the plate colour, then enter its price.${isPremium() ? '' : ` The free version has up to ${FREE_PLATES} plates.`}</p>
+      <p class="muted" style="margin:-4px 0 12px;font-size:14px">Tap a circle to change the plate colour, then enter its price.${isPremium() ? '' : ` The free version has up to ${FREE_PLATES} plates.`}</p>
       ${rows}
       <button class="btn" style="width:100%" data-act="add-plate">Add a plate${!isPremium() && d.plates.length >= FREE_PLATES ? '<span class="pro">Premium</span>' : ''}</button>
       <div class="field-label">Menu items${isPremium() ? '' : '<span class="pro">Premium</span>'}</div>
@@ -722,6 +887,10 @@ function render(){
   if (now && lastView === ui.view) now.scrollTop = top;
   lastView = ui.view;
   if (ui.view === 'bill') fitTotal();
+  if (ui.view === 'edit') {
+    const all = [...document.querySelectorAll('.screen input[type="text"]')];
+    if (all.length) all[all.length - 1].setAttribute('enterkeyhint', 'done');
+  }
 }
 
 /* slide the add-item drawer up/down without re-rendering (keeps what's typed, and the animation) */
@@ -831,6 +1000,9 @@ function saveDraft(){
 
 /* ============ events ============ */
 document.addEventListener('click', e => {
+  // anywhere on the collapsed drawer opens it (the name and the tab also toggle it, via data-act)
+  const dock = e.target.closest('#dock');
+  if (dock && !ui.dock && !e.target.closest('[data-act="dock-toggle"]')) { setDock(true); return; }
   const t = e.target.closest('[data-act]'); if (!t) return;
   const act = t.dataset.act, id = t.dataset.id;
   switch (act) {
@@ -862,15 +1034,45 @@ document.addEventListener('click', e => {
       else { ui.menu = false; render(); }
       break;
     case 'plate': {
+      if (Date.now() < lp.suppressUntil) break;   // this click is just the end of a long press
       const r = rest(), b = billOf(r.id);
-      if (ui.removing) {
+      if (ui.removing) {   // stays in remove mode until Done, so several plates can be removed one by one
         if (!(b.counts[id] > 0)) return;
-        b.counts[id]--; persist(); ui.removing = false; render(); refreshTotal();
+        b.counts[id]--; persist(); refreshPlate(id); refreshTotal();
+        if (navigator.vibrate) navigator.vibrate(8);
+        if (!r.plates.some(p => (b.counts[p.id] || 0) > 0)) { ui.removing = false; render(); refreshTotal(); toast('All plates removed'); }
       } else {
         b.counts[id] = (b.counts[id] || 0) + 1; persist();
         refreshPlate(id); refreshTotal();
         if (navigator.vibrate) navigator.vibrate(8);
       }
+      break;
+    }
+    case 'add-plate-modal':
+      if (!isPremium() && rest().plates.length >= FREE_PLATES) { showUpgrade('plates'); break; }
+      openAddPlate(); break;
+    case 'np-save': saveNewPlate(); break;
+    case 'm-close': hideModal(); break;
+    case 'm-remove': {
+      const r = rest(), b = billOf(r.id);
+      hideModal();
+      if (b.counts[id] > 0) { b.counts[id]--; persist(); refreshPlate(id); refreshTotal(); toast('Removed one plate'); }
+      break;
+    }
+    case 'edit-colour': {
+      const i = +t.dataset.i; ccInit(ui.draft.plates[i].colour);
+      showModal(`<h2>Plate colour</h2>
+        <p class="m-sub">Pick a colour, or tap the rainbow circle to mix your own starting from it.</p>
+        <div class="m-preview"><div class="plate" data-cc-preview style="--c:${CC.value};--ink:${inkFor(CC.value)}"><span class="n zero">0</span></div></div>
+        ${ccHtml()}
+        <div class="m-row"><button class="btn" data-act="m-close">Cancel</button><button class="btn primary" data-act="cc-apply" data-i="${i}">Use colour</button></div>`);
+      ccRefresh(); break;
+    }
+    case 'cc-pick': CC.value = t.dataset.c; CC.custom = false; ccRefresh(); break;
+    case 'cc-custom': CC.custom = true; ccRefresh(); break;
+    case 'cc-apply': {
+      const i = +t.dataset.i; ui.draft.plates[i].colour = CC.value; hideModal();
+      const dot = document.querySelector(`.cdot[data-i="${i}"]`); if (dot) dot.style.setProperty('--c', CC.value);
       break;
     }
     case 'del-extra': {
@@ -939,6 +1141,15 @@ document.addEventListener('change', e => {
 /* editor inputs: update draft without re-rendering (keeps keyboard open) */
 document.addEventListener('input', e => {
   if (e.target.id === 'xdesc') { showSuggest(); return; }
+  if (e.target.id === 'cc-h' || e.target.id === 'cc-s' || e.target.id === 'cc-l') {
+    CC.value = hslToHex(+document.getElementById('cc-h').value, +document.getElementById('cc-s').value, +document.getElementById('cc-l').value);
+    CC.custom = true; ccRefresh('hsl'); return;
+  }
+  if (e.target.id === 'cc-hex') {
+    let v = e.target.value.trim(); if (v && v[0] !== '#') v = '#' + v;
+    if (/^#[0-9a-f]{6}$/i.test(v)) { CC.value = v.toLowerCase(); CC.custom = true; ccRefresh('hex'); }
+    return;
+  }
   const f = e.target.dataset.field; if (!f || !ui.draft) return;
   const i = +e.target.dataset.i, v = e.target.value;
   if (f === 'name') ui.draft.name = v;
@@ -998,8 +1209,8 @@ function showSuggest(){
   }
   const items = rest().items || [], raw = input.value.trim(), q = raw.toLowerCase();
   const mine = items.filter(i => i.desc.toLowerCase().includes(q));
-  // items from other restaurants appear as soon as something is typed; they never bring a price with them
-  const others = q ? otherItems(S.current, items.map(i => i.desc), q).slice(0, 8) : [];
+  // items from other restaurants are offered too (on focus, and narrowed as you type); they never bring a price with them
+  const others = otherItems(S.current, items.map(i => i.desc), q).slice(0, q ? 8 : 6);
   const exact = items.some(i => i.desc.toLowerCase() === q);
   let html = mine.map(i => `<button type="button" data-act="pick-item" data-id="${i.id}"><span>${esc(i.desc)}</span><b>${money(i.price)}</b></button>`).join('');
   html += others.map(d => `<button type="button" data-act="pick-other" data-desc="${esc(d)}"><span>${esc(d)}</span><small>other menu</small></button>`).join('');
@@ -1013,7 +1224,7 @@ function showEditSuggest(input){
   const box = input.parentElement.querySelector('.edit-suggest'); if (!box) return;
   const i = +input.dataset.i, q = input.value.trim().toLowerCase();
   const taken = d.items.filter((_, j) => j !== i).map(x => x.desc.trim()).filter(Boolean);
-  const list = q ? otherItems(d.isNew ? null : d.id, taken, q).slice(0, 6) : [];
+  const list = otherItems(d.isNew ? null : d.id, taken, q).slice(0, 6);
   if (!list.length) { box.hidden = true; return; }
   box.innerHTML = list.map(t => `<button type="button" data-act="pick-other" data-i="${i}" data-desc="${esc(t)}"><span>${esc(t)}</span><small>other menu</small></button>`).join('');
   // open upwards when there is little room below the field (e.g. the keyboard is up)
@@ -1024,8 +1235,24 @@ function showEditSuggest(input){
 }
 function hideSuggest(){ const b = document.getElementById('suggest'); if (b) b.hidden = true; }
 document.addEventListener('keydown', e => {
-  if (e.key !== 'Escape') return;
-  if (document.getElementById('upgrade')) hideUpgrade(); else if (ui.dock) setDock(false);
+  if (e.key === 'Escape') {
+    if (document.getElementById('modal')) hideModal();
+    else if (document.getElementById('upgrade')) hideUpgrade();
+    else if (ui.dock) setDock(false);
+    return;
+  }
+  if (e.key !== 'Enter' || e.isComposing) return;
+  const el = e.target;
+  if (!el.matches || !el.matches('input[type="text"]')) return;
+  if (el.id === 'np-price') { e.preventDefault(); const b = document.querySelector('[data-act="np-save"]'); if (b) b.click(); return; }
+  if (el.id === 'cc-hex') { e.preventDefault(); el.blur(); return; }
+  if (el.id === 'xdesc') { e.preventDefault(); document.getElementById('xprice').focus(); return; }   // Next: description, then price
+  if (ui.view === 'edit') {                                                                           // Next: on to the next box
+    e.preventDefault();
+    const all = [...document.querySelectorAll('.screen input[type="text"]')].filter(x => !x.disabled && !x.closest('[hidden]'));
+    const next = all[all.indexOf(el) + 1];
+    if (next) { next.focus(); if (next.scrollIntoView) next.scrollIntoView({ block: 'center', behavior: 'smooth' }); } else el.blur();
+  }
 });
 document.addEventListener('focusin', e => {
   if (e.target.id === 'xdesc') showSuggest();
@@ -1033,6 +1260,15 @@ document.addEventListener('focusin', e => {
 });
 document.addEventListener('focusout', e => {
   const el = e.target;
+  if (el.matches && el.matches('[data-field="price"],[data-field="iprice"],#xprice,#np-price') && el.value.trim()) {   // 4.8 becomes 4.80
+    const inEditor = !!(ui.draft && el.dataset.field), cur = inEditor ? ui.draft.currency : curOf(rest());
+    const c = toCents(el.value, cur);
+    if (c !== null) {
+      el.value = plain(c, cur);
+      if (inEditor && el.dataset.field === 'price') ui.draft.plates[+el.dataset.i].price = el.value;
+      else if (inEditor && el.dataset.field === 'iprice') ui.draft.items[+el.dataset.i].price = el.value;
+    }
+  }
   if (el.id === 'xdesc') setTimeout(() => { if (document.activeElement !== el) hideSuggest(); }, 250);
   else if (el.dataset && el.dataset.field === 'idesc') {
     const box = el.parentElement && el.parentElement.querySelector('.edit-suggest');
