@@ -832,7 +832,7 @@ function viewBill(){
       <button class="dock-tab" data-act="dock-toggle" aria-expanded="${ui.dock}" aria-controls="dock-body"><span class="lbl">${ui.dock ? 'Close' : 'Add menu item'}</span><i></i></button>
       <div class="venue" data-act="dock-toggle">${esc(r.name)}</div>
       <div class="extras" id="dock-body" ${ui.dock ? '' : 'inert'}>
-        <label for="xdesc">Add item</label>
+        <label for="xdesc">Menu item</label>
         <div class="formwrap">
           <div class="suggest" id="suggest" hidden></div>
           <form id="extra-form" autocomplete="off">
