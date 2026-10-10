@@ -7,8 +7,8 @@
       "namespace": "android_app",
       "package_name": "com.robsofficetips.sushitraintrack",
       "sha256_cert_fingerprints": [
-        "REPLACE_WITH_PLAY_APP_SIGNING_SHA256",
-        "REPLACE_WITH_UPLOAD_KEY_SHA256"
+        "76:87:10:56:13:29:68:82:5A:F8:96:80:9D:CD:06:AE:0E:61:AD:92:EE:6A:79:F7:D0:1A:75:F8:76:0D:3F:B8",
+        "1A:9C:B2:6B:2E:85:22:AB:40:70:DE:00:8F:08:46:F9:D3:A1:A7:C1:BC:D7:DB:62:DE:93:D1:A7:02:06:1D:4A"
       ]
     }
   }
