@@ -50,11 +50,13 @@ Perfect for solo diners, families, and anyone who has ever lost count of the pla
 **Privacy policy URL**: https://sushi.robsofficetips.com/privacy
 **Default language**: English (Australia)
 
-## In-app product (Monetize > Products > In-app products)
+## One-time product (Monetize with Play > Products > One-time products)
 
 | Field | Value |
 |---|---|
 | Product ID | `premium_unlock` (must match exactly, and cannot be changed afterwards) |
+| Purchase option ID | `buy-premium` (an internal label only; lowercase letters, numbers and hyphens) |
+| Purchase type | Buy (keep it marked backwards compatible, which the first Buy option is by default) |
 | Name | Premium |
 | Description | Unlock unlimited restaurants, more than 5 plates, saved menu items and a currency for each restaurant. One-time purchase. |
 | Price | [your choice, for example A$4.99. Play offers to convert to other currencies] |
@@ -71,7 +73,7 @@ Perfect for solo diners, families, and anyone who has ever lost count of the pla
 | News app / COVID-19 / Government / Health / Financial features | No / No / No / No / None |
 | Data safety | Does the app collect or share any user data? No. Is data encrypted in transit? Yes (the app is loaded over HTTPS). See the note below. |
 
-**Data safety note.** The app itself collects nothing: restaurants, prices and bills stay on the phone, there are no accounts, no analytics and no ads, and the font is bundled so there are no third-party requests. The only network traffic is loading the app's own files from your Cloudflare-hosted site, which (like any web host) sees IP addresses, and the Google Play purchase check, which Google handles. The privacy policy says this in plain words. The form is a declaration you make, so read Google's definitions on the form itself and answer the way you are comfortable with. If you later add analytics, accounts or cloud backup, this answer and the privacy policy must change.
+**Data safety note.** The app itself collects nothing: restaurants, prices and bills stay on the phone, there are no accounts, no analytics and no ads, and the font is bundled so there are no third-party requests. The only network traffic is loading the app's own files from your Cloudflare-hosted site, which (like any web host) sees IP addresses, and the purchase check. When someone buys Premium, the app sends the purchase receipt (a code from Google Play) to your own `/api/acknowledge` function on Cloudflare, which uses it only to confirm and acknowledge the purchase with Google. It is not stored. Google's Data safety definitions treat data that is only handled briefly to serve a request differently from data that is collected, so read those definitions on the form and answer the way you are comfortable with. The privacy policy says this in plain words. The form is a declaration you make, so read Google's definitions on the form itself and answer the way you are comfortable with. If you later add analytics, accounts or cloud backup, this answer and the privacy policy must change.
 
 ## Release notes (first release)
 

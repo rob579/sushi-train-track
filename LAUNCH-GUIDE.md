@@ -159,7 +159,14 @@ You are building a thin wrapper that opens your website. Everything happens on t
    ```
    Copy the long line that starts `SHA256:` (letters and numbers separated by colons).
 
-**What the settings file does** (so you are not surprised): the app opens `https://sushi.robsofficetips.com/?app=play`. The `?app=play` part is how the website knows it is running inside the Play app, and so starts on the free edition. The file also turns on Google Play Billing for purchases. Bubblewrap insists that "notifications" are switched on whenever Billing is, so that is on too; the app never shows notifications and asks for no extra permissions.
+**Optional but worthwhile: try the build on your phone before uploading it.** With USB debugging on and the phone connected, remove any Play-installed copy and install the file Bubblewrap made, then open the app:
+```
+adb uninstall com.robsofficetips.sushitraintrack
+adb install app-release-signed.apk
+```
+If it opens, it will not crash for testers either. (It may show a browser address bar and cannot buy anything; those only work once installed from Play.) Install from Play again afterwards.
+
+**What the settings file does** (so you are not surprised): the app opens `https://sushi.robsofficetips.com/?app=play`. The `?app=play` part is how the website knows it is running inside the Play app, and so starts on the free edition. The file also turns on Google Play Billing for purchases. Bubblewrap insists that "notifications" are switched on whenever Billing is, so that is on too; the app never shows notifications. The site-settings shortcut is switched on because the Android helper library needs it declared (it adds a "site settings" shortcut to the app icon, handy for clearing the app's data). The notifications permission does appear in the app's list of permissions as a result, but the app never asks for it.
 
 ---
 
@@ -182,7 +189,7 @@ Play Console menus get renamed from time to time. Use the search box at the top 
 
 ### 3. Link the website to the app (this makes the address bar disappear, and Billing work)
 
-1. In Play Console find **App integrity** (App signing). Copy the **SHA-256 certificate fingerprint of the app signing key**. This is Google's key, not yours.
+1. In Play Console open **Protected with Play** (this used to be called App integrity), expand **Play Store protection**, choose **Manage Play app signing**, and under **App signing key certificate** copy the **SHA-256 certificate fingerprint**. This is Google's key, not yours. The same page has a ready-made "Digital Asset Links JSON" box; use it as a cross-check, but keep both fingerprints in your own file. If you cannot find it, search for "app signing" in the search box at the top of Play Console.
 2. Open `.well-known/assetlinks.json` in VS Code. Replace the two placeholders:
    - `REPLACE_WITH_PLAY_APP_SIGNING_SHA256` with the fingerprint from step 1
    - `REPLACE_WITH_UPLOAD_KEY_SHA256` with the fingerprint from Part D step 7
@@ -192,8 +199,8 @@ Play Console menus get renamed from time to time. Use the search box at the top 
 
 ### 4. Create the Premium product
 
-1. **Monetize with Play**, then **Products**, then **In-app products**, then **Create product**. (Play may want an app version uploaded first, which you did in step 2.)
-2. Use the values in `store/listing.md`. **The product ID must be exactly `premium_unlock`**, because the app asks Play for that name.
+1. **Monetize with Play**, then **Products**, then **One-time products** (Google renamed "In-app products"), then **Create one-time product**. (Play may want an app version uploaded first, which you did in step 2.)
+2. Use the values in `store/listing.md`. **The product ID must be exactly `premium_unlock`**, because the app asks Play for that name. The form also asks for a **purchase option ID**. Use `buy-premium`. It is only an internal label (lowercase letters, numbers and hyphens), users never see it, and the app does not use it. Leave the purchase type as **Buy**, and keep the option marked as backwards compatible (the first Buy option is marked that way automatically).
 3. Set your price and make the product **Active**.
 
 ### 5. Let yourself test purchases for free
@@ -218,14 +225,54 @@ Everything is in `store/listing.md`: names, descriptions, the form answers, and 
 
 ### 8. The 14-day closed test (needed because you have a new personal account)
 
-Google requires **at least 12 testers opted in continuously for 14 days** before it lets a new personal account publish.
+Google requires **at least 12 testers opted in continuously for 14 days** before it lets a new personal account publish. That has to be a **closed** test. Internal testing (steps 2 to 6) is only for you and a few helpers: it has no review and starts instantly, but it does not count towards the 14 days. So do both, in this order: internal first, closed second.
 
-1. **Testing**, then **Closed testing**: create a track, add the same release (you can promote it from internal testing), and make an email list of 12 or more testers, aiming for around 15 so a drop-out does not restart your clock.
-2. Send them the message at the bottom of `store/listing.md` with the opt-in link. Each person must open the link, opt in, and install.
-3. After 14 days the Dashboard offers **Apply for production**. You will be asked a few questions about your test (how you found testers, what feedback you got). Answer honestly.
-4. Google reviews it, usually within a few days. Then create a **Production** release (promote your build), choose countries, and roll it out.
+1. Make sure the Dashboard's setup checklist is finished (store listing, privacy policy, content rating, data safety and the other forms from step 7). Google will not review the release without them. Then finish the internal-testing checks above, **including step 3** (linking the website to the app). That fix lives on the website, so it needs no new build, but your testers should see a proper full-screen app on day one.
+2. Go to **Testing**, then **Closed testing**. Play already gives you a default track called **Alpha**. Use that one. (If you made a track of your own as well, you only need one of them. Track names are only visible to you, so a typo in a name does no harm.) Open the track and click **Create new release**.
+3. On the release page, under **App bundles**, click **Add from library** (it sits next to **Upload**) and pick the bundle you already uploaded for internal testing. Upload again only if you rebuilt the app. Another way: on your internal testing release use **Promote release** and choose the closed track.
+4. Add release notes, then work down the track's checklist: **Select testers** (create an email list of 12 or more people, aiming for around 15 so a drop-out does not restart your clock, and add a feedback email address), then **Preview and confirm**, then send the release to Google for review. Closed-test releases are reviewed, which can take a few days.
+5. **Wait for approval before sending the link.** Testers cannot install until Google has approved the release. Reports from other developers range from about a day to a week for a brand-new account, and I could not find an official figure. While you wait, do the internal testing and the website-link step. When the track's status says it is available to testers, send them the message at the bottom of `store/listing.md` with the opt-in link. Each person must open the link, opt in, and install. The 14 days only count while 12 or more testers are opted in, so chase the stragglers in the first couple of days.
+6. After 14 days the Dashboard offers **Apply for production**. You will be asked a few questions about your test (how you found testers, what feedback you got). Answer honestly.
+7. Google reviews it, usually within a few days. Then create a **Production** release (promote your build), choose countries, and roll it out.
 
 Your friends and family beta can run on the website the whole time. It does not depend on any of this.
+
+---
+
+## Part F: purchase acknowledgement (needed before real sales)
+
+Google automatically refunds any purchase that the developer never "acknowledges": after about 3 days for real purchases, and after about 3 minutes for test purchases. The browser version of Google's billing API cannot do this for a one-time purchase, so a small function on your Cloudflare site (`functions/api/acknowledge.js`, already in the pack) does it through Google's Play Developer API. It also checks that the purchase is genuine. If you skip this part, every sale would be refunded.
+
+You do four things. Take your time on the second one, because Google can be slow to apply permissions.
+
+1. **Make a service account (Google Cloud).**
+   - Go to https://console.cloud.google.com and create a project (any name, for example `sushi-train-track`).
+   - Open **APIs & Services**, then **Library**, search for **Google Play Android Developer API**, and click **Enable**.
+   - Open **IAM & Admin**, then **Service accounts**, then **Create service account**. Name it `play-acknowledge`. You do not need to give it any roles.
+   - Open the new account, go to **Keys**, then **Add key**, then **Create new key**, choose **JSON**. A file downloads. This file is a password: never email it, never put it in GitHub.
+   - Note the account's email address, which looks like `play-acknowledge@your-project.iam.gserviceaccount.com`.
+2. **Let that account manage your orders (Play Console).** Open **Users and permissions**, then **Invite new users**. Paste the service account's email. Under app permissions add Sushi Train Track and tick **View financial data, orders and cancellation survey responses** and **Manage orders and subscriptions** (menu wording changes from time to time). Send the invitation. It can take several hours to take effect.
+3. **Give Cloudflare the key.** In your Cloudflare Pages project open **Settings**, then **Variables and Secrets**, and add a variable named `GOOGLE_SERVICE_ACCOUNT_JSON`. Choose the encrypted/secret type, and paste in the **whole contents** of the JSON file (open it in a text editor, select everything, copy). Save, then redeploy (Deployments, then retry the latest) or push a small change.
+4. **Push the new files.** The pack adds a `functions` folder. Commit and push it like everything else. No change to the build command is needed. Cloudflare picks up the folder by itself.
+
+**Check it without buying anything.** In Terminal on your Mac:
+
+```
+curl -s -X POST https://sushi.robsofficetips.com/api/acknowledge -H "Content-Type: application/json" -d '{"sku":"premium_unlock","purchaseToken":"aaaaaaaaaaaaaaaaaaaaaaaaaaaa"}'
+```
+
+| You get | It means |
+|---|---|
+| `{"ok":false,"reason":"invalid-token"}` | Everything is set up: the function logged in to Google and Google said the made-up token is not real. |
+| `{"ok":false,"reason":"not-configured"}` | The secret in step 3 is missing, or the site has not redeployed since you added it. |
+| `{"ok":false,"reason":"google-auth-failed"}` | The pasted JSON is incomplete or wrong. Paste the whole file again. |
+| `{"ok":false,"reason":"google-denied"}` | Google has not applied the permissions in step 2 yet (wait a few hours and retry), or the wrong permissions or app were ticked. |
+| `{"ok":false,"reason":"method-not-allowed"}` | You sent a GET instead of a POST, but it proves the function is deployed. |
+| a `404` page | The `functions` folder was not deployed. Check it is at the top of the repository and pushed. |
+
+Then make a test purchase with your licence-tester account. Google's payment screen should close by itself, Premium should unlock, and there should be **no** "cancelled because it was not acknowledged" email five minutes later.
+
+If acknowledging fails for any reason (no signal, the setup not finished), the app still unlocks Premium for the person who paid, remembers the receipt, and tries again the next time the app opens.
 
 ---
 
@@ -247,9 +294,13 @@ Your friends and family beta can run on the website the whole time. It does not 
 | Unlock does nothing in a normal browser | Expected. On the website everything is already unlocked, and in `?edition=free` preview mode the button only simulates a purchase. |
 | Bubblewrap says "Play Billing requires enableNotifications" | Make sure `enableNotifications` is `true` in your `twa-manifest.json` (it is in mine). |
 | `bubblewrap update` says it failed to download the web manifest or icon | The website is not live at the final address yet (Part C). |
+| `bubblewrap build` fails with "minSdkVersion 21 cannot be smaller than version 23 declared in library ... billing" | In `twa-manifest.json` set `"minSdkVersion": 24` (Play Billing needs Android 6.0 or newer, and Play's automatic protection needs 7.0 or newer), then run `bubblewrap update --skipVersionUpgrade` and `bubblewrap build` again. The long list of `at org.gradle...` lines in a build error can be ignored; the useful part is the first few lines under ERROR and "What went wrong". |
+| The app installs from Play but says "keeps stopping" the moment it opens; the log (`adb logcat -b crash -d`) says "Component class ... does not exist" | In `twa-manifest.json` `enableSiteSettingsShortcut` must be `true`. The Android helper library always toggles a "site settings" screen at start-up, and the app crashes if that screen is not declared. Set it to `true`, run `bubblewrap update` (this adds 1 to the version number; type a new version name such as 1.0.1 when asked), run `bubblewrap build`, and upload the new `.aab`. |
+| Play says "automatic protection requires a minimum SDK version of 24 or higher" when you upload | Set `"minSdkVersion": 24` in `twa-manifest.json`, run `bubblewrap update --skipVersionUpgrade` and `bubblewrap build`, and upload the new `.aab`. (Android 7.0 and newer covers nearly every phone in use.) |
 | Play rejects the upload because of the target API level | Part D step 5: set `targetSdkVersion 36`, rebuild. |
 | Cloudflare build fails or says no files uploaded | Build command must be `sh build.sh` and output directory `dist`. Open the build log. If it says `build.sh` is missing, the files are in a subfolder; set Root directory to that folder. |
 | Cloudflare custom domain stays on "Verifying" | The `sushi` CNAME row in Enom is wrong or has not spread yet. |
+| Google's payment screen leaves the app dimmed after buying, and Play emails "test purchase was cancelled because it was not acknowledged" | The purchase was never acknowledged. This was a bug in the first version of the purchase code (it used a browser call that does not exist any more) and is fixed, but acknowledging needs Part F to be set up. |
 | Friends see an old version | Open the app once while online. A "New version ready" prompt appears, or reopen it. |
 | "This site can't be reached" (`ERR_FAILED`) on the main address, but `/privacy` still works | A phone or browser is stuck on an old service worker. Reload once or twice and it replaces itself. On your own computer you can clear it at once: DevTools (Cmd+Option+I), **Application**, **Service workers**, **Unregister**, then reload. A private window also bypasses it. |
 
@@ -257,7 +308,7 @@ Your friends and family beta can run on the website the whole time. It does not 
 
 ## What I could not check myself
 
-- **Real purchases.** I tested the purchase code against a simulated Google Play service, covering buying, cancelling, failing, restoring, refunds and offline start. Real purchases only work inside a Play-installed app, so Part E step 6 is the real test.
+- **Real purchases.** I tested the purchase code against simulated services. My first simulation wrongly included a browser call for acknowledging that real phones do not have, which hid a bug until your test purchase exposed it. It is fixed and now tested both with and without that call, but only a purchase on a real Play-installed phone proves the whole chain, including Google's side of Part F.
 - **Google's fee for a one-time purchase** on your first US$1 million of earnings: the page I read showed the standard rate and a 5% billing fee, but the cell for a reduced rate came through blank. Check "Service fees" in Play Console.
 - **Cloudflare serving the hidden `.well-known` folder.** I added a backup route, as described in Part B step 6.
 - **Menu names** in Play Console and Cloudflare, which change often.

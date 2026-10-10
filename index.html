@@ -311,7 +311,7 @@ html.kb .extras{padding-bottom:16px}
 
 <script>
 /* ============ config ============ */
-const BUILD = '7 Oct 2026 · plate tools';   // shown on the landing page so you can tell which copy is running
+const BUILD = '8 Oct 2026 · purchase fix';   // shown on the landing page so you can tell which copy is running
 const BUILD_ID = 'dev';   // stamped with the git commit by update.sh
 const KEY = 'plateTally.v1';
 const SWATCHES = ['#e5484d','#f5a524','#f2d74a','#4cb782','#3e8ef7','#8b5cf6','#e8e2d4','#2b2b2b'];
@@ -470,12 +470,47 @@ function setPurchased(v){
   try { localStorage.setItem(ENT_KEY, JSON.stringify({ purchased: v, at: Date.now() })); } catch {}
   return changed;
 }
+/* ---- acknowledging purchases ----
+   Google refunds a purchase that is never acknowledged (after about 3 days, and after about 3 minutes for test
+   purchases). The browser Billing API cannot do this for one-time purchases, so a small server function
+   (/api/acknowledge) does it, and anything that fails is remembered and retried the next time the app opens or
+   comes back to the front. */
+const ACKED_KEY = 'plateTally.acked.v1', PENDING_KEY = 'plateTally.pending.v1';
+const readList = k => { try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : []; } catch { return []; } };
+const writeList = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v.slice(-10))); } catch {} };
+const isAcked = t => readList(ACKED_KEY).includes(t);
+function markAcked(t){ if (!isAcked(t)) writeList(ACKED_KEY, [...readList(ACKED_KEY), t]); writeList(PENDING_KEY, readList(PENDING_KEY).filter(x => x !== t)); }
+function addPending(t){ if (!readList(PENDING_KEY).includes(t)) writeList(PENDING_KEY, [...readList(PENDING_KEY), t]); }
+function dropPending(t){ writeList(PENDING_KEY, readList(PENDING_KEY).filter(x => x !== t)); }
+async function ackOnServer(token){
+  if (isAcked(token)) return true;
+  let timer;
+  try {
+    const ctl = new AbortController(); timer = setTimeout(() => ctl.abort(), 12000);
+    const res = await fetch('/api/acknowledge', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sku: PREMIUM_SKU, purchaseToken: token }), signal: ctl.signal });
+    const out = await res.json().catch(() => ({}));
+    if (res.ok && out.ok) { markAcked(token); return true; }
+    if (out.reason === 'invalid-token' || out.reason === 'not-purchased') { dropPending(token); return false; }   // nothing to retry
+  } catch {} finally { clearTimeout(timer); }
+  addPending(token);   // try again later
+  return false;
+}
+async function acknowledgePurchase(svc, token){
+  if (svc && typeof svc.acknowledge === 'function') {   // some older browsers still have this; current ones do not
+    try { await svc.acknowledge(token, 'onetime'); markAcked(token); return true; } catch {}
+  }
+  return ackOnServer(token);
+}
+async function retryPendingAcks(){ for (const t of readList(PENDING_KEY).slice(0, 5)) await ackOnServer(t); }
+
 /* ask Google Play what this person owns (also restores a purchase on a new phone or after reinstalling) */
 async function refreshEntitlement(){
   const svc = await getBilling(); if (!svc) return false;
   try {
     const owned = (await svc.listPurchases()).find(p => p.itemId === PREMIUM_SKU);
-    if (owned) { try { await svc.acknowledge(owned.purchaseToken, 'onetime'); } catch {} }   // unacknowledged purchases are refunded after ~3 days
+    if (owned && !isAcked(owned.purchaseToken)) acknowledgePurchase(svc, owned.purchaseToken);   // not waited for
+    retryPendingAcks();                                                                      // and any earlier attempt that failed
     if (setPurchased(!!owned)) { hideUpgrade(); render(); }
     return !!owned;
   } catch { return ENT.purchased; }   // offline or Play unavailable: keep what we had
@@ -489,21 +524,30 @@ async function buyPremium(){
   const svc = await getBilling();
   if (!svc) { upgradeMsg('Purchases are not available right now. Please try again later.'); return; }
   upgradeBusy(true); upgradeMsg('');
+  let response = null, bought = false;
   try {
-    const details = await svc.getDetails([PREMIUM_SKU]);
-    const price = details && details[0] && details[0].price;
+    let price = null;
+    try { const details = await svc.getDetails([PREMIUM_SKU]); price = details && details[0] && details[0].price; } catch {}
     const request = new PaymentRequest(
       [{ supportedMethods: 'https://play.google.com/billing', data: { sku: PREMIUM_SKU } }],
       { total: { label: 'Premium', amount: { currency: price ? price.currency : 'USD', value: price ? price.value : '0' } } });   // amount is ignored by Play Billing
-    const response = await request.show();
-    await svc.acknowledge(response.details.purchaseToken, 'onetime');
-    await response.complete('success');
-    setPurchased(true); hideUpgrade(); render(); toast('Premium unlocked. Thank you!');
+    response = await request.show();
+    const token = response.details && response.details.purchaseToken;
+    if (token) {
+      bought = true;
+      setPurchased(true);                    // they have paid, so unlock now
+      await acknowledgePurchase(svc, token); // never throws; a failure is retried later
+    } else {
+      upgradeBusy(false); upgradeMsg('The purchase did not complete. If you were charged, tap "Restore purchase".');
+    }
   } catch (err) {
     upgradeBusy(false);
-    if (err && err.name === 'AbortError') return;   // the person closed the Google Play dialog
-    upgradeMsg('The purchase did not complete. If you were charged, tap "Restore purchase".');
+    if (!(err && err.name === 'AbortError')) upgradeMsg('The purchase did not complete. If you were charged, tap "Restore purchase".');   // an abort is just the person closing Google's dialog
+  } finally {
+    // always close Google's payment screen, otherwise the app stays dimmed until it is reopened
+    if (response) { try { await response.complete(bought ? 'success' : 'fail'); } catch {} }
   }
+  if (bought) { hideUpgrade(); render(); toast('Premium unlocked. Thank you!'); }
 }
 
 const UP_WHY = {
