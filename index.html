@@ -131,11 +131,12 @@ input::placeholder{color:#6d8d88}
 }
 .extras{padding:6px 0 calc(16px + env(safe-area-inset-bottom,0px))}
 .extras form{display:flex;gap:8px}
-.extras .amt{width:104px;flex:none;position:relative}
+.extras .amt{width:92px;flex:none;position:relative}
+#xdesc{padding-left:12px;padding-right:8px}
 .extras .amt span{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--mute)}
 .extras .amt input{padding-left:28px}
 .extras .safe{height:calc(14px + env(safe-area-inset-bottom,0px))}
-.extras .add{flex:none;background:var(--wasabi);color:#1c2a0a;border-radius:12px;padding:0 16px;font-weight:800}
+.extras .add{flex:none;background:var(--wasabi);color:#1c2a0a;border-radius:12px;padding:0 14px;font-weight:800}
 .extras .add:active{transform:scale(.96)}
 .extras label{display:block;font-size:15px;color:var(--mute);margin:0 0 8px 2px}
 .venue{height:calc(var(--bar) + env(safe-area-inset-bottom,0px));box-sizing:border-box;padding-bottom:env(safe-area-inset-bottom,0px);display:flex;align-items:center;font-weight:800;color:var(--rice);font-size:26px;
@@ -265,7 +266,16 @@ html.kb .extras{padding-bottom:16px}
 .cc-hex{display:flex;align-items:center;gap:10px;margin-top:8px}
 .cc-hex span{color:var(--mute);font-size:14px;width:96px}
 .cc-hex input{width:130px}
-#toast{position:fixed;left:50%;bottom:calc(var(--bar) + var(--tab) + 18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);
+/* the drawer lists the menu items on this bill */
+.dock-items{max-height:28vh;overflow-y:auto;overscroll-behavior:contain}
+.dock-items:not(:empty){border-top:1px solid rgba(255,255,255,.1);border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:12px}
+.ditem{display:flex;align-items:center;gap:6px;padding:6px 0;border-top:1px solid rgba(255,255,255,.07)}
+.ditem:first-child{border-top:0}
+.ditem .nm{flex:1;min-width:0;line-height:1.25;overflow-wrap:anywhere}
+.ditem .step{width:38px;height:36px;flex:none;border-radius:10px;background:var(--belt-2);color:var(--rice);font-size:22px;font-weight:800;line-height:1;display:grid;place-items:center}
+.ditem .step:active{transform:scale(.94)}
+.ditem .amt{min-width:58px;text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
+#toast{position:fixed;width:max-content;left:50%;bottom:calc(var(--bar) + var(--tab) + 18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px);
   background:var(--rice);color:var(--nori);padding:10px 16px;border-radius:12px;font-weight:800;opacity:0;
   pointer-events:none;transition:opacity .2s,transform .2s;z-index:20;max-width:90vw;text-align:center}
 #toast.show{opacity:1;transform:translate(-50%,0)}
@@ -311,7 +321,7 @@ html.kb .extras{padding-bottom:16px}
 
 <script>
 /* ============ config ============ */
-const BUILD = '11 Oct 2026 · purchase fix part 2b';   // shown on the landing page so you can tell which copy is running
+const BUILD = '12 Oct 2026 · menu items handle';   // shown on the landing page so you can tell which copy is running
 const BUILD_ID = 'dev';   // stamped with the git commit by update.sh
 const KEY = 'plateTally.v1';
 const SWATCHES = ['#e5484d','#f5a524','#f2d74a','#4cb782','#3e8ef7','#8b5cf6','#e8e2d4','#2b2b2b'];
@@ -829,14 +839,14 @@ function viewBill(){
     <div class="dock-space"></div>
     <div class="dock-scrim ${ui.dock ? 'on' : ''}" id="dock-scrim" data-act="dock-close"></div>
     <div class="dock ${ui.dock ? 'open' : ''}" id="dock">
-      <button class="dock-tab" data-act="dock-toggle" aria-expanded="${ui.dock}" aria-controls="dock-body"><span class="lbl">${ui.dock ? 'Close' : 'Add menu item'}</span><i></i></button>
+      <button class="dock-tab" data-act="dock-toggle" aria-expanded="${ui.dock}" aria-controls="dock-body"><span class="lbl">${ui.dock ? 'Close' : dockTitle(b)}</span><i></i></button>
       <div class="venue" data-act="dock-toggle">${esc(r.name)}</div>
       <div class="extras" id="dock-body" ${ui.dock ? '' : 'inert'}>
-        <label for="xdesc">Menu item</label>
+        <div class="dock-items" id="dock-items">${dockItemsHtml(b, r)}</div>
         <div class="formwrap">
           <div class="suggest" id="suggest" hidden></div>
           <form id="extra-form" autocomplete="off">
-            <input id="xdesc" type="text" enterkeyhint="next" placeholder="${isPremium() && (r.items || []).length ? 'Pick or type an item' : 'Description (optional)'}" aria-label="Description" autocomplete="off">
+            <input id="xdesc" type="text" enterkeyhint="next" placeholder="Add menu item" aria-label="Add menu item" autocomplete="off">
             <div class="amt"><span>${esc(symOf(curOf(r)))}</span><input id="xprice" type="text" inputmode="decimal" enterkeyhint="go" placeholder="${plain(0, curOf(r))}" style="padding-left:${symPad(curOf(r))}px" aria-label="Price"></div>
             <button class="add" type="submit">Add</button>
           </form>
@@ -946,7 +956,8 @@ function setDock(open){
   dock.querySelector('#dock-body').toggleAttribute('inert', !open);
   const tab = dock.querySelector('.dock-tab');
   tab.setAttribute('aria-expanded', open);
-  tab.querySelector('.lbl').textContent = open ? 'Close' : 'Add menu item';
+  const rr = rest();
+  tab.querySelector('.lbl').textContent = open ? 'Close' : (rr ? dockTitle(billOf(rr.id)) : 'Menu items');
   if (!open) { if (document.activeElement) document.activeElement.blur(); hideSuggest(); }
   syncKeyboard();
 }
@@ -979,6 +990,35 @@ function fitTotal(){
 }
 window.addEventListener('resize', fitTotal);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitTotal);
+
+/* ============ the drawer: menu items on this bill, grouped ============ */
+const itemKey = e => (e.desc || '').trim().toLowerCase() + '|' + e.price;
+const itemName = e => (e.desc || '').trim() || 'Other item';
+function itemGroups(b){
+  const groups = [], byKey = new Map();
+  for (const e of b.extras) {
+    const k = itemKey(e);
+    let g = byKey.get(k);
+    if (!g) { g = { name: itemName(e), price: e.price, qty: 0, lastId: e.id }; byKey.set(k, g); groups.push(g); }
+    g.qty++; g.lastId = e.id;
+  }
+  return groups;
+}
+const dockTitle = b => 'Menu items' + (b.extras.length ? ' (' + b.extras.length + ')' : '');
+function dockItemsHtml(b, r){
+  return itemGroups(b).map(g => `<div class="ditem">
+      <span class="nm">${g.qty} x ${esc(g.name)}</span>
+      <button type="button" class="step" data-act="item-minus" data-id="${g.lastId}" aria-label="Remove one ${esc(g.name)}">\u2212</button>
+      <button type="button" class="step" data-act="item-plus" data-id="${g.lastId}" aria-label="Add one more ${esc(g.name)}">+</button>
+      <span class="amt">${money(g.price * g.qty, r)}</span>
+    </div>`).join('');
+}
+function refreshDockItems(){
+  const r = rest(); if (!r) return;
+  const b = billOf(r.id);
+  const box = document.getElementById('dock-items'); if (box) box.innerHTML = dockItemsHtml(b, r);
+  const lbl = document.querySelector('#dock .dock-tab .lbl'); if (lbl && !ui.dock) lbl.textContent = dockTitle(b);   // the handle shows the count while closed
+}
 
 /* in-place update so taps feel instant */
 function refreshTotal(){
@@ -1119,6 +1159,19 @@ document.addEventListener('click', e => {
       const dot = document.querySelector(`.cdot[data-i="${i}"]`); if (dot) dot.style.setProperty('--c', CC.value);
       break;
     }
+    case 'item-plus': {   // one more of this item (the drawer stays open, no message)
+      const b = billOf(S.current), src = b.extras.find(x => x.id === id); if (!src) break;
+      b.extras.push({ id: uid(), price: src.price, desc: src.desc });
+      persist(); refreshDockItems(); refreshTotal(); break;
+    }
+    case 'item-minus': {  // one fewer; removing the last one says so
+      const b = billOf(S.current), i = b.extras.findIndex(x => x.id === id); if (i < 0) break;
+      const gone = b.extras[i], left = b.extras.filter(x => itemKey(x) === itemKey(gone)).length;
+      b.extras.splice(i, 1);
+      persist(); refreshDockItems(); refreshTotal();
+      if (left === 1) toast(itemName(gone) + ' removed');
+      break;
+    }
     case 'del-extra': {
       const b = billOf(S.current); b.extras = b.extras.filter(x => x.id !== id); persist(); render(); break;
     }
@@ -1211,20 +1264,19 @@ document.addEventListener('submit', e => {
   if (c === null || c === 0) { priceEl.focus(); priceEl.style.borderColor = 'var(--danger)'; return; }
   const desc = descEl.value.trim(), r = rest();
   billOf(r.id).extras.push({ id: uid(), price: c, desc });
-  // Premium: a new description is remembered on this restaurant's menu
-  let note = '';
+  // Premium: a new description is remembered on this restaurant's menu, or its saved price updated (quietly)
   if (isPremium() && desc) {
     r.items ||= [];
     const existing = r.items.find(i => i.desc.toLowerCase() === desc.toLowerCase());
-    if (!existing) { r.items.push({ id: uid(), desc, price: c }); note = `Saved "${desc}" to the ${r.name} menu`; }
-    else if (existing.price !== c) { existing.price = c; note = `Updated "${existing.desc}" to ${money(c)} on the ${r.name} menu`; }
+    if (!existing) r.items.push({ id: uid(), desc, price: c });
+    else if (existing.price !== c) existing.price = c;
   }
   persist();
   priceEl.value = ''; descEl.value = ''; priceEl.style.borderColor = '';
   setDock(false);
-  descEl.placeholder = isPremium() && (r.items || []).length ? 'Pick or type an item' : 'Description (optional)';
+  refreshDockItems();
   refreshTotal();
-  if (note) toast(note);
+  toast((desc || 'Other item') + ' added');
 });
 
 /* ---- suggestions for the description field ---- */
@@ -1324,6 +1376,8 @@ document.addEventListener('mousedown', e => { if (e.target.closest('.suggest')) 
 function toast(msg){
   let t = document.getElementById('toast');
   if (!t) { t = document.createElement('div'); t.id = 'toast'; document.body.appendChild(t); }
+  const dock = document.getElementById('dock');
+  t.style.bottom = (ui.dock && dock) ? Math.round(window.innerHeight - dock.getBoundingClientRect().top + 46) + 'px' : '';   // clear of the open drawer
   t.textContent = msg; t.className = 'show';
   clearTimeout(toast._t); toast._t = setTimeout(() => t.className = '', 2400);
 }
