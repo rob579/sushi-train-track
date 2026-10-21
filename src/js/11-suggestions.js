@@ -16,12 +16,6 @@ function otherItems(excludeRestId, takenDescs, q){
 function showSuggest(){
   const box = document.getElementById('suggest'), input = document.getElementById('xdesc');
   if (!box || !input) return;
-  if (!isPremium()) {   // free: no saved items, just a nudge while the box is empty
-    const typed = input.value.trim();
-    box.innerHTML = typed ? '' : '<button type="button" data-act="upsell" data-why="items"><span>Save items for next time</span><small class="pro-note">Premium</small></button>';
-    box.hidden = !!typed;
-    return;
-  }
   const items = rest().items || [], raw = input.value.trim(), q = raw.toLowerCase();
   const mine = items.filter(i => i.desc.toLowerCase().includes(q));
   // items from other restaurants are offered too (on focus, and narrowed as you type); they never bring a price with them
@@ -52,7 +46,6 @@ function hideSuggest(){ const b = document.getElementById('suggest'); if (b) b.h
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     if (document.getElementById('modal')) hideModal();
-    else if (document.getElementById('upgrade')) hideUpgrade();
     else if (ui.dock) setDock(false);
     return;
   }
@@ -102,6 +95,6 @@ function toast(msg){
 }
 
 render();
-refreshEntitlement();   // inside the Play app: ask Google Play whether Premium is owned
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshEntitlement(); });
+// tidy away what the old Premium unlock kept on the phone (everything is free now)
+try { ['plateTally.entitlement.v1', 'plateTally.acked.v1', 'plateTally.pending.v1'].forEach(k => localStorage.removeItem(k)); } catch {}
 

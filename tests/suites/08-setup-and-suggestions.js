@@ -34,10 +34,10 @@ exports.run = async t => {
   t.eq('own item fills the price', a.$('#xprice').value, '3.50');
   a.close();
 
-  // free edition: nothing saved, just a nudge
-  a = await open({ search: '?edition=free', state: stateWith([sample()]) });
+  // the Play app saves menu items and offers suggestions just like the website
+  a = await open({ search: '?app=play', state: stateWith([withItems('r1', 'Kura', [['Green tea', 300]])]) });
   a.ev("go('bill')"); a.act('dock-toggle'); focus(a, a.$('#xdesc'));
-  t.check('free shows the Premium nudge', a.text('#suggest').includes('Save items for next time'), a.text('#suggest'));
+  t.check('play app offers saved items', a.$$('#suggest [data-act="pick-item"]').length === 1, a.text('#suggest'));
   a.close();
 
   // ---- setup screen ----

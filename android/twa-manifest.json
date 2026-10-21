@@ -28,7 +28,7 @@
   "isMetaQuest": false,
   "signingKey": { "path": "./android.keystore", "alias": "upload" },
   "alphaDependencies": { "enabled": true },
-  "features": { "playBilling": { "enabled": true } },
+  "features": { "playBilling": { "enabled": false } },
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli"
 }

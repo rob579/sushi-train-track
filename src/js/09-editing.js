@@ -5,7 +5,7 @@ function startDraft(id){
     ? { id: r.id, isNew: false, name: r.name, currency: curOf(r),
       plates: r.plates.map(p => ({ id: p.id, colour: p.colour, price: plain(p.price, curOf(r)) })),
       items: (r.items || []).map(it => ({ id: it.id, desc: it.desc, price: plain(it.price, curOf(r)) })) }
-    : { id: uid(), isNew: true, name: '', currency: (isPremium() && S.lastCurrency) || defaultCurrency(),
+    : { id: uid(), isNew: true, name: '', currency: S.lastCurrency || defaultCurrency(),
       plates: [{ id: uid(), colour: SWATCHES[0], price: '' }], items: [] };
   ui.prevView = ui.view;
   go('edit');
@@ -13,7 +13,6 @@ function startDraft(id){
 function saveDraft(){
   const d = ui.draft;
   if (!d.name.trim()) { alert('Give the restaurant a name.'); return; }
-  if (d.isNew && !isPremium() && S.restaurants.length >= FREE_RESTAURANTS) { showUpgrade('restaurants'); return; }
   const plates = [];
   for (const p of d.plates) {
     if (p.price.trim() === '') continue;               // ignore blank rows

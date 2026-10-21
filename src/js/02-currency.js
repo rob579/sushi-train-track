@@ -72,10 +72,6 @@ function toCents(v, cur){
   if (!isFinite(n) || n < 0) return null;
   return digits === 0 ? Math.round(n) * 100 : Math.round(n * 100);
 }
-function currencyLabel(c){
-  let n = ''; try { n = new Intl.DisplayNames([LOCALE], { type: 'currency' }).of(c); } catch {}
-  return c + (n && n !== c ? ' · ' + n : '');
-}
 function currencyOptions(sel){
   let names = null;
   try { names = new Intl.DisplayNames([LOCALE], { type: 'currency' }); } catch {}
@@ -95,7 +91,6 @@ function inkFor(hex){
 }
 const ICON = {
   menu:'<svg viewBox="0 0 24 24" style="fill:var(--rice);stroke:none"><circle cx="12" cy="5" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="12" cy="19" r="2.2"/></svg>',
-  lock:'<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
   cup:'<svg viewBox="0 0 24 24"><path d="M5 10h11v4.5a4.5 4.5 0 0 1-4.5 4.5h-2A4.5 4.5 0 0 1 5 14.5z"/><path d="M16 12h1.4a2.3 2.3 0 0 1 0 4.6H16"/><path d="M8.5 4.5c0 1.4 1.4 1.4 1.4 2.8M12.5 4.5c0 1.4 1.4 1.4 1.4 2.8"/></svg>',
   back:'<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
   pencil:'<svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/></svg>',

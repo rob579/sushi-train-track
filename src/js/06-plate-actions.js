@@ -17,7 +17,6 @@ function saveNewPlate(){
   const c = toCents(input.value, curOf(r));
   if (c === null) { err.textContent = 'Enter the price, for example ' + plain(450, curOf(r)) + '.'; input.focus(); return; }
   if (r.plates.some(p => p.colour.toLowerCase() === CC.value)) { err.textContent = 'You already have a plate in this colour. Pick a different one.'; return; }
-  if (!isPremium() && r.plates.length >= FREE_PLATES) { hideModal(); showUpgrade('plates'); return; }
   r.plates.push({ id: uid(), colour: CC.value, price: c });
   persist(); hideModal(); render(); toast('Plate added');
 }

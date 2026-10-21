@@ -1,6 +1,6 @@
 # Sushi Train Track: project notes
 
-A mobile-first web app for totalling spend at a conveyor-belt sushi restaurant. Tap coloured plates, see the running total, add drinks and extras, keep several restaurants. Delivered as a website/PWA (`sushi.robsofficetips.com`) and as an Android app on Google Play (a thin wrapper around the same site, with a one-time Premium unlock). No ads, no accounts, nothing leaves the phone except the purchase receipt.
+A mobile-first web app for totalling spend at a conveyor-belt sushi restaurant. Tap coloured plates, see the running total, add drinks and extras, keep several restaurants. Delivered as a website/PWA (`sushi.robsofficetips.com`) and as an Android app on Google Play (a thin wrapper around the same site). Everything is free: no ads, no purchases, no accounts, nothing leaves the phone.
 
 The words we use for parts of the screen are in [`docs/GLOSSARY.md`](docs/GLOSSARY.md).
 
@@ -22,9 +22,8 @@ An Android re-upload is only needed when `android/twa-manifest.json` changes. Ch
 |---|---|
 | `src/head.html`, `src/body.html`, `src/tail.html` | The page skeleton |
 | `src/styles.css` | All the styling |
-| `src/js/01 … 12-*.js` | The app's code in topic order, joined by file name: config + state, currency, editions, purchases, dialogs + colour chooser, plate actions, views, render + drawer, editing, events, suggestions, app update |
+| `src/js/01 … 12-*.js` | The app's code in topic order, joined by file name: config + state, currency, (03 and 04 are gone: they were editions and purchases), dialogs + colour chooser, plate actions, views, render + drawer, editing, events, suggestions, app update |
 | `sw.js` | Service worker (offline use, update banner). Stamped with the version at build time |
-| `functions/api/acknowledge.js` | Cloudflare function that acknowledges purchases with Google. Must stay at the top level |
 | `.well-known/assetlinks.json` | Links the website to the Android app. **Contains the real signing fingerprints. Never overwrite it with a placeholder.** Must stay at the top level |
 | `privacy.html` | The privacy policy page (your real one) |
 | `build.sh` | Builds `dist/` (joins `src/` into one `index.html`, stamps the version). Cloudflare runs it on every push |
@@ -52,23 +51,20 @@ The first run installs a small test library into `~/.cache/sushi-test-deps` (out
 |---|---|
 | currency | typing amounts in any style, symbols, decimals |
 | flows | first-run setup, tapping plates, totals, itemised bill, saving, editing, validation |
-| editions | website / free / premium / Play app limits and locks |
+| free-for-all | website and Play app both have everything; old purchase records tidied away |
 | drawer | the drawer: handle title, add, group, + and −, messages |
 | remove | remove mode, long-press confirm, add a plate |
-| billing | Play purchase, retry, refund, cancel, offline, restore |
-| acknowledge-function | the server function, against a pretend Google |
 | setup-and-suggestions | suggestions from other restaurants, price tidying, Enter/Next, colour chooser |
 | browser | service worker, offline, Cloudflare-style redirects, assetlinks, phone layout |
 
 ## Decisions already made
 
-- Free: 1 restaurant, 5 plates. Premium (one-time, about A$1.99): unlimited restaurants and plates, saved menu items, currency per restaurant, restaurant picker with bills in progress. The website is fully unlocked.
-- Over-limit things are locked, never deleted.
+- Everything is free for everyone (decided 21 Oct 2026). The Free/Premium split, the Play Billing purchase and the acknowledge function were removed in this release. The old Play product ID was `premium_unlock` (deactivated, not reusable).
+- Things that were locked under Free were never deleted, so extra restaurants, plates and menu items from that time simply become usable again.
 - Prices are stored in hundredths of the main unit (yen 450 is stored as 45000).
-- Play product ID `premium_unlock`, package `com.robsofficetips.sushitraintrack`.
-- Purchases are acknowledged by our server function, because the browser Billing API cannot do it for one-time products. Failures are queued and retried.
+- Package `com.robsofficetips.sushitraintrack`.
 - UI text is English only for now (translation was offered, not requested).
-- The git repo is private for now. There are no secrets in it (the Google key is a Cloudflare secret, the Android signing key is never committed).
+- The git repo is public (github.com/rob579/sushi-train-track). There are no secrets in it (the Android signing key is never committed).
 
 ## Habits that save time
 

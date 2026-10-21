@@ -8,22 +8,16 @@ document.addEventListener('click', e => {
   switch (act) {
     case 'open': {
       const r = S.restaurants.find(x => x.id === id);
-      if (!r || (!isPremium() && S.restaurants.indexOf(r) >= FREE_RESTAURANTS)) { showUpgrade('restaurants'); break; }
+      if (!r) break;
       S.current = id; persist(); go('bill'); break;
     }
     case 'pick': go('pick'); break;
     case 'bill': go('bill'); break;
-    case 'new':
-      if (!isPremium() && S.restaurants.length >= FREE_RESTAURANTS) { if (ui.menu) { ui.menu = false; render(); } showUpgrade('restaurants'); break; }
-      startDraft(null); break;
+    case 'new': startDraft(null); break;
     case 'edit': startDraft(id); break;
     case 'edit-back': ui.draft = null; go(ui.prevView === 'bill' && rest() ? 'bill' : 'pick'); break;
     case 'dock-toggle': setDock(!ui.dock); break;
     case 'dock-close': setDock(false); break;
-    case 'upsell': if (ui.menu) { ui.menu = false; render(); } showUpgrade(t.dataset.why); break;
-    case 'up-close': hideUpgrade(); break;
-    case 'up-buy': buyPremium(); break;
-    case 'up-restore': restorePurchase(); break;
     case 'menu': ui.menu = true; render(); break;
     case 'menu-close': ui.menu = false; render(); break;
     case 'itemised': go('itemised'); break;
@@ -48,9 +42,7 @@ document.addEventListener('click', e => {
       }
       break;
     }
-    case 'add-plate-modal':
-      if (!isPremium() && rest().plates.length >= FREE_PLATES) { showUpgrade('plates'); break; }
-      openAddPlate(); break;
+    case 'add-plate-modal': openAddPlate(); break;
     case 'np-save': saveNewPlate(); break;
     case 'm-close': hideModal(); break;
     case 'm-remove': {
@@ -92,7 +84,6 @@ document.addEventListener('click', e => {
       const b = billOf(S.current); b.extras = b.extras.filter(x => x.id !== id); persist(); render(); break;
     }
     case 'add-plate':
-      if (!isPremium() && ui.draft.plates.length >= FREE_PLATES) { showUpgrade('plates'); break; }
       ui.draft.plates.push({ id: uid(), colour: SWATCHES[ui.draft.plates.length % SWATCHES.length], price: '' });
       render();
       { const inputs = document.querySelectorAll('[data-field="price"]'); inputs[inputs.length - 1]?.focus(); }
@@ -180,8 +171,8 @@ document.addEventListener('submit', e => {
   if (c === null || c === 0) { priceEl.focus(); priceEl.style.borderColor = 'var(--danger)'; return; }
   const desc = descEl.value.trim(), r = rest();
   billOf(r.id).extras.push({ id: uid(), price: c, desc });
-  // Premium: a new description is remembered on this restaurant's menu, or its saved price updated (quietly)
-  if (isPremium() && desc) {
+  // a new description is remembered on this restaurant's menu, or its saved price updated (quietly)
+  if (desc) {
     r.items ||= [];
     const existing = r.items.find(i => i.desc.toLowerCase() === desc.toLowerCase());
     if (!existing) r.items.push({ id: uid(), desc, price: c });

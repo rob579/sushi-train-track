@@ -12,6 +12,9 @@ This guide takes you from the files in this folder to a live website on Cloudfla
 | C | Point `sushi.robsofficetips.com` at Cloudflare (Enom) | 15 min, plus waiting |
 | D | Build the Android app file | 45 min the first time |
 | E | Google Play Console: upload, test, publish | an evening, then 14 days of testing |
+| G | Going fully free (October 2026): retiring Premium | 30 min |
+
+**21 Oct 2026: the app is now free for everyone.** Premium, Play Billing and the purchase acknowledgement were removed in this release. Parts E4, E5 and F below are kept only as history; do not follow them. Part G says what to do instead.
 
 ---
 
@@ -21,7 +24,6 @@ This guide takes you from the files in this folder to a live website on Cloudfla
 |---|---|
 | `src/` | The app's pages and code, in small pieces. `build.sh` joins them into the single `index.html` that gets deployed |
 | `sw.js`, `manifest.webmanifest`, `fonts/`, icons | The rest of the app |
-| `functions/` | The small server function that acknowledges purchases (Part F). Must stay at the top level for Cloudflare |
 | `tests/` | The automatic checks. Run them with `npm test` (see `PROJECT-NOTES.md`) |
 | `docs/`, `tools/` | This guide and the glossary; helper scripts (`tools/make-zip.sh` packs the project into one zip) |
 | `privacy.html` | Your privacy policy page (Play requires one) |
@@ -203,13 +205,13 @@ Play Console menus get renamed from time to time. Use the search box at the top 
    Keep the colons and the quotes. If you used a different package name, change `package_name` too.
 3. Commit and push. About a minute later check `https://sushi.robsofficetips.com/.well-known/assetlinks.json` shows your fingerprints.
 
-### 4. Create the Premium product
+### 4. Create the Premium product (retired: see Part G)
 
 1. **Monetize with Play**, then **Products**, then **One-time products** (Google renamed "In-app products"), then **Create one-time product**. (Play may want an app version uploaded first, which you did in step 2.)
 2. Use the values in `store/listing.md`. **The product ID must be exactly `premium_unlock`**, because the app asks Play for that name. The form also asks for a **purchase option ID**. Use `buy-premium`. It is only an internal label (lowercase letters, numbers and hyphens), users never see it, and the app does not use it. Leave the purchase type as **Buy**, and keep the option marked as backwards compatible (the first Buy option is marked that way automatically).
 3. Set your price and make the product **Active**.
 
-### 5. Let yourself test purchases for free
+### 5. Let yourself test purchases for free (retired: see Part G)
 
 In Play Console **Settings**, then **License testing**, add your own Gmail address. Purchases made by that account are free test purchases.
 
@@ -245,7 +247,7 @@ Your friends and family beta can run on the website the whole time. It does not 
 
 ---
 
-## Part F: purchase acknowledgement (needed before real sales)
+## Part F: purchase acknowledgement (retired: see Part G)
 
 Google automatically refunds any purchase that the developer never "acknowledges": after about 3 days for real purchases, and after about 3 minutes for test purchases. The browser version of Google's billing API cannot do this for a one-time purchase, so a small function on your Cloudflare site (`functions/api/acknowledge.js`, already in the pack) does it through Google's Play Developer API. It also checks that the purchase is genuine. If you skip this part, every sale would be refunded.
 
@@ -282,12 +284,26 @@ If acknowledging fails for any reason (no signal, the setup not finished), the a
 
 ---
 
+## Part G: going fully free (October 2026)
+
+Do these in order. The website change goes first, so that nobody can be offered a purchase once the product is switched off.
+
+1. **Push the website.** Commit and push version `21 Oct 2026 · free for everyone`. A minute later the website and the Play app (it loads the same site) have everything unlocked and never ask Google Play about purchases again. Phones that had Premium keep all their data; the app quietly removes its old purchase records.
+2. **New Android wrapper without Billing.** In your `sushi-android` folder, open `twa-manifest.json` and change `"playBilling": { "enabled": true }` to `false` (the copy in `android/` already has this). Run `bubblewrap update`, then `bubblewrap build` (it adds 1 to the version number). Upload the new `.aab` as a new release on the track you are using (closed testing now, production later), with the release notes from `store/listing.md`. This removes the Billing permission from the app.
+3. **Switch off the product.** Play Console, **Monetize with Play**, **Products**, **One-time products**, open `premium_unlock`. Open its purchase option `buy-premium` (the arrow on its row) and click **Deactivate**, then confirm. Google does not let you delete an active product or reuse its ID; deactivated is the end state.
+4. **People who already bought it.** Your licence testers' purchases were free test purchases, so nothing is owed. If anyone paid real money, you can refund them in **Order management** (find the order, then **Refund**). Either way they lose nothing in the app.
+5. **Store listing.** **Grow users**, **Store presence**, **Main store listing**: paste the new full description from `store/listing.md`. Screenshots are unchanged.
+6. **App content.** Open **Data safety** and remove anything you declared about purchase history or financial information. Your privacy policy address is the same; its wording has been updated.
+7. **Tidy up the acknowledgement setup (optional, after a week or so).** In Cloudflare Pages, **Settings**, **Variables and Secrets**: delete `GOOGLE_SERVICE_ACCOUNT_JSON`. In Play Console, **Users and permissions**: remove the `play-acknowledge@...` service account. In Google Cloud: delete that service account (or the whole project if you made it only for this). The payments profile can stay; it costs nothing.
+8. **Check the listing.** Once the new release is live, look at the app's Play page on a phone. If it still says "Contains in-app purchases" a few days later, ask Play Console support to clear it. (I could not confirm exactly what Google uses to show that label.)
+
+---
+
 ## Day to day afterwards
 
 - **Changing the app itself** (features, fixes, wording): edit, commit, push. About a minute later it is live on the website, and the Play app picks it up the next time it opens (people see a "New version ready" prompt if the app was already open). No Play review, no new upload.
 - **Changing the Android wrapper** (name, icon, package settings, Billing settings, and the yearly Android version requirement): in your `sushi-android` folder run `bubblewrap update`, then `bubblewrap build`, and upload the new `.aab` to a new release. It adds 1 to the version number for you. Plan for one wrapper update about once a year.
 - **Keep the domain.** The app is tied to `sushi.robsofficetips.com`. If you ever change it, existing installs would need a new wrapper release.
-- **Try the editions in a browser:** add `?edition=free` or `?edition=premium` to the website address. (It is ignored inside the Play app, so nobody can unlock Premium with a link.)
 
 ---
 
@@ -296,8 +312,6 @@ If acknowledging fails for any reason (no signal, the setup not finished), the a
 | Problem | Likely cause and fix |
 |---|---|
 | App opens with a browser address bar | The website and app are not linked. Check `/.well-known/assetlinks.json` is live, contains the Play app signing fingerprint, and has the right package name. Android caches the check, so uninstall and reinstall the app after fixing. |
-| "Purchases are not available right now" | The app was installed from an APK instead of Play; or the product is not **Active**; or the link above is not working; or Chrome on the phone is very old. |
-| Unlock does nothing in a normal browser | Expected. On the website everything is already unlocked, and in `?edition=free` preview mode the button only simulates a purchase. |
 | Bubblewrap says "Play Billing requires enableNotifications" | Make sure `enableNotifications` is `true` in your `twa-manifest.json` (it is in mine). |
 | `bubblewrap update` says it failed to download the web manifest or icon | The website is not live at the final address yet (Part C). |
 | `bubblewrap build` fails with "minSdkVersion 21 cannot be smaller than version 23 declared in library ... billing" | In `twa-manifest.json` set `"minSdkVersion": 24` (Play Billing needs Android 6.0 or newer, and Play's automatic protection needs 7.0 or newer), then run `bubblewrap update --skipVersionUpgrade` and `bubblewrap build` again. The long list of `at org.gradle...` lines in a build error can be ignored; the useful part is the first few lines under ERROR and "What went wrong". |
@@ -306,8 +320,6 @@ If acknowledging fails for any reason (no signal, the setup not finished), the a
 | Play rejects the upload because of the target API level | Part D step 5: set `targetSdkVersion 36`, rebuild. |
 | Cloudflare build fails or says no files uploaded | Build command must be `sh build.sh` and output directory `dist`. Open the build log. If it says `build.sh` is missing, the files are in a subfolder; set Root directory to that folder. |
 | Cloudflare custom domain stays on "Verifying" | The `sushi` CNAME row in Enom is wrong or has not spread yet. |
-| The app suddenly shows a browser address bar (a bar with an X, the web address, a share icon) and Unlock says "Purchases are not available right now", but it works on some phones | These are one problem. The bar means Android could not confirm that the website and the app belong together (Digital Asset Links), and Google's purchase service only works when it can. Most likely `.well-known/assetlinks.json` on the live site has placeholder or wrong fingerprints (for example after copying a pack over the top of your own file). Open `https://sushi.robsofficetips.com/.well-known/assetlinks.json` in a browser: it must show your package name and two real SHA-256 fingerprints (Play's app signing key, and your upload key), with no `REPLACE_WITH` in it. To see what Google itself sees, open `https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://sushi.robsofficetips.com&relation=delegate_permission/common.handle_all_urls`. Fix the file, push, wait for Cloudflare, then uninstall and reinstall the app on each affected phone, because phones that had already confirmed the link keep working from memory while others do not. |
-| Google's payment screen leaves the app dimmed after buying, and Play emails "test purchase was cancelled because it was not acknowledged" | The purchase was never acknowledged. This was a bug in the first version of the purchase code (it used a browser call that does not exist any more) and is fixed, but acknowledging needs Part F to be set up. |
 | Friends see an old version | Open the app once while online. A "New version ready" prompt appears, or reopen it. |
 | "This site can't be reached" (`ERR_FAILED`) on the main address, but `/privacy` still works | A phone or browser is stuck on an old service worker. Reload once or twice and it replaces itself. On your own computer you can clear it at once: DevTools (Cmd+Option+I), **Application**, **Service workers**, **Unregister**, then reload. A private window also bypasses it. |
 

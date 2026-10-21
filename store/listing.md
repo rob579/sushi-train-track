@@ -16,25 +16,20 @@ Sushi Train Track keeps a running total while you eat at a sushi train (kaiten-z
 
 Set up your restaurant once: choose a colour and a price for each plate. Then, every time you take a plate off the belt, tap its colour. The total at the top goes up straight away.
 
-FREE
+EVERYTHING IS FREE
 • Tap a plate to add it, with a big running total at the top
-• Colour-coded plates with the price shown on each one
+• Colour-coded plates with the price shown on each one, as many as your restaurant has
 • Took one by mistake? Remove-a-plate mode takes it off again
 • An itemised bill showing every plate colour and the total
 • Add drinks and other extras with a price and a short description
+• Saved menu items: pick your usual drink in one tap, with suggestions from your other restaurants
+• As many restaurants as you like, each with its own bill and its own currency
+• A quick restaurant picker that shows your bills in progress
 • Your bill is saved on your phone, so it is still there if you close the app
-• One restaurant with up to 5 plate colours
 • Works offline, on phones and tablets
 
-PREMIUM (one-time purchase, no subscription)
-• As many restaurants as you like, each with its own bill
-• More than 5 plates per restaurant
-• Saved menu items: pick your usual drink in one tap, with suggestions from your other restaurants
-• A currency for each restaurant, with amounts shown in your phone's own style
-• A quick restaurant picker that shows your bills in progress
-
 PRIVATE AND SIMPLE
-• No ads, no accounts and no tracking
+• No ads, no in-app purchases, no accounts and no tracking
 • Everything you enter stays on your phone
 
 Perfect for solo diners, families, and anyone who has ever lost count of the plates.
@@ -50,18 +45,6 @@ Perfect for solo diners, families, and anyone who has ever lost count of the pla
 **Privacy policy URL**: https://sushi.robsofficetips.com/privacy
 **Default language**: English (Australia)
 
-## One-time product (Monetize with Play > Products > One-time products)
-
-| Field | Value |
-|---|---|
-| Product ID | `premium_unlock` (must match exactly, and cannot be changed afterwards) |
-| Purchase option ID | `buy-premium` (an internal label only; lowercase letters, numbers and hyphens) |
-| Purchase type | Buy (keep it marked backwards compatible, which the first Buy option is by default) |
-| Name | Premium |
-| Description | Unlock unlimited restaurants, more than 5 plates, saved menu items and a currency for each restaurant. One-time purchase. |
-| Price | [your choice, for example A$4.99. Play offers to convert to other currencies] |
-| Status | Active |
-
 ## Policy forms (Dashboard > "Set up your app")
 
 | Form | Suggested answer |
@@ -73,9 +56,17 @@ Perfect for solo diners, families, and anyone who has ever lost count of the pla
 | News app / COVID-19 / Government / Health / Financial features | No / No / No / No / None |
 | Data safety | Does the app collect or share any user data? No. Is data encrypted in transit? Yes (the app is loaded over HTTPS). See the note below. |
 
-**Data safety note.** The app itself collects nothing: restaurants, prices and bills stay on the phone, there are no accounts, no analytics and no ads, and the font is bundled so there are no third-party requests. The only network traffic is loading the app's own files from your Cloudflare-hosted site, which (like any web host) sees IP addresses, and the purchase check. When someone buys Premium, the app sends the purchase receipt (a code from Google Play) to your own `/api/acknowledge` function on Cloudflare, which uses it only to confirm and acknowledge the purchase with Google. It is not stored. Google's Data safety definitions treat data that is only handled briefly to serve a request differently from data that is collected, so read those definitions on the form and answer the way you are comfortable with. The privacy policy says this in plain words. The form is a declaration you make, so read Google's definitions on the form itself and answer the way you are comfortable with. If you later add analytics, accounts or cloud backup, this answer and the privacy policy must change.
+**Data safety note.** The app collects nothing: restaurants, prices and bills stay on the phone, there are no accounts, no analytics, no ads and no purchases, and the font is bundled so there are no third-party requests. The only network traffic is loading the app's own files from your Cloudflare-hosted site, which (like any web host) sees IP addresses. The form is a declaration you make, so read Google's definitions on the form itself and answer the way you are comfortable with. If you later add analytics, accounts or cloud backup, this answer and the privacy policy must change.
 
-## Release notes (first release)
+## Release notes
+
+Everything-free release (21 Oct 2026):
+
+```
+Everything is now free: as many restaurants and plates as you like, saved menu items and a currency for each restaurant. No purchases, no ads.
+```
+
+First release:
 
 ```
 First release. Tap each plate you take and watch your sushi train bill add up.

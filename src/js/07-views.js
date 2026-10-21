@@ -62,7 +62,7 @@ function viewPick(){
       <p class="intro">Add the sushi train you're at, set the colour and price of each plate, then tap as you grab them.</p>
       <button class="btn primary big" data-act="new">Get started</button>
     </div>`;
-  } else if (isPremium()) {
+  } else {
     const opts = S.restaurants.map(r => {
       const t = totalOf(r);
       return `<option value="${r.id}">${esc(r.name)}${t ? ` · ${money(t, r)} so far` : ''}</option>`;
@@ -77,18 +77,8 @@ function viewPick(){
         </select>
       </div>
     </div>`;
-  } else {
-    // free: one restaurant, no picker
-    const first = S.restaurants[0], more = S.restaurants.length - FREE_RESTAURANTS;
-    picker = `<div class="picker">
-      <div class="pick-label">Your restaurant</div>
-      <button class="btn primary big" data-act="open" data-id="${first.id}">${esc(first.name)}</button>
-      <button class="btn ghost" data-act="upsell" data-why="restaurants">${more > 0
-        ? `${more} more saved. Unlock Premium to use ${more === 1 ? 'it' : 'them'}`
-        : 'Want more than one restaurant? Unlock Premium'}</button>
-    </div>`;
   }
-  return `<div class="screen narrow"><div class="scroll"><div class="landing">${hero}<div>${picker}<div class="ver">Build ${BUILD}${BUILD_ID !== 'dev' ? ' · ' + BUILD_ID : ''} · ${editionLabel()}</div></div></div></div></div>`;
+  return `<div class="screen narrow"><div class="scroll"><div class="landing">${hero}<div>${picker}<div class="ver">Build ${BUILD}${BUILD_ID !== 'dev' ? ' · ' + BUILD_ID : ''}</div></div></div></div></div>`;
 }
 
 function viewBill(){
@@ -96,11 +86,6 @@ function viewBill(){
   const plates = r.plates.map((p, idx) => {
     const n = b.counts[p.id] || 0;
     const lbl = money(p.price, r), pf = lbl.length <= 6 ? 10.5 : lbl.length === 7 ? 9.5 : lbl.length <= 9 ? 8 : 6.8;   // longer labels get smaller type
-    if (!isPremium() && idx >= FREE_PLATES) {   // free: only the first plates work, the rest are locked (never deleted)
-      return `<button class="plate-btn locked" data-act="upsell" data-why="plates" aria-label="${esc(p.colour)} plate, ${lbl}. Premium feature">
-      <div class="plate" style="--c:${p.colour};--ink:${inkFor(p.colour)};--pf:${pf}"><span class="n lock">${ICON.lock}</span><span class="price">${lbl}</span></div>
-    </button>`;
-    }
     return `<button class="plate-btn ${n ? 'has' : ''}" data-act="plate" data-id="${p.id}" aria-label="${esc(p.colour)} plate, ${lbl}, ${n} taken">
       <div class="plate" data-plate="${p.id}" style="--c:${p.colour};--ink:${inkFor(p.colour)};--pf:${pf}"><span class="n ${n ? '' : 'zero'}">${n}</span><span class="price">${lbl}</span></div>
     </button>`;
@@ -135,8 +120,8 @@ function viewBill(){
         <button data-act="start-remove">Remove a plate</button>
         <hr>
         <button data-act="edit" data-id="${r.id}">Edit this restaurant</button>
-        <button data-act="new">Add a new restaurant${isPremium() ? '' : '<span class="pro">Premium</span>'}</button>
-        ${isPremium() ? '<button data-act="pick">Switch restaurant</button>' : '<hr><button class="up-entry" data-act="upsell" data-why="generic">Unlock Premium</button>'}
+        <button data-act="new">Add a new restaurant</button>
+        <button data-act="pick">Switch restaurant</button>
         <hr>
         <button class="danger" data-act="reset">Start a new bill</button>
       </div>` : ''}
@@ -184,20 +169,16 @@ function viewEdit(){
       <div class="field-label" style="margin-top:0">Restaurant name</div>
       <input type="text" enterkeyhint="next" value="${esc(d.name)}" placeholder="e.g. Sushi Hub" data-field="name" id="rname">
       <div class="field-label">Currency</div>
-      ${isPremium()
-        ? `<div class="select-wrap"><select id="cur-select" aria-label="Currency">${currencyOptions(cur)}</select></div>
-      ${d.isNew ? '' : '<p class="muted" style="margin:8px 2px 0;font-size:14px">Changing the currency does not convert the prices.</p>'}`
-        : `<button class="select-like" data-act="upsell" data-why="currency"><span>${esc(currencyLabel(cur))}</span><span class="pro">Premium</span></button>`}
+      <div class="select-wrap"><select id="cur-select" aria-label="Currency">${currencyOptions(cur)}</select></div>
+      ${d.isNew ? '' : '<p class="muted" style="margin:8px 2px 0;font-size:14px">Changing the currency does not convert the prices.</p>'}
       <div class="field-label">Plates</div>
-      <p class="muted" style="margin:-4px 0 12px;font-size:14px">Tap a circle to change the plate colour, then enter its price.${isPremium() ? '' : ` The free version has up to ${FREE_PLATES} plates.`}</p>
+      <p class="muted" style="margin:-4px 0 12px;font-size:14px">Tap a circle to change the plate colour, then enter its price.</p>
       ${rows}
-      <button class="btn" style="width:100%" data-act="add-plate">Add a plate${!isPremium() && d.plates.length >= FREE_PLATES ? '<span class="pro">Premium</span>' : ''}</button>
-      <div class="field-label">Menu items${isPremium() ? '' : '<span class="pro">Premium</span>'}</div>
-      ${isPremium() ? `<p class="muted" style="margin:-4px 0 12px;font-size:14px">Drinks and other extras with set prices. You can pick these when adding an item to a bill.</p>
+      <button class="btn" style="width:100%" data-act="add-plate">Add a plate</button>
+      <div class="field-label">Menu items</div>
+      <p class="muted" style="margin:-4px 0 12px;font-size:14px">Drinks and other extras with set prices. You can pick these when adding an item to a bill.</p>
       ${irows}
-      <button class="btn" style="width:100%" data-act="add-item">Add a menu item</button>`
-      : `<p class="muted" style="margin:-4px 0 12px;font-size:14px">Save drinks and other extras with set prices, then pick them in one tap.${d.items.length ? ` Your ${d.items.length} saved item${d.items.length === 1 ? ' is' : 's are'} kept safe and will be back when you unlock Premium.` : ''}</p>
-      <button class="btn" style="width:100%" data-act="upsell" data-why="items">Unlock Premium</button>`}
+      <button class="btn" style="width:100%" data-act="add-item">Add a menu item</button>
       ${d.isNew ? '' : '<button class="btn danger" style="width:100%;margin-top:28px" data-act="del-rest">Delete this restaurant</button>'}
     </div>
     <div class="footer-actions">

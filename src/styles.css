@@ -173,35 +173,6 @@ html.kb .extras{padding-bottom:16px}
   font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.45);white-space:nowrap}
 #update-banner button{border-radius:10px;padding:8px 12px;font-weight:800;background:rgba(0,0,0,.16)}
 #update-banner .x{padding:8px 10px;font-size:18px;line-height:1}
-/* ---------- editions: premium pill, locks, upgrade sheet ---------- */
-.pro{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;background:var(--wasabi);color:#1c2a0a;
-  font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;vertical-align:middle;white-space:nowrap}
-.btn.ghost{background:transparent;color:var(--mute);width:100%;margin-top:10px;font-weight:500;font-size:15px}
-.select-like{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;
-  background:var(--belt);border:2px solid var(--belt-2);border-radius:16px;padding:17px 18px;font-size:19px;color:var(--mute)}
-.menu .up-entry{color:var(--wasabi);font-weight:800}
-.suggest small.pro-note{color:var(--wasabi)}
-.plate-btn.locked .plate{filter:grayscale(.8) brightness(.72)}
-.plate .n.lock svg{width:40px;height:40px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.75}
-@supports (height:1cqh){ .plate .n.lock svg{width:30cqw;height:30cqw} }
-#upgrade{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center}
-#upgrade .up-scrim{position:absolute;inset:0;background:rgba(0,0,0,.6)}
-#upgrade .up-card{position:relative;width:min(520px,100%);max-height:92%;overflow-y:auto;background:var(--belt);
-  border-radius:24px 24px 0 0;padding:24px 20px calc(20px + env(safe-area-inset-bottom,0px));
-  box-shadow:0 -12px 40px rgba(0,0,0,.5);animation:upIn .28s ease-out}
-@keyframes upIn{from{transform:translateY(40px);opacity:0}}
-#upgrade h2{margin:0 0 6px;font-size:26px;font-weight:800}
-#upgrade .up-why{margin:0 0 14px;color:var(--wasabi);font-weight:500;line-height:1.4}
-#upgrade ul{list-style:none;margin:0 0 14px;padding:0}
-#upgrade li{display:flex;gap:10px;align-items:flex-start;padding:7px 0;line-height:1.35}
-#upgrade li::before{content:'';flex:none;width:7px;height:12px;margin:3px 4px 0 3px;border:solid var(--wasabi);border-width:0 3px 3px 0;transform:rotate(40deg)}
-#upgrade .small{font-size:14px;margin:8px 2px}
-#upgrade .up-msg{min-height:20px;margin:6px 2px;color:var(--danger);font-size:14px}
-#upgrade .up-msg.ok{color:var(--price)}
-#upgrade .up-row{display:flex;gap:10px;margin-top:10px}
-#upgrade .up-row .btn{flex:1}
-#upgrade .btn[disabled]{opacity:.6;pointer-events:none}
-@media (prefers-reduced-motion:reduce){#upgrade .up-card{animation:none}}
 /* itemised bill: a quiet icon for extras (not a button) */
 .line .chip.extra{background:none;box-shadow:none;color:var(--mute);display:grid;place-items:center}
 .line .chip.extra svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
