@@ -1,6 +1,5 @@
 dist/
 node_modules/
 .DS_Store
-# never commit signing keys
 *.keystore
 *.jks

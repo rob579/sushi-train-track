@@ -1,0 +1,13 @@
+{
+  "name": "sushi-train-track",
+  "private": true,
+  "description": "Sushi Train Track. Run the checks with: npm test",
+  "scripts": {
+    "build": "sh build.sh",
+    "test": "node tests/run.js",
+    "test:quick": "node tests/run.js --quick"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.1"
+  }
+}

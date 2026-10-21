@@ -15,7 +15,10 @@ cp .well-known/assetlinks.json dist/.well-known/
 # the same file at a plain address too, plus a rewrite, in case a host does not serve hidden folders
 cp .well-known/assetlinks.json dist/assetlinks.json
 printf '/.well-known/assetlinks.json /assetlinks.json 200\n' > dist/_redirects
-sed "s/const BUILD_ID = '[^']*'/const BUILD_ID = '$VERSION'/" index.html > dist/index.html
+# the page is kept as small source pieces in src/ and joined into the single index.html that gets deployed
+sh tools/assemble.sh dist/index.assembled.html
+sed "s/const BUILD_ID = '[^']*'/const BUILD_ID = '$VERSION'/" dist/index.assembled.html > dist/index.html
+rm dist/index.assembled.html
 sed "s/const VERSION = '[^']*'/const VERSION = '$VERSION'/" sw.js > dist/sw.js
 
 echo "Built version $VERSION into dist/"

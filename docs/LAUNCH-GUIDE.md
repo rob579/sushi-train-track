@@ -19,7 +19,11 @@ This guide takes you from the files in this folder to a live website on Cloudfla
 
 | File or folder | What it is |
 |---|---|
-| `index.html`, `sw.js`, `manifest.webmanifest`, `fonts/`, icons | The app itself |
+| `src/` | The app's pages and code, in small pieces. `build.sh` joins them into the single `index.html` that gets deployed |
+| `sw.js`, `manifest.webmanifest`, `fonts/`, icons | The rest of the app |
+| `functions/` | The small server function that acknowledges purchases (Part F). Must stay at the top level for Cloudflare |
+| `tests/` | The automatic checks. Run them with `npm test` (see `PROJECT-NOTES.md`) |
+| `docs/`, `tools/` | This guide and the glossary; helper scripts (`tools/make-zip.sh` packs the project into one zip) |
 | `privacy.html` | Your privacy policy page (Play requires one) |
 | `build.sh` | Builds the site into `dist/`; Cloudflare runs it on every push |
 | `_headers`, `.well-known/assetlinks.json` | Cloudflare settings, and the file that links the website to the Android app |
@@ -42,11 +46,13 @@ Hidden files (the ones starting with a dot) matter. On a Mac press Cmd+Shift+. i
 
 ## Part A: GitHub
 
-1. Copy everything from this folder into your VS Code workspace folder (the one linked to your GitHub repository). Replace the old `index.html`. Make sure the hidden files (`.gitignore`, `.well-known/`) come across.
+1. Copy everything from this folder into your VS Code workspace folder (the one linked to your GitHub repository). Delete the old `index.html` and the old `LAUNCH-GUIDE.md` from the top level of your folder first (the app is now built from `src/`, and the guide lives in `docs/`). Make sure the hidden files (`.gitignore`, `.well-known/`) come across.
 2. In VS Code open Source Control, stage all changes, write a message such as `Free/premium editions, Cloudflare build, Play launch files`, commit, then **Sync Changes**.
 3. Check on github.com that you can see `build.sh`, `_headers`, `.well-known/assetlinks.json` and `store/`.
 
 A private repository is fine. Cloudflare can read it through its GitHub connection.
+
+**Later on, when you copy in a newer pack, do not blindly overwrite these two files:** `.well-known/assetlinks.json` (it holds your real Google fingerprints) and `privacy.html` (it holds your real email address). If you do overwrite them, put your values back before pushing. A quick check before every push: `grep -n "REPLACE_WITH\|YOUR_EMAIL_HERE" .well-known/assetlinks.json privacy.html` should print nothing.
 
 ---
 
@@ -300,6 +306,7 @@ If acknowledging fails for any reason (no signal, the setup not finished), the a
 | Play rejects the upload because of the target API level | Part D step 5: set `targetSdkVersion 36`, rebuild. |
 | Cloudflare build fails or says no files uploaded | Build command must be `sh build.sh` and output directory `dist`. Open the build log. If it says `build.sh` is missing, the files are in a subfolder; set Root directory to that folder. |
 | Cloudflare custom domain stays on "Verifying" | The `sushi` CNAME row in Enom is wrong or has not spread yet. |
+| The app suddenly shows a browser address bar (a bar with an X, the web address, a share icon) and Unlock says "Purchases are not available right now", but it works on some phones | These are one problem. The bar means Android could not confirm that the website and the app belong together (Digital Asset Links), and Google's purchase service only works when it can. Most likely `.well-known/assetlinks.json` on the live site has placeholder or wrong fingerprints (for example after copying a pack over the top of your own file). Open `https://sushi.robsofficetips.com/.well-known/assetlinks.json` in a browser: it must show your package name and two real SHA-256 fingerprints (Play's app signing key, and your upload key), with no `REPLACE_WITH` in it. To see what Google itself sees, open `https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://sushi.robsofficetips.com&relation=delegate_permission/common.handle_all_urls`. Fix the file, push, wait for Cloudflare, then uninstall and reinstall the app on each affected phone, because phones that had already confirmed the link keep working from memory while others do not. |
 | Google's payment screen leaves the app dimmed after buying, and Play emails "test purchase was cancelled because it was not acknowledged" | The purchase was never acknowledged. This was a bug in the first version of the purchase code (it used a browser call that does not exist any more) and is fixed, but acknowledging needs Part F to be set up. |
 | Friends see an old version | Open the app once while online. A "New version ready" prompt appears, or reopen it. |
 | "This site can't be reached" (`ERR_FAILED`) on the main address, but `/privacy` still works | A phone or browser is stuck on an old service worker. Reload once or twice and it replaces itself. On your own computer you can clear it at once: DevTools (Cmd+Option+I), **Application**, **Service workers**, **Unregister**, then reload. A private window also bypasses it. |
