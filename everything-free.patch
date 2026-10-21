@@ -1,0 +1,1304 @@
+From fa71f4533e9fa5c7067ce3597047388ca4ae5313 Mon Sep 17 00:00:00 2001
+From: Rob <robbjennings@gmail.com>
+Date: Wed, 21 Oct 2026 11:22:16 +1100
+Subject: [PATCH] Everything free: remove Premium, Play Billing and purchase
+ acknowledgement
+
+---
+ PROJECT-NOTES.md                         |  18 ++--
+ android/twa-manifest.json                |   2 +-
+ docs/GLOSSARY.md                         |  18 ++--
+ docs/LAUNCH-GUIDE.md                     |  30 ++++--
+ functions/api/acknowledge.js             | 101 ------------------
+ privacy.html                             |   6 +-
+ src/js/01-config-state.js                |   2 +-
+ src/js/02-currency.js                    |   5 -
+ src/js/03-editions.js                    |  41 --------
+ src/js/04-purchases.js                   | 125 -----------------------
+ src/js/06-plate-actions.js               |   1 -
+ src/js/07-views.js                       |  41 ++------
+ src/js/09-editing.js                     |   3 +-
+ src/js/10-events.js                      |  19 +---
+ src/js/11-suggestions.js                 |  11 +-
+ src/styles.css                           |  29 ------
+ store/listing.md                         |  41 +++-----
+ tests/suites/03-editions.js              |  66 ------------
+ tests/suites/03-free-for-all.js          |  59 +++++++++++
+ tests/suites/06-billing.js               | 112 --------------------
+ tests/suites/07-acknowledge-function.js  | 109 --------------------
+ tests/suites/08-setup-and-suggestions.js |   6 +-
+ 22 files changed, 137 insertions(+), 708 deletions(-)
+ delete mode 100644 functions/api/acknowledge.js
+ delete mode 100644 src/js/03-editions.js
+ delete mode 100644 src/js/04-purchases.js
+ delete mode 100644 tests/suites/03-editions.js
+ create mode 100644 tests/suites/03-free-for-all.js
+ delete mode 100644 tests/suites/06-billing.js
+ delete mode 100644 tests/suites/07-acknowledge-function.js
+
+diff --git a/PROJECT-NOTES.md b/PROJECT-NOTES.md
+index 1f08f13..626cc0c 100644
+--- a/PROJECT-NOTES.md
++++ b/PROJECT-NOTES.md
+@@ -1,6 +1,6 @@
+ # Sushi Train Track: project notes
+ 
+-A mobile-first web app for totalling spend at a conveyor-belt sushi restaurant. Tap coloured plates, see the running total, add drinks and extras, keep several restaurants. Delivered as a website/PWA (`sushi.robsofficetips.com`) and as an Android app on Google Play (a thin wrapper around the same site, with a one-time Premium unlock). No ads, no accounts, nothing leaves the phone except the purchase receipt.
++A mobile-first web app for totalling spend at a conveyor-belt sushi restaurant. Tap coloured plates, see the running total, add drinks and extras, keep several restaurants. Delivered as a website/PWA (`sushi.robsofficetips.com`) and as an Android app on Google Play (a thin wrapper around the same site). Everything is free: no ads, no purchases, no accounts, nothing leaves the phone.
+ 
+ The words we use for parts of the screen are in [`docs/GLOSSARY.md`](docs/GLOSSARY.md).
+ 
+@@ -22,9 +22,8 @@ An Android re-upload is only needed when `android/twa-manifest.json` changes. Ch
+ |---|---|
+ | `src/head.html`, `src/body.html`, `src/tail.html` | The page skeleton |
+ | `src/styles.css` | All the styling |
+-| `src/js/01 … 12-*.js` | The app's code in topic order, joined by file name: config + state, currency, editions, purchases, dialogs + colour chooser, plate actions, views, render + drawer, editing, events, suggestions, app update |
++| `src/js/01 … 12-*.js` | The app's code in topic order, joined by file name: config + state, currency, (03 and 04 are gone: they were editions and purchases), dialogs + colour chooser, plate actions, views, render + drawer, editing, events, suggestions, app update |
+ | `sw.js` | Service worker (offline use, update banner). Stamped with the version at build time |
+-| `functions/api/acknowledge.js` | Cloudflare function that acknowledges purchases with Google. Must stay at the top level |
+ | `.well-known/assetlinks.json` | Links the website to the Android app. **Contains the real signing fingerprints. Never overwrite it with a placeholder.** Must stay at the top level |
+ | `privacy.html` | The privacy policy page (your real one) |
+ | `build.sh` | Builds `dist/` (joins `src/` into one `index.html`, stamps the version). Cloudflare runs it on every push |
+@@ -52,23 +51,20 @@ The first run installs a small test library into `~/.cache/sushi-test-deps` (out
+ |---|---|
+ | currency | typing amounts in any style, symbols, decimals |
+ | flows | first-run setup, tapping plates, totals, itemised bill, saving, editing, validation |
+-| editions | website / free / premium / Play app limits and locks |
++| free-for-all | website and Play app both have everything; old purchase records tidied away |
+ | drawer | the drawer: handle title, add, group, + and −, messages |
+ | remove | remove mode, long-press confirm, add a plate |
+-| billing | Play purchase, retry, refund, cancel, offline, restore |
+-| acknowledge-function | the server function, against a pretend Google |
+ | setup-and-suggestions | suggestions from other restaurants, price tidying, Enter/Next, colour chooser |
+ | browser | service worker, offline, Cloudflare-style redirects, assetlinks, phone layout |
+ 
+ ## Decisions already made
+ 
+-- Free: 1 restaurant, 5 plates. Premium (one-time, about A$1.99): unlimited restaurants and plates, saved menu items, currency per restaurant, restaurant picker with bills in progress. The website is fully unlocked.
+-- Over-limit things are locked, never deleted.
++- Everything is free for everyone (decided 21 Oct 2026). The Free/Premium split, the Play Billing purchase and the acknowledge function were removed in this release. The old Play product ID was `premium_unlock` (deactivated, not reusable).
++- Things that were locked under Free were never deleted, so extra restaurants, plates and menu items from that time simply become usable again.
+ - Prices are stored in hundredths of the main unit (yen 450 is stored as 45000).
+-- Play product ID `premium_unlock`, package `com.robsofficetips.sushitraintrack`.
+-- Purchases are acknowledged by our server function, because the browser Billing API cannot do it for one-time products. Failures are queued and retried.
++- Package `com.robsofficetips.sushitraintrack`.
+ - UI text is English only for now (translation was offered, not requested).
+-- The git repo is private for now. There are no secrets in it (the Google key is a Cloudflare secret, the Android signing key is never committed).
++- The git repo is public (github.com/rob579/sushi-train-track). There are no secrets in it (the Android signing key is never committed).
+ 
+ ## Habits that save time
+ 
+diff --git a/android/twa-manifest.json b/android/twa-manifest.json
+index 97b4b38..4daf956 100644
+--- a/android/twa-manifest.json
++++ b/android/twa-manifest.json
+@@ -28,7 +28,7 @@
+   "isMetaQuest": false,
+   "signingKey": { "path": "./android.keystore", "alias": "upload" },
+   "alphaDependencies": { "enabled": true },
+-  "features": { "playBilling": { "enabled": true } },
++  "features": { "playBilling": { "enabled": false } },
+   "shortcuts": [],
+   "generatorApp": "bubblewrap-cli"
+ }
+diff --git a/docs/GLOSSARY.md b/docs/GLOSSARY.md
+index 4972c23..d01fb07 100644
+--- a/docs/GLOSSARY.md
++++ b/docs/GLOSSARY.md
+@@ -11,7 +11,7 @@ So we always mean the same thing. If a word here is not what you call it, tell m
+ | **Bill screen** | The main screen: total at the top, plates, drawer at the bottom | `viewBill` |
+ | **Itemised bill** | The list of every plate colour and extra with the total | `viewItemised` |
+ | **Setup screen** | Where you create or edit a restaurant: name, currency, plates, menu items. (Also called "edit restaurant") | `viewEdit` |
+-| **Menu (top-right)** | The three-line menu on the bill screen: itemised bill, remove a plate, edit, new restaurant, start over | `data-act="menu"` |
++| **Menu (top-right)** | The three-line menu on the bill screen: itemised bill, remove a plate, edit, new restaurant, switch restaurant, start a new bill | `data-act="menu"` |
+ 
+ ## Parts of the bill screen
+ 
+@@ -32,7 +32,6 @@ So we always mean the same thing. If a word here is not what you call it, tell m
+ | **Toast** | The small message that pops up and fades ("Green tea added") |
+ | **Modal** | A pop-up card over the screen (remove one plate?, add a plate, plate colour) |
+ | **Colour chooser** | The swatches plus the rainbow circle for mixing your own colour |
+-| **Upgrade sheet** | The "Unlock Premium" pop-up |
+ 
+ ## Things on a bill
+ 
+@@ -40,21 +39,18 @@ So we always mean the same thing. If a word here is not what you call it, tell m
+ |---|---|
+ | **Plate** | A coloured plate on the belt, with a fixed price per restaurant |
+ | **Extra** (or **item on the bill**) | Anything that is not a plate, e.g. a drink. Each one has a price and an optional description. In the code: `extras`. |
+-| **Menu item** (saved item) | A saved extra on a restaurant, so you can pick it again in one tap. Premium only. In the code: `items`. |
++| **Menu item** (saved item) | A saved extra on a restaurant, so you can pick it again in one tap. In the code: `items`. |
+ 
+-(An *extra* is what is on today's bill. A *menu item* is what the restaurant remembers. Adding an extra with a new description creates a menu item in Premium.)
++(An *extra* is what is on today's bill. A *menu item* is what the restaurant remembers. Adding an extra with a new description creates a menu item.)
+ 
+-## Editions and apps
++## Where the app runs
+ 
+ | Term | Meaning |
+ |---|---|
+-| **Website** | sushi.robsofficetips.com opened in a browser or installed from the browser. Fully unlocked, no purchase. |
++| **Website** | sushi.robsofficetips.com opened in a browser or installed from the browser |
+ | **Play app** | The Android app from Google Play. It is the same site inside a thin Android wrapper (`?app=play`). |
+-| **Free** | 1 restaurant, 5 plates, no saved menu items, one currency |
+-| **Premium** | One-time unlock: unlimited restaurants and plates, saved menu items, currency per restaurant, picker with bills in progress |
+-| **Locked** | Over the free limit. Locked things are shown but never deleted. |
+-| **Preview** | `?edition=free` or `?edition=premium` on the website, to try an edition without buying |
+-| **Acknowledge** | Telling Google we received the purchase. If we do not, Google refunds it after a few days. |
++
++Both are the same app with everything included. (Until 21 Oct 2026 the Play app had a Free and a Premium edition; that is gone.)
+ 
+ ## How we work
+ 
+diff --git a/docs/LAUNCH-GUIDE.md b/docs/LAUNCH-GUIDE.md
+index 122a327..c3fc92b 100644
+--- a/docs/LAUNCH-GUIDE.md
++++ b/docs/LAUNCH-GUIDE.md
+@@ -12,6 +12,9 @@ This guide takes you from the files in this folder to a live website on Cloudfla
+ | C | Point `sushi.robsofficetips.com` at Cloudflare (Enom) | 15 min, plus waiting |
+ | D | Build the Android app file | 45 min the first time |
+ | E | Google Play Console: upload, test, publish | an evening, then 14 days of testing |
++| G | Going fully free (October 2026): retiring Premium | 30 min |
++
++**21 Oct 2026: the app is now free for everyone.** Premium, Play Billing and the purchase acknowledgement were removed in this release. Parts E4, E5 and F below are kept only as history; do not follow them. Part G says what to do instead.
+ 
+ ---
+ 
+@@ -21,7 +24,6 @@ This guide takes you from the files in this folder to a live website on Cloudfla
+ |---|---|
+ | `src/` | The app's pages and code, in small pieces. `build.sh` joins them into the single `index.html` that gets deployed |
+ | `sw.js`, `manifest.webmanifest`, `fonts/`, icons | The rest of the app |
+-| `functions/` | The small server function that acknowledges purchases (Part F). Must stay at the top level for Cloudflare |
+ | `tests/` | The automatic checks. Run them with `npm test` (see `PROJECT-NOTES.md`) |
+ | `docs/`, `tools/` | This guide and the glossary; helper scripts (`tools/make-zip.sh` packs the project into one zip) |
+ | `privacy.html` | Your privacy policy page (Play requires one) |
+@@ -203,13 +205,13 @@ Play Console menus get renamed from time to time. Use the search box at the top
+    Keep the colons and the quotes. If you used a different package name, change `package_name` too.
+ 3. Commit and push. About a minute later check `https://sushi.robsofficetips.com/.well-known/assetlinks.json` shows your fingerprints.
+ 
+-### 4. Create the Premium product
++### 4. Create the Premium product (retired: see Part G)
+ 
+ 1. **Monetize with Play**, then **Products**, then **One-time products** (Google renamed "In-app products"), then **Create one-time product**. (Play may want an app version uploaded first, which you did in step 2.)
+ 2. Use the values in `store/listing.md`. **The product ID must be exactly `premium_unlock`**, because the app asks Play for that name. The form also asks for a **purchase option ID**. Use `buy-premium`. It is only an internal label (lowercase letters, numbers and hyphens), users never see it, and the app does not use it. Leave the purchase type as **Buy**, and keep the option marked as backwards compatible (the first Buy option is marked that way automatically).
+ 3. Set your price and make the product **Active**.
+ 
+-### 5. Let yourself test purchases for free
++### 5. Let yourself test purchases for free (retired: see Part G)
+ 
+ In Play Console **Settings**, then **License testing**, add your own Gmail address. Purchases made by that account are free test purchases.
+ 
+@@ -245,7 +247,7 @@ Your friends and family beta can run on the website the whole time. It does not
+ 
+ ---
+ 
+-## Part F: purchase acknowledgement (needed before real sales)
++## Part F: purchase acknowledgement (retired: see Part G)
+ 
+ Google automatically refunds any purchase that the developer never "acknowledges": after about 3 days for real purchases, and after about 3 minutes for test purchases. The browser version of Google's billing API cannot do this for a one-time purchase, so a small function on your Cloudflare site (`functions/api/acknowledge.js`, already in the pack) does it through Google's Play Developer API. It also checks that the purchase is genuine. If you skip this part, every sale would be refunded.
+ 
+@@ -282,12 +284,26 @@ If acknowledging fails for any reason (no signal, the setup not finished), the a
+ 
+ ---
+ 
++## Part G: going fully free (October 2026)
++
++Do these in order. The website change goes first, so that nobody can be offered a purchase once the product is switched off.
++
++1. **Push the website.** Commit and push version `21 Oct 2026 · free for everyone`. A minute later the website and the Play app (it loads the same site) have everything unlocked and never ask Google Play about purchases again. Phones that had Premium keep all their data; the app quietly removes its old purchase records.
++2. **New Android wrapper without Billing.** In your `sushi-android` folder, open `twa-manifest.json` and change `"playBilling": { "enabled": true }` to `false` (the copy in `android/` already has this). Run `bubblewrap update`, then `bubblewrap build` (it adds 1 to the version number). Upload the new `.aab` as a new release on the track you are using (closed testing now, production later), with the release notes from `store/listing.md`. This removes the Billing permission from the app.
++3. **Switch off the product.** Play Console, **Monetize with Play**, **Products**, **One-time products**, open `premium_unlock`. Open its purchase option `buy-premium` (the arrow on its row) and click **Deactivate**, then confirm. Google does not let you delete an active product or reuse its ID; deactivated is the end state.
++4. **People who already bought it.** Your licence testers' purchases were free test purchases, so nothing is owed. If anyone paid real money, you can refund them in **Order management** (find the order, then **Refund**). Either way they lose nothing in the app.
++5. **Store listing.** **Grow users**, **Store presence**, **Main store listing**: paste the new full description from `store/listing.md`. Screenshots are unchanged.
++6. **App content.** Open **Data safety** and remove anything you declared about purchase history or financial information. Your privacy policy address is the same; its wording has been updated.
++7. **Tidy up the acknowledgement setup (optional, after a week or so).** In Cloudflare Pages, **Settings**, **Variables and Secrets**: delete `GOOGLE_SERVICE_ACCOUNT_JSON`. In Play Console, **Users and permissions**: remove the `play-acknowledge@...` service account. In Google Cloud: delete that service account (or the whole project if you made it only for this). The payments profile can stay; it costs nothing.
++8. **Check the listing.** Once the new release is live, look at the app's Play page on a phone. If it still says "Contains in-app purchases" a few days later, ask Play Console support to clear it. (I could not confirm exactly what Google uses to show that label.)
++
++---
++
+ ## Day to day afterwards
+ 
+ - **Changing the app itself** (features, fixes, wording): edit, commit, push. About a minute later it is live on the website, and the Play app picks it up the next time it opens (people see a "New version ready" prompt if the app was already open). No Play review, no new upload.
+ - **Changing the Android wrapper** (name, icon, package settings, Billing settings, and the yearly Android version requirement): in your `sushi-android` folder run `bubblewrap update`, then `bubblewrap build`, and upload the new `.aab` to a new release. It adds 1 to the version number for you. Plan for one wrapper update about once a year.
+ - **Keep the domain.** The app is tied to `sushi.robsofficetips.com`. If you ever change it, existing installs would need a new wrapper release.
+-- **Try the editions in a browser:** add `?edition=free` or `?edition=premium` to the website address. (It is ignored inside the Play app, so nobody can unlock Premium with a link.)
+ 
+ ---
+ 
+@@ -296,8 +312,6 @@ If acknowledging fails for any reason (no signal, the setup not finished), the a
+ | Problem | Likely cause and fix |
+ |---|---|
+ | App opens with a browser address bar | The website and app are not linked. Check `/.well-known/assetlinks.json` is live, contains the Play app signing fingerprint, and has the right package name. Android caches the check, so uninstall and reinstall the app after fixing. |
+-| "Purchases are not available right now" | The app was installed from an APK instead of Play; or the product is not **Active**; or the link above is not working; or Chrome on the phone is very old. |
+-| Unlock does nothing in a normal browser | Expected. On the website everything is already unlocked, and in `?edition=free` preview mode the button only simulates a purchase. |
+ | Bubblewrap says "Play Billing requires enableNotifications" | Make sure `enableNotifications` is `true` in your `twa-manifest.json` (it is in mine). |
+ | `bubblewrap update` says it failed to download the web manifest or icon | The website is not live at the final address yet (Part C). |
+ | `bubblewrap build` fails with "minSdkVersion 21 cannot be smaller than version 23 declared in library ... billing" | In `twa-manifest.json` set `"minSdkVersion": 24` (Play Billing needs Android 6.0 or newer, and Play's automatic protection needs 7.0 or newer), then run `bubblewrap update --skipVersionUpgrade` and `bubblewrap build` again. The long list of `at org.gradle...` lines in a build error can be ignored; the useful part is the first few lines under ERROR and "What went wrong". |
+@@ -306,8 +320,6 @@ If acknowledging fails for any reason (no signal, the setup not finished), the a
+ | Play rejects the upload because of the target API level | Part D step 5: set `targetSdkVersion 36`, rebuild. |
+ | Cloudflare build fails or says no files uploaded | Build command must be `sh build.sh` and output directory `dist`. Open the build log. If it says `build.sh` is missing, the files are in a subfolder; set Root directory to that folder. |
+ | Cloudflare custom domain stays on "Verifying" | The `sushi` CNAME row in Enom is wrong or has not spread yet. |
+-| The app suddenly shows a browser address bar (a bar with an X, the web address, a share icon) and Unlock says "Purchases are not available right now", but it works on some phones | These are one problem. The bar means Android could not confirm that the website and the app belong together (Digital Asset Links), and Google's purchase service only works when it can. Most likely `.well-known/assetlinks.json` on the live site has placeholder or wrong fingerprints (for example after copying a pack over the top of your own file). Open `https://sushi.robsofficetips.com/.well-known/assetlinks.json` in a browser: it must show your package name and two real SHA-256 fingerprints (Play's app signing key, and your upload key), with no `REPLACE_WITH` in it. To see what Google itself sees, open `https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://sushi.robsofficetips.com&relation=delegate_permission/common.handle_all_urls`. Fix the file, push, wait for Cloudflare, then uninstall and reinstall the app on each affected phone, because phones that had already confirmed the link keep working from memory while others do not. |
+-| Google's payment screen leaves the app dimmed after buying, and Play emails "test purchase was cancelled because it was not acknowledged" | The purchase was never acknowledged. This was a bug in the first version of the purchase code (it used a browser call that does not exist any more) and is fixed, but acknowledging needs Part F to be set up. |
+ | Friends see an old version | Open the app once while online. A "New version ready" prompt appears, or reopen it. |
+ | "This site can't be reached" (`ERR_FAILED`) on the main address, but `/privacy` still works | A phone or browser is stuck on an old service worker. Reload once or twice and it replaces itself. On your own computer you can clear it at once: DevTools (Cmd+Option+I), **Application**, **Service workers**, **Unregister**, then reload. A private window also bypasses it. |
+ 
+diff --git a/functions/api/acknowledge.js b/functions/api/acknowledge.js
+deleted file mode 100644
+index 73f1d08..0000000
+--- a/functions/api/acknowledge.js
++++ /dev/null
+@@ -1,101 +0,0 @@
+-// Cloudflare Pages Function: POST /api/acknowledge
+-//
+-// Google Play refunds a purchase that the developer never acknowledges (after about 3 days, and after
+-// about 3 minutes for test purchases). The browser version of the Play Billing API cannot acknowledge a
+-// one-time purchase, so the app sends the purchase token here and this function does it through Google's
+-// Play Developer API. It also checks that the purchase is real (state "purchased"), nothing is stored.
+-//
+-// Needs one secret on the Cloudflare Pages project:
+-//   GOOGLE_SERVICE_ACCOUNT_JSON   the whole JSON key file of a Google service account that has been
+-//                                 invited to your Play Console with permission to manage orders.
+-// Optional:
+-//   PLAY_PACKAGE_NAME             defaults to com.robsofficetips.sushitraintrack
+-
+-const ALLOWED_SKUS = new Set(['premium_unlock']);
+-const SCOPE = 'https://www.googleapis.com/auth/androidpublisher';
+-const API = 'https://androidpublisher.googleapis.com/androidpublisher/v3/applications';
+-const DEFAULT_PACKAGE = 'com.robsofficetips.sushitraintrack';
+-
+-let cachedToken = { value: null, expires: 0 };
+-
+-const json = (body, status = 200) => new Response(JSON.stringify(body), {
+-  status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
+-});
+-
+-const toB64Url = bytes => {
+-  let s = '';
+-  for (const b of new Uint8Array(bytes)) s += String.fromCharCode(b);
+-  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+-};
+-const textB64Url = text => toB64Url(new TextEncoder().encode(text));
+-
+-function pemToDer(pem) {
+-  const body = pem.replace(/-----[^-]+-----/g, '').replace(/\s+/g, '');
+-  const bin = atob(body);
+-  const out = new Uint8Array(bin.length);
+-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+-  return out.buffer;
+-}
+-
+-// Signs a short-lived login request with the service account's private key and swaps it for an access token.
+-async function getAccessToken(env) {
+-  if (cachedToken.value && Date.now() < cachedToken.expires) return cachedToken.value;
+-  const account = JSON.parse(env.GOOGLE_SERVICE_ACCOUNT_JSON);
+-  const now = Math.floor(Date.now() / 1000);
+-  const unsigned = textB64Url(JSON.stringify({ alg: 'RS256', typ: 'JWT' })) + '.' + textB64Url(JSON.stringify({
+-    iss: account.client_email, scope: SCOPE, aud: 'https://oauth2.googleapis.com/token', iat: now, exp: now + 3300
+-  }));
+-  const key = await crypto.subtle.importKey('pkcs8', pemToDer(account.private_key),
+-    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']);
+-  const signature = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', key, new TextEncoder().encode(unsigned));
+-  const res = await fetch('https://oauth2.googleapis.com/token', {
+-    method: 'POST',
+-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+-    body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: unsigned + '.' + toB64Url(signature) })
+-  });
+-  if (!res.ok) throw new Error('google-auth-' + res.status);
+-  const data = await res.json();
+-  cachedToken = { value: data.access_token, expires: Date.now() + Math.max(60, (data.expires_in || 3600) - 300) * 1000 };
+-  return cachedToken.value;
+-}
+-
+-export async function onRequestPost({ request, env }) {
+-  const origin = request.headers.get('Origin');
+-  if (origin && origin !== new URL(request.url).origin) return json({ ok: false, reason: 'forbidden' }, 403);
+-
+-  let body;
+-  try { body = await request.json(); } catch { return json({ ok: false, reason: 'bad-request' }, 400); }
+-  const sku = body && body.sku, token = body && body.purchaseToken;
+-  if (!ALLOWED_SKUS.has(sku) || typeof token !== 'string' || !/^[A-Za-z0-9._-]{20,600}$/.test(token)) {
+-    return json({ ok: false, reason: 'bad-request' }, 400);
+-  }
+-  if (!env || !env.GOOGLE_SERVICE_ACCOUNT_JSON) return json({ ok: false, reason: 'not-configured' }, 500);
+-
+-  let accessToken;
+-  try { accessToken = await getAccessToken(env); } catch { return json({ ok: false, reason: 'google-auth-failed' }, 502); }
+-
+-  const pkg = env.PLAY_PACKAGE_NAME || DEFAULT_PACKAGE;
+-  const url = `${API}/${pkg}/purchases/products/${sku}/tokens/${encodeURIComponent(token)}`;
+-  const auth = { Authorization: 'Bearer ' + accessToken };
+-
+-  const check = await fetch(url, { headers: auth });
+-  if (check.status === 400 || check.status === 404 || check.status === 410) return json({ ok: false, reason: 'invalid-token' });
+-  if (check.status === 401 || check.status === 403) return json({ ok: false, reason: 'google-denied' }, 502);
+-  if (!check.ok) return json({ ok: false, reason: 'google-error' }, 502);
+-
+-  const purchase = await check.json();
+-  if (purchase.purchaseState === 2) return json({ ok: false, reason: 'pending' });
+-  if (purchase.purchaseState !== 0) return json({ ok: false, reason: 'not-purchased' });
+-  const test = purchase.purchaseType === 0;
+-  if (purchase.acknowledgementState === 1) return json({ ok: true, acknowledged: true, already: true, test });
+-
+-  const ack = await fetch(url + ':acknowledge', {
+-    method: 'POST', headers: { ...auth, 'Content-Type': 'application/json' }, body: '{}'
+-  });
+-  if (ack.status === 401 || ack.status === 403) return json({ ok: false, reason: 'google-denied' }, 502);
+-  if (!ack.ok) return json({ ok: false, reason: 'google-error' }, 502);
+-  return json({ ok: true, acknowledged: true, test });
+-}
+-
+-// anything other than POST
+-export const onRequest = () => json({ ok: false, reason: 'method-not-allowed' }, 405);
+diff --git a/privacy.html b/privacy.html
+index f5bc325..68d0080 100644
+--- a/privacy.html
++++ b/privacy.html
+@@ -23,7 +23,7 @@
+ <main>
+   <a class="back" href="/">&larr; Back to the app</a>
+   <h1>Privacy Policy</h1>
+-  <p class="muted">Sushi Train Track &middot; Last updated 8 October 2026</p>
++  <p class="muted">Sushi Train Track &middot; Last updated 21 October 2026</p>
+ 
+   <p>Sushi Train Track helps you add up the plates you take at a sushi train restaurant. This page explains what happens to your information. The short version: <strong>the app does not collect your personal information.</strong></p>
+ 
+@@ -33,8 +33,8 @@
+   <h2>No ads, analytics or tracking</h2>
+   <p>The app has no advertising, no analytics and no tracking tools. The font it uses is bundled inside the app, so it does not load anything from other companies' websites.</p>
+ 
+-  <h2>Purchases</h2>
+-  <p>The optional Premium upgrade is a one-time purchase handled entirely by Google Play. The app only asks Google Play whether this Google account owns Premium. The developer does not receive your name, email address or payment details. To complete a purchase, the app sends the purchase receipt (a code created by Google Play) to this website's server, which uses it only to confirm the purchase with Google and mark it as received. The server does not keep it and does not link it to you.</p>
++  <h2>No purchases</h2>
++  <p>The app is completely free. It has no in-app purchases, so it does not talk to Google Play's billing service and no purchase information is sent anywhere.</p>
+ 
+   <h2>How the app is delivered</h2>
+   <p>The app's files are loaded from <strong>sushi.robsofficetips.com</strong>, which is hosted by Cloudflare. Like any website host, Cloudflare processes standard technical information, such as your IP address, in order to deliver those files. The developer does not use this information to identify you. After the first visit the app keeps its own copy and also works offline.</p>
+diff --git a/src/js/01-config-state.js b/src/js/01-config-state.js
+index 608a85a..c5c1e1a 100644
+--- a/src/js/01-config-state.js
++++ b/src/js/01-config-state.js
+@@ -1,5 +1,5 @@
+ /* ============ config ============ */
+-const BUILD = '12 Oct 2026 · menu items handle';   // shown on the landing page so you can tell which copy is running
++const BUILD = '21 Oct 2026 · free for everyone';   // shown on the landing page so you can tell which copy is running
+ const BUILD_ID = 'dev';   // stamped with the git commit by update.sh
+ const KEY = 'plateTally.v1';
+ const SWATCHES = ['#e5484d','#f5a524','#f2d74a','#4cb782','#3e8ef7','#8b5cf6','#e8e2d4','#2b2b2b'];
+diff --git a/src/js/02-currency.js b/src/js/02-currency.js
+index d9032f5..f9f953a 100644
+--- a/src/js/02-currency.js
++++ b/src/js/02-currency.js
+@@ -72,10 +72,6 @@ function toCents(v, cur){
+   if (!isFinite(n) || n < 0) return null;
+   return digits === 0 ? Math.round(n) * 100 : Math.round(n * 100);
+ }
+-function currencyLabel(c){
+-  let n = ''; try { n = new Intl.DisplayNames([LOCALE], { type: 'currency' }).of(c); } catch {}
+-  return c + (n && n !== c ? ' · ' + n : '');
+-}
+ function currencyOptions(sel){
+   let names = null;
+   try { names = new Intl.DisplayNames([LOCALE], { type: 'currency' }); } catch {}
+@@ -95,7 +91,6 @@ function inkFor(hex){
+ }
+ const ICON = {
+   menu:'<svg viewBox="0 0 24 24" style="fill:var(--rice);stroke:none"><circle cx="12" cy="5" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="12" cy="19" r="2.2"/></svg>',
+-  lock:'<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+   cup:'<svg viewBox="0 0 24 24"><path d="M5 10h11v4.5a4.5 4.5 0 0 1-4.5 4.5h-2A4.5 4.5 0 0 1 5 14.5z"/><path d="M16 12h1.4a2.3 2.3 0 0 1 0 4.6H16"/><path d="M8.5 4.5c0 1.4 1.4 1.4 1.4 2.8M12.5 4.5c0 1.4 1.4 1.4 1.4 2.8"/></svg>',
+   back:'<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
+   pencil:'<svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/></svg>',
+diff --git a/src/js/03-editions.js b/src/js/03-editions.js
+deleted file mode 100644
+index be62f9e..0000000
+--- a/src/js/03-editions.js
++++ /dev/null
+@@ -1,41 +0,0 @@
+-/* ============ editions: free and premium ============
+-   - On the website (a normal browser, or the installed website app) everything is unlocked.
+-   - Inside the Google Play app (it opens the site with ?app=play) the app starts on the free tier, and
+-     Premium is unlocked by a one-time purchase through Google Play Billing.
+-   - To test in a browser, add ?edition=free or ?edition=premium to the address (ignored in the Play app;
+-     ?edition=reset goes back to normal). */
+-const FREE_RESTAURANTS = 1, FREE_PLATES = 5, PREMIUM_SKU = 'premium_unlock';
+-const IN_PLAY_APP = (() => {
+-  try {
+-    const q = new URLSearchParams(location.search);
+-    if (q.get('app') === 'play' || document.referrer.startsWith('android-app://')) sessionStorage.setItem('stt-app', 'play');
+-    return sessionStorage.getItem('stt-app') === 'play';
+-  } catch { return false; }
+-})();
+-let PREVIEW = (() => {
+-  try {
+-    if (IN_PLAY_APP) return null;
+-    const e = new URLSearchParams(location.search).get('edition');
+-    if (e === 'free' || e === 'premium') sessionStorage.setItem('stt-edition', e);
+-    if (e === 'reset') sessionStorage.removeItem('stt-edition');
+-    return sessionStorage.getItem('stt-edition');
+-  } catch { return null; }
+-})();
+-const ENT_KEY = 'plateTally.entitlement.v1';
+-const ENT = { purchased: (() => { try { return JSON.parse(localStorage.getItem(ENT_KEY)).purchased === true; } catch { return false; } })() };
+-const isPremium = () => IN_PLAY_APP ? ENT.purchased : PREVIEW !== 'free';
+-const editionLabel = () => IN_PLAY_APP ? (ENT.purchased ? 'Premium' : 'Free') : PREVIEW === 'free' ? 'Free (preview)' : PREVIEW === 'premium' ? 'Premium (preview)' : 'Website';
+-
+-let _billing = null;
+-async function getBilling(){
+-  if (_billing) return _billing;
+-  if (!IN_PLAY_APP || !('getDigitalGoodsService' in window)) return null;
+-  try { _billing = await window.getDigitalGoodsService('https://play.google.com/billing'); } catch { _billing = null; }
+-  return _billing;
+-}
+-function setPurchased(v){
+-  const changed = ENT.purchased !== v;
+-  ENT.purchased = v;
+-  try { localStorage.setItem(ENT_KEY, JSON.stringify({ purchased: v, at: Date.now() })); } catch {}
+-  return changed;
+-}
+diff --git a/src/js/04-purchases.js b/src/js/04-purchases.js
+deleted file mode 100644
+index 30647d1..0000000
+--- a/src/js/04-purchases.js
++++ /dev/null
+@@ -1,125 +0,0 @@
+-/* ---- acknowledging purchases ----
+-   Google refunds a purchase that is never acknowledged (after about 3 days, and after about 3 minutes for test
+-   purchases). The browser Billing API cannot do this for one-time purchases, so a small server function
+-   (/api/acknowledge) does it, and anything that fails is remembered and retried the next time the app opens or
+-   comes back to the front. */
+-const ACKED_KEY = 'plateTally.acked.v1', PENDING_KEY = 'plateTally.pending.v1';
+-const readList = k => { try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : []; } catch { return []; } };
+-const writeList = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v.slice(-10))); } catch {} };
+-const isAcked = t => readList(ACKED_KEY).includes(t);
+-function markAcked(t){ if (!isAcked(t)) writeList(ACKED_KEY, [...readList(ACKED_KEY), t]); writeList(PENDING_KEY, readList(PENDING_KEY).filter(x => x !== t)); }
+-function addPending(t){ if (!readList(PENDING_KEY).includes(t)) writeList(PENDING_KEY, [...readList(PENDING_KEY), t]); }
+-function dropPending(t){ writeList(PENDING_KEY, readList(PENDING_KEY).filter(x => x !== t)); }
+-async function ackOnServer(token){
+-  if (isAcked(token)) return true;
+-  let timer;
+-  try {
+-    const ctl = new AbortController(); timer = setTimeout(() => ctl.abort(), 12000);
+-    const res = await fetch('/api/acknowledge', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+-      body: JSON.stringify({ sku: PREMIUM_SKU, purchaseToken: token }), signal: ctl.signal });
+-    const out = await res.json().catch(() => ({}));
+-    if (res.ok && out.ok) { markAcked(token); return true; }
+-    if (out.reason === 'invalid-token' || out.reason === 'not-purchased') { dropPending(token); return false; }   // nothing to retry
+-  } catch {} finally { clearTimeout(timer); }
+-  addPending(token);   // try again later
+-  return false;
+-}
+-async function acknowledgePurchase(svc, token){
+-  if (svc && typeof svc.acknowledge === 'function') {   // some older browsers still have this; current ones do not
+-    try { await svc.acknowledge(token, 'onetime'); markAcked(token); return true; } catch {}
+-  }
+-  return ackOnServer(token);
+-}
+-async function retryPendingAcks(){ for (const t of readList(PENDING_KEY).slice(0, 5)) await ackOnServer(t); }
+-
+-/* ask Google Play what this person owns (also restores a purchase on a new phone or after reinstalling) */
+-async function refreshEntitlement(){
+-  const svc = await getBilling(); if (!svc) return false;
+-  try {
+-    const owned = (await svc.listPurchases()).find(p => p.itemId === PREMIUM_SKU);
+-    if (owned && !isAcked(owned.purchaseToken)) acknowledgePurchase(svc, owned.purchaseToken);   // not waited for
+-    retryPendingAcks();                                                                      // and any earlier attempt that failed
+-    if (setPurchased(!!owned)) { hideUpgrade(); render(); }
+-    return !!owned;
+-  } catch { return ENT.purchased; }   // offline or Play unavailable: keep what we had
+-}
+-async function buyPremium(){
+-  if (!IN_PLAY_APP) {   // website preview: pretend the purchase worked
+-    PREVIEW = 'premium'; try { sessionStorage.setItem('stt-edition', 'premium'); } catch {}
+-    hideUpgrade(); render(); toast('Preview: Premium unlocked (no real purchase)');
+-    return;
+-  }
+-  const svc = await getBilling();
+-  if (!svc) { upgradeMsg('Purchases are not available right now. Please try again later.'); return; }
+-  upgradeBusy(true); upgradeMsg('');
+-  let response = null, bought = false;
+-  try {
+-    let price = null;
+-    try { const details = await svc.getDetails([PREMIUM_SKU]); price = details && details[0] && details[0].price; } catch {}
+-    const request = new PaymentRequest(
+-      [{ supportedMethods: 'https://play.google.com/billing', data: { sku: PREMIUM_SKU } }],
+-      { total: { label: 'Premium', amount: { currency: price ? price.currency : 'USD', value: price ? price.value : '0' } } });   // amount is ignored by Play Billing
+-    response = await request.show();
+-    const token = response.details && response.details.purchaseToken;
+-    if (token) {
+-      bought = true;
+-      setPurchased(true);                    // they have paid, so unlock now
+-      await acknowledgePurchase(svc, token); // never throws; a failure is retried later
+-    } else {
+-      upgradeBusy(false); upgradeMsg('The purchase did not complete. If you were charged, tap "Restore purchase".');
+-    }
+-  } catch (err) {
+-    upgradeBusy(false);
+-    if (!(err && err.name === 'AbortError')) upgradeMsg('The purchase did not complete. If you were charged, tap "Restore purchase".');   // an abort is just the person closing Google's dialog
+-  } finally {
+-    // always close Google's payment screen, otherwise the app stays dimmed until it is reopened
+-    if (response) { try { await response.complete(bought ? 'success' : 'fail'); } catch {} }
+-  }
+-  if (bought) { hideUpgrade(); render(); toast('Premium unlocked. Thank you!'); }
+-}
+-
+-const UP_WHY = {
+-  restaurants: 'Premium lets you save as many restaurants as you like.',
+-  plates: 'Premium lets you add more than ' + FREE_PLATES + ' plates to a restaurant.',
+-  items: 'Premium saves your drinks and extras so you can pick them in one tap.',
+-  currency: 'Premium lets you choose a currency for each restaurant.',
+-  generic: 'Unlock everything in Sushi Train Track with one purchase.'
+-};
+-function upgradeMsg(t, ok){ const m = document.getElementById('up-msg'); if (m) { m.textContent = t; m.classList.toggle('ok', !!ok); } }
+-function upgradeBusy(b){ const x = document.getElementById('up-buy'); if (x) x.disabled = b; }
+-function hideUpgrade(){ const u = document.getElementById('upgrade'); if (u) u.remove(); }
+-function showUpgrade(why){
+-  hideUpgrade();
+-  const u = document.createElement('div');
+-  u.id = 'upgrade'; u.setAttribute('role', 'dialog'); u.setAttribute('aria-modal', 'true'); u.setAttribute('aria-labelledby', 'up-title');
+-  u.innerHTML = `<div class="up-scrim" data-act="up-close"></div>
+-    <div class="up-card">
+-      <h2 id="up-title">Unlock Premium</h2>
+-      <p class="up-why">${esc(UP_WHY[why] || UP_WHY.generic)}</p>
+-      <ul>
+-        <li>As many restaurants as you like, each with its own bill</li>
+-        <li>More than ${FREE_PLATES} plates per restaurant</li>
+-        <li>Saved menu items, with suggestions from your other restaurants</li>
+-        <li>A currency for each restaurant</li>
+-        <li>A quick restaurant picker that shows bills in progress</li>
+-      </ul>
+-      <p class="muted small">One-time purchase. No ads and no subscription.</p>
+-      <div id="up-msg" class="up-msg" role="status"></div>
+-      <button class="btn primary big" id="up-buy" data-act="up-buy"><span id="up-buy-label">Unlock Premium</span></button>
+-      <div class="up-row"><button class="btn" data-act="up-restore">Restore purchase</button><button class="btn" data-act="up-close">Not now</button></div>
+-      ${IN_PLAY_APP ? '' : '<p class="muted small">Preview: on the website everything is unlocked. The real purchase happens in the Android app.</p>'}
+-    </div>`;
+-  document.body.appendChild(u);
+-  document.getElementById('up-buy').focus({ preventScroll: true });
+-  getBilling().then(svc => svc && svc.getDetails([PREMIUM_SKU])).then(d => {   // show the real local price
+-    const pr = d && d[0] && d[0].price, lbl = document.getElementById('up-buy-label');
+-    if (pr && lbl) { try { lbl.textContent = 'Unlock Premium · ' + new Intl.NumberFormat(LOCALE, { style: 'currency', currency: pr.currency }).format(pr.value); } catch {} }
+-  }).catch(() => {});
+-}
+-async function restorePurchase(){
+-  if (!IN_PLAY_APP) { upgradeMsg('Nothing to restore in preview mode.'); return; }
+-  upgradeMsg('Checking with Google Play…', true);
+-  const owned = await refreshEntitlement();
+-  if (document.getElementById('upgrade')) upgradeMsg(owned ? 'Premium restored.' : 'No purchase found for this Google account.', owned);
+-}
+-
+diff --git a/src/js/06-plate-actions.js b/src/js/06-plate-actions.js
+index f01c8fc..ce3bc02 100644
+--- a/src/js/06-plate-actions.js
++++ b/src/js/06-plate-actions.js
+@@ -17,7 +17,6 @@ function saveNewPlate(){
+   const c = toCents(input.value, curOf(r));
+   if (c === null) { err.textContent = 'Enter the price, for example ' + plain(450, curOf(r)) + '.'; input.focus(); return; }
+   if (r.plates.some(p => p.colour.toLowerCase() === CC.value)) { err.textContent = 'You already have a plate in this colour. Pick a different one.'; return; }
+-  if (!isPremium() && r.plates.length >= FREE_PLATES) { hideModal(); showUpgrade('plates'); return; }
+   r.plates.push({ id: uid(), colour: CC.value, price: c });
+   persist(); hideModal(); render(); toast('Plate added');
+ }
+diff --git a/src/js/07-views.js b/src/js/07-views.js
+index f3de783..b97098e 100644
+--- a/src/js/07-views.js
++++ b/src/js/07-views.js
+@@ -62,7 +62,7 @@ function viewPick(){
+       <p class="intro">Add the sushi train you're at, set the colour and price of each plate, then tap as you grab them.</p>
+       <button class="btn primary big" data-act="new">Get started</button>
+     </div>`;
+-  } else if (isPremium()) {
++  } else {
+     const opts = S.restaurants.map(r => {
+       const t = totalOf(r);
+       return `<option value="${r.id}">${esc(r.name)}${t ? ` · ${money(t, r)} so far` : ''}</option>`;
+@@ -77,18 +77,8 @@ function viewPick(){
+         </select>
+       </div>
+     </div>`;
+-  } else {
+-    // free: one restaurant, no picker
+-    const first = S.restaurants[0], more = S.restaurants.length - FREE_RESTAURANTS;
+-    picker = `<div class="picker">
+-      <div class="pick-label">Your restaurant</div>
+-      <button class="btn primary big" data-act="open" data-id="${first.id}">${esc(first.name)}</button>
+-      <button class="btn ghost" data-act="upsell" data-why="restaurants">${more > 0
+-        ? `${more} more saved. Unlock Premium to use ${more === 1 ? 'it' : 'them'}`
+-        : 'Want more than one restaurant? Unlock Premium'}</button>
+-    </div>`;
+   }
+-  return `<div class="screen narrow"><div class="scroll"><div class="landing">${hero}<div>${picker}<div class="ver">Build ${BUILD}${BUILD_ID !== 'dev' ? ' · ' + BUILD_ID : ''} · ${editionLabel()}</div></div></div></div></div>`;
++  return `<div class="screen narrow"><div class="scroll"><div class="landing">${hero}<div>${picker}<div class="ver">Build ${BUILD}${BUILD_ID !== 'dev' ? ' · ' + BUILD_ID : ''}</div></div></div></div></div>`;
+ }
+ 
+ function viewBill(){
+@@ -96,11 +86,6 @@ function viewBill(){
+   const plates = r.plates.map((p, idx) => {
+     const n = b.counts[p.id] || 0;
+     const lbl = money(p.price, r), pf = lbl.length <= 6 ? 10.5 : lbl.length === 7 ? 9.5 : lbl.length <= 9 ? 8 : 6.8;   // longer labels get smaller type
+-    if (!isPremium() && idx >= FREE_PLATES) {   // free: only the first plates work, the rest are locked (never deleted)
+-      return `<button class="plate-btn locked" data-act="upsell" data-why="plates" aria-label="${esc(p.colour)} plate, ${lbl}. Premium feature">
+-      <div class="plate" style="--c:${p.colour};--ink:${inkFor(p.colour)};--pf:${pf}"><span class="n lock">${ICON.lock}</span><span class="price">${lbl}</span></div>
+-    </button>`;
+-    }
+     return `<button class="plate-btn ${n ? 'has' : ''}" data-act="plate" data-id="${p.id}" aria-label="${esc(p.colour)} plate, ${lbl}, ${n} taken">
+       <div class="plate" data-plate="${p.id}" style="--c:${p.colour};--ink:${inkFor(p.colour)};--pf:${pf}"><span class="n ${n ? '' : 'zero'}">${n}</span><span class="price">${lbl}</span></div>
+     </button>`;
+@@ -135,8 +120,8 @@ function viewBill(){
+         <button data-act="start-remove">Remove a plate</button>
+         <hr>
+         <button data-act="edit" data-id="${r.id}">Edit this restaurant</button>
+-        <button data-act="new">Add a new restaurant${isPremium() ? '' : '<span class="pro">Premium</span>'}</button>
+-        ${isPremium() ? '<button data-act="pick">Switch restaurant</button>' : '<hr><button class="up-entry" data-act="upsell" data-why="generic">Unlock Premium</button>'}
++        <button data-act="new">Add a new restaurant</button>
++        <button data-act="pick">Switch restaurant</button>
+         <hr>
+         <button class="danger" data-act="reset">Start a new bill</button>
+       </div>` : ''}
+@@ -184,20 +169,16 @@ function viewEdit(){
+       <div class="field-label" style="margin-top:0">Restaurant name</div>
+       <input type="text" enterkeyhint="next" value="${esc(d.name)}" placeholder="e.g. Sushi Hub" data-field="name" id="rname">
+       <div class="field-label">Currency</div>
+-      ${isPremium()
+-        ? `<div class="select-wrap"><select id="cur-select" aria-label="Currency">${currencyOptions(cur)}</select></div>
+-      ${d.isNew ? '' : '<p class="muted" style="margin:8px 2px 0;font-size:14px">Changing the currency does not convert the prices.</p>'}`
+-        : `<button class="select-like" data-act="upsell" data-why="currency"><span>${esc(currencyLabel(cur))}</span><span class="pro">Premium</span></button>`}
++      <div class="select-wrap"><select id="cur-select" aria-label="Currency">${currencyOptions(cur)}</select></div>
++      ${d.isNew ? '' : '<p class="muted" style="margin:8px 2px 0;font-size:14px">Changing the currency does not convert the prices.</p>'}
+       <div class="field-label">Plates</div>
+-      <p class="muted" style="margin:-4px 0 12px;font-size:14px">Tap a circle to change the plate colour, then enter its price.${isPremium() ? '' : ` The free version has up to ${FREE_PLATES} plates.`}</p>
++      <p class="muted" style="margin:-4px 0 12px;font-size:14px">Tap a circle to change the plate colour, then enter its price.</p>
+       ${rows}
+-      <button class="btn" style="width:100%" data-act="add-plate">Add a plate${!isPremium() && d.plates.length >= FREE_PLATES ? '<span class="pro">Premium</span>' : ''}</button>
+-      <div class="field-label">Menu items${isPremium() ? '' : '<span class="pro">Premium</span>'}</div>
+-      ${isPremium() ? `<p class="muted" style="margin:-4px 0 12px;font-size:14px">Drinks and other extras with set prices. You can pick these when adding an item to a bill.</p>
++      <button class="btn" style="width:100%" data-act="add-plate">Add a plate</button>
++      <div class="field-label">Menu items</div>
++      <p class="muted" style="margin:-4px 0 12px;font-size:14px">Drinks and other extras with set prices. You can pick these when adding an item to a bill.</p>
+       ${irows}
+-      <button class="btn" style="width:100%" data-act="add-item">Add a menu item</button>`
+-      : `<p class="muted" style="margin:-4px 0 12px;font-size:14px">Save drinks and other extras with set prices, then pick them in one tap.${d.items.length ? ` Your ${d.items.length} saved item${d.items.length === 1 ? ' is' : 's are'} kept safe and will be back when you unlock Premium.` : ''}</p>
+-      <button class="btn" style="width:100%" data-act="upsell" data-why="items">Unlock Premium</button>`}
++      <button class="btn" style="width:100%" data-act="add-item">Add a menu item</button>
+       ${d.isNew ? '' : '<button class="btn danger" style="width:100%;margin-top:28px" data-act="del-rest">Delete this restaurant</button>'}
+     </div>
+     <div class="footer-actions">
+diff --git a/src/js/09-editing.js b/src/js/09-editing.js
+index 9897811..a640908 100644
+--- a/src/js/09-editing.js
++++ b/src/js/09-editing.js
+@@ -5,7 +5,7 @@ function startDraft(id){
+     ? { id: r.id, isNew: false, name: r.name, currency: curOf(r),
+       plates: r.plates.map(p => ({ id: p.id, colour: p.colour, price: plain(p.price, curOf(r)) })),
+       items: (r.items || []).map(it => ({ id: it.id, desc: it.desc, price: plain(it.price, curOf(r)) })) }
+-    : { id: uid(), isNew: true, name: '', currency: (isPremium() && S.lastCurrency) || defaultCurrency(),
++    : { id: uid(), isNew: true, name: '', currency: S.lastCurrency || defaultCurrency(),
+       plates: [{ id: uid(), colour: SWATCHES[0], price: '' }], items: [] };
+   ui.prevView = ui.view;
+   go('edit');
+@@ -13,7 +13,6 @@ function startDraft(id){
+ function saveDraft(){
+   const d = ui.draft;
+   if (!d.name.trim()) { alert('Give the restaurant a name.'); return; }
+-  if (d.isNew && !isPremium() && S.restaurants.length >= FREE_RESTAURANTS) { showUpgrade('restaurants'); return; }
+   const plates = [];
+   for (const p of d.plates) {
+     if (p.price.trim() === '') continue;               // ignore blank rows
+diff --git a/src/js/10-events.js b/src/js/10-events.js
+index d1303a9..c1ec7ca 100644
+--- a/src/js/10-events.js
++++ b/src/js/10-events.js
+@@ -8,22 +8,16 @@ document.addEventListener('click', e => {
+   switch (act) {
+     case 'open': {
+       const r = S.restaurants.find(x => x.id === id);
+-      if (!r || (!isPremium() && S.restaurants.indexOf(r) >= FREE_RESTAURANTS)) { showUpgrade('restaurants'); break; }
++      if (!r) break;
+       S.current = id; persist(); go('bill'); break;
+     }
+     case 'pick': go('pick'); break;
+     case 'bill': go('bill'); break;
+-    case 'new':
+-      if (!isPremium() && S.restaurants.length >= FREE_RESTAURANTS) { if (ui.menu) { ui.menu = false; render(); } showUpgrade('restaurants'); break; }
+-      startDraft(null); break;
++    case 'new': startDraft(null); break;
+     case 'edit': startDraft(id); break;
+     case 'edit-back': ui.draft = null; go(ui.prevView === 'bill' && rest() ? 'bill' : 'pick'); break;
+     case 'dock-toggle': setDock(!ui.dock); break;
+     case 'dock-close': setDock(false); break;
+-    case 'upsell': if (ui.menu) { ui.menu = false; render(); } showUpgrade(t.dataset.why); break;
+-    case 'up-close': hideUpgrade(); break;
+-    case 'up-buy': buyPremium(); break;
+-    case 'up-restore': restorePurchase(); break;
+     case 'menu': ui.menu = true; render(); break;
+     case 'menu-close': ui.menu = false; render(); break;
+     case 'itemised': go('itemised'); break;
+@@ -48,9 +42,7 @@ document.addEventListener('click', e => {
+       }
+       break;
+     }
+-    case 'add-plate-modal':
+-      if (!isPremium() && rest().plates.length >= FREE_PLATES) { showUpgrade('plates'); break; }
+-      openAddPlate(); break;
++    case 'add-plate-modal': openAddPlate(); break;
+     case 'np-save': saveNewPlate(); break;
+     case 'm-close': hideModal(); break;
+     case 'm-remove': {
+@@ -92,7 +84,6 @@ document.addEventListener('click', e => {
+       const b = billOf(S.current); b.extras = b.extras.filter(x => x.id !== id); persist(); render(); break;
+     }
+     case 'add-plate':
+-      if (!isPremium() && ui.draft.plates.length >= FREE_PLATES) { showUpgrade('plates'); break; }
+       ui.draft.plates.push({ id: uid(), colour: SWATCHES[ui.draft.plates.length % SWATCHES.length], price: '' });
+       render();
+       { const inputs = document.querySelectorAll('[data-field="price"]'); inputs[inputs.length - 1]?.focus(); }
+@@ -180,8 +171,8 @@ document.addEventListener('submit', e => {
+   if (c === null || c === 0) { priceEl.focus(); priceEl.style.borderColor = 'var(--danger)'; return; }
+   const desc = descEl.value.trim(), r = rest();
+   billOf(r.id).extras.push({ id: uid(), price: c, desc });
+-  // Premium: a new description is remembered on this restaurant's menu, or its saved price updated (quietly)
+-  if (isPremium() && desc) {
++  // a new description is remembered on this restaurant's menu, or its saved price updated (quietly)
++  if (desc) {
+     r.items ||= [];
+     const existing = r.items.find(i => i.desc.toLowerCase() === desc.toLowerCase());
+     if (!existing) r.items.push({ id: uid(), desc, price: c });
+diff --git a/src/js/11-suggestions.js b/src/js/11-suggestions.js
+index 46621e3..cb0a109 100644
+--- a/src/js/11-suggestions.js
++++ b/src/js/11-suggestions.js
+@@ -16,12 +16,6 @@ function otherItems(excludeRestId, takenDescs, q){
+ function showSuggest(){
+   const box = document.getElementById('suggest'), input = document.getElementById('xdesc');
+   if (!box || !input) return;
+-  if (!isPremium()) {   // free: no saved items, just a nudge while the box is empty
+-    const typed = input.value.trim();
+-    box.innerHTML = typed ? '' : '<button type="button" data-act="upsell" data-why="items"><span>Save items for next time</span><small class="pro-note">Premium</small></button>';
+-    box.hidden = !!typed;
+-    return;
+-  }
+   const items = rest().items || [], raw = input.value.trim(), q = raw.toLowerCase();
+   const mine = items.filter(i => i.desc.toLowerCase().includes(q));
+   // items from other restaurants are offered too (on focus, and narrowed as you type); they never bring a price with them
+@@ -52,7 +46,6 @@ function hideSuggest(){ const b = document.getElementById('suggest'); if (b) b.h
+ document.addEventListener('keydown', e => {
+   if (e.key === 'Escape') {
+     if (document.getElementById('modal')) hideModal();
+-    else if (document.getElementById('upgrade')) hideUpgrade();
+     else if (ui.dock) setDock(false);
+     return;
+   }
+@@ -102,6 +95,6 @@ function toast(msg){
+ }
+ 
+ render();
+-refreshEntitlement();   // inside the Play app: ask Google Play whether Premium is owned
+-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshEntitlement(); });
++// tidy away what the old Premium unlock kept on the phone (everything is free now)
++try { ['plateTally.entitlement.v1', 'plateTally.acked.v1', 'plateTally.pending.v1'].forEach(k => localStorage.removeItem(k)); } catch {}
+ 
+diff --git a/src/styles.css b/src/styles.css
+index b56991b..40adf3e 100644
+--- a/src/styles.css
++++ b/src/styles.css
+@@ -173,35 +173,6 @@ html.kb .extras{padding-bottom:16px}
+   font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.45);white-space:nowrap}
+ #update-banner button{border-radius:10px;padding:8px 12px;font-weight:800;background:rgba(0,0,0,.16)}
+ #update-banner .x{padding:8px 10px;font-size:18px;line-height:1}
+-/* ---------- editions: premium pill, locks, upgrade sheet ---------- */
+-.pro{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;background:var(--wasabi);color:#1c2a0a;
+-  font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;vertical-align:middle;white-space:nowrap}
+-.btn.ghost{background:transparent;color:var(--mute);width:100%;margin-top:10px;font-weight:500;font-size:15px}
+-.select-like{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;
+-  background:var(--belt);border:2px solid var(--belt-2);border-radius:16px;padding:17px 18px;font-size:19px;color:var(--mute)}
+-.menu .up-entry{color:var(--wasabi);font-weight:800}
+-.suggest small.pro-note{color:var(--wasabi)}
+-.plate-btn.locked .plate{filter:grayscale(.8) brightness(.72)}
+-.plate .n.lock svg{width:40px;height:40px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.75}
+-@supports (height:1cqh){ .plate .n.lock svg{width:30cqw;height:30cqw} }
+-#upgrade{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center}
+-#upgrade .up-scrim{position:absolute;inset:0;background:rgba(0,0,0,.6)}
+-#upgrade .up-card{position:relative;width:min(520px,100%);max-height:92%;overflow-y:auto;background:var(--belt);
+-  border-radius:24px 24px 0 0;padding:24px 20px calc(20px + env(safe-area-inset-bottom,0px));
+-  box-shadow:0 -12px 40px rgba(0,0,0,.5);animation:upIn .28s ease-out}
+-@keyframes upIn{from{transform:translateY(40px);opacity:0}}
+-#upgrade h2{margin:0 0 6px;font-size:26px;font-weight:800}
+-#upgrade .up-why{margin:0 0 14px;color:var(--wasabi);font-weight:500;line-height:1.4}
+-#upgrade ul{list-style:none;margin:0 0 14px;padding:0}
+-#upgrade li{display:flex;gap:10px;align-items:flex-start;padding:7px 0;line-height:1.35}
+-#upgrade li::before{content:'';flex:none;width:7px;height:12px;margin:3px 4px 0 3px;border:solid var(--wasabi);border-width:0 3px 3px 0;transform:rotate(40deg)}
+-#upgrade .small{font-size:14px;margin:8px 2px}
+-#upgrade .up-msg{min-height:20px;margin:6px 2px;color:var(--danger);font-size:14px}
+-#upgrade .up-msg.ok{color:var(--price)}
+-#upgrade .up-row{display:flex;gap:10px;margin-top:10px}
+-#upgrade .up-row .btn{flex:1}
+-#upgrade .btn[disabled]{opacity:.6;pointer-events:none}
+-@media (prefers-reduced-motion:reduce){#upgrade .up-card{animation:none}}
+ /* itemised bill: a quiet icon for extras (not a button) */
+ .line .chip.extra{background:none;box-shadow:none;color:var(--mute);display:grid;place-items:center}
+ .line .chip.extra svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+diff --git a/store/listing.md b/store/listing.md
+index 8c72f97..c8b0be9 100644
+--- a/store/listing.md
++++ b/store/listing.md
+@@ -16,25 +16,20 @@ Sushi Train Track keeps a running total while you eat at a sushi train (kaiten-z
+ 
+ Set up your restaurant once: choose a colour and a price for each plate. Then, every time you take a plate off the belt, tap its colour. The total at the top goes up straight away.
+ 
+-FREE
++EVERYTHING IS FREE
+ • Tap a plate to add it, with a big running total at the top
+-• Colour-coded plates with the price shown on each one
++• Colour-coded plates with the price shown on each one, as many as your restaurant has
+ • Took one by mistake? Remove-a-plate mode takes it off again
+ • An itemised bill showing every plate colour and the total
+ • Add drinks and other extras with a price and a short description
+-• Your bill is saved on your phone, so it is still there if you close the app
+-• One restaurant with up to 5 plate colours
+-• Works offline, on phones and tablets
+-
+-PREMIUM (one-time purchase, no subscription)
+-• As many restaurants as you like, each with its own bill
+-• More than 5 plates per restaurant
+ • Saved menu items: pick your usual drink in one tap, with suggestions from your other restaurants
+-• A currency for each restaurant, with amounts shown in your phone's own style
++• As many restaurants as you like, each with its own bill and its own currency
+ • A quick restaurant picker that shows your bills in progress
++• Your bill is saved on your phone, so it is still there if you close the app
++• Works offline, on phones and tablets
+ 
+ PRIVATE AND SIMPLE
+-• No ads, no accounts and no tracking
++• No ads, no in-app purchases, no accounts and no tracking
+ • Everything you enter stays on your phone
+ 
+ Perfect for solo diners, families, and anyone who has ever lost count of the plates.
+@@ -50,18 +45,6 @@ Perfect for solo diners, families, and anyone who has ever lost count of the pla
+ **Privacy policy URL**: https://sushi.robsofficetips.com/privacy
+ **Default language**: English (Australia)
+ 
+-## One-time product (Monetize with Play > Products > One-time products)
+-
+-| Field | Value |
+-|---|---|
+-| Product ID | `premium_unlock` (must match exactly, and cannot be changed afterwards) |
+-| Purchase option ID | `buy-premium` (an internal label only; lowercase letters, numbers and hyphens) |
+-| Purchase type | Buy (keep it marked backwards compatible, which the first Buy option is by default) |
+-| Name | Premium |
+-| Description | Unlock unlimited restaurants, more than 5 plates, saved menu items and a currency for each restaurant. One-time purchase. |
+-| Price | [your choice, for example A$4.99. Play offers to convert to other currencies] |
+-| Status | Active |
+-
+ ## Policy forms (Dashboard > "Set up your app")
+ 
+ | Form | Suggested answer |
+@@ -73,9 +56,17 @@ Perfect for solo diners, families, and anyone who has ever lost count of the pla
+ | News app / COVID-19 / Government / Health / Financial features | No / No / No / No / None |
+ | Data safety | Does the app collect or share any user data? No. Is data encrypted in transit? Yes (the app is loaded over HTTPS). See the note below. |
+ 
+-**Data safety note.** The app itself collects nothing: restaurants, prices and bills stay on the phone, there are no accounts, no analytics and no ads, and the font is bundled so there are no third-party requests. The only network traffic is loading the app's own files from your Cloudflare-hosted site, which (like any web host) sees IP addresses, and the purchase check. When someone buys Premium, the app sends the purchase receipt (a code from Google Play) to your own `/api/acknowledge` function on Cloudflare, which uses it only to confirm and acknowledge the purchase with Google. It is not stored. Google's Data safety definitions treat data that is only handled briefly to serve a request differently from data that is collected, so read those definitions on the form and answer the way you are comfortable with. The privacy policy says this in plain words. The form is a declaration you make, so read Google's definitions on the form itself and answer the way you are comfortable with. If you later add analytics, accounts or cloud backup, this answer and the privacy policy must change.
++**Data safety note.** The app collects nothing: restaurants, prices and bills stay on the phone, there are no accounts, no analytics, no ads and no purchases, and the font is bundled so there are no third-party requests. The only network traffic is loading the app's own files from your Cloudflare-hosted site, which (like any web host) sees IP addresses. The form is a declaration you make, so read Google's definitions on the form itself and answer the way you are comfortable with. If you later add analytics, accounts or cloud backup, this answer and the privacy policy must change.
++
++## Release notes
++
++Everything-free release (21 Oct 2026):
++
++```
++Everything is now free: as many restaurants and plates as you like, saved menu items and a currency for each restaurant. No purchases, no ads.
++```
+ 
+-## Release notes (first release)
++First release:
+ 
+ ```
+ First release. Tap each plate you take and watch your sushi train bill add up.
+diff --git a/tests/suites/03-editions.js b/tests/suites/03-editions.js
+deleted file mode 100644
+index 0d83b77..0000000
+--- a/tests/suites/03-editions.js
++++ /dev/null
+@@ -1,66 +0,0 @@
+-const { open, sample, stateWith, plate } = require('../lib/harness');
+-const many = n => sample({ plates: Array.from({ length: n }, (_, i) => plate('q' + i, '#e5484d', 100 + i)) });
+-exports.run = async t => {
+-  // the website is fully unlocked by default
+-  let a = await open({ state: stateWith([sample()]) });
+-  t.eq('website: premium', a.ev('isPremium()'), true);
+-  a.close();
+-
+-  // ?edition=free pretends to be the free tier; ?edition=reset undoes it
+-  a = await open({ search: '?edition=free', state: stateWith([sample()]) });
+-  t.eq('preview free: not premium', a.ev('isPremium()'), false);
+-  a.close();
+-  a = await open({ search: '?edition=reset', session: { 'stt-edition': 'free' } });
+-  t.eq('reset goes back to normal', a.ev('isPremium()'), true);
+-  a.close();
+-
+-  // free tier: second restaurant is blocked and shows the upgrade sheet
+-  a = await open({ search: '?edition=free', state: stateWith([sample()]) });
+-  a.ev("go('bill')"); a.act('menu'); a.act('new');
+-  t.check('upgrade sheet appears for a 2nd restaurant', !!a.$('#upgrade'));
+-  t.check('sheet explains why', a.text('.up-why').includes('restaurants'), a.text('.up-why'));
+-  a.act('up-close');
+-  t.check('"Not now" closes the sheet', !a.$('#upgrade'));
+-  a.close();
+-
+-  // free tier: plates after the 5th are locked, not deleted
+-  a = await open({ search: '?edition=free', state: stateWith([many(7)]) });
+-  a.ev("go('bill')");
+-  t.eq('5 usable plates', a.$$('.plate-btn[data-act="plate"]').length, 5);
+-  t.eq('2 locked plates', a.$$('.plate-btn.locked').length, 2);
+-  t.eq('nothing deleted from the saved data', a.S().restaurants[0].plates.length, 7);
+-  a.click('.plate-btn.locked');
+-  t.check('tapping a locked plate offers Premium', !!a.$('#upgrade'));
+-  a.close();
+-
+-  // free tier: cannot add a 6th plate in the editor
+-  a = await open({ search: '?edition=free', state: stateWith([many(5)]) });
+-  a.ev("go('bill')"); a.act('menu'); a.act('edit', 'r1'); a.act('add-plate');
+-  t.check('6th plate asks for Premium', !!a.$('#upgrade'));
+-  t.eq('editor still has 5', a.ev('ui.draft.plates.length'), 5);
+-  a.close();
+-
+-  // free tier does not remember menu items; premium does
+-  for (const [search, want] of [['?edition=free', 0], ['?edition=premium', 1]]) {
+-    a = await open({ search, state: stateWith([sample()]) });
+-    a.ev("go('bill')"); a.act('dock-toggle');
+-    a.type('#xdesc', 'Green tea'); a.type('#xprice', '3'); a.submit('#extra-form');
+-    t.eq(`${search}: saved menu items`, a.S().restaurants[0].items.length, want);
+-    a.close();
+-  }
+-
+-  // inside the Play app: free until bought; the purchase flag decides
+-  a = await open({ search: '?app=play', state: stateWith([sample()]) });
+-  t.eq('play app starts free', a.ev('isPremium()'), false);
+-  t.eq('play app label', a.ev('editionLabel()'), 'Free');
+-  a.close();
+-  a = await open({ search: '?app=play', state: stateWith([sample()]), storage: { 'plateTally.entitlement.v1': JSON.stringify({ purchased: true }) } });
+-  t.eq('play app with saved purchase is premium', a.ev('isPremium()'), true);
+-  a.close();
+-  a = await open({ search: '?app=play&edition=premium', state: stateWith([sample()]) });
+-  t.eq('?edition is ignored inside the play app', a.ev('isPremium()'), false);
+-  a.close();
+-  a = await open({ referrer: 'android-app://com.robsofficetips.sushitraintrack/', state: stateWith([sample()]) });
+-  t.eq('android-app referrer counts as the play app', a.ev('IN_PLAY_APP'), true);
+-  a.close();
+-};
+diff --git a/tests/suites/03-free-for-all.js b/tests/suites/03-free-for-all.js
+new file mode 100644
+index 0000000..8afa1af
+--- /dev/null
++++ b/tests/suites/03-free-for-all.js
+@@ -0,0 +1,59 @@
++// Everything is free for everyone: the website, the Play app, and phones that had the old Premium unlock.
++const { open, sample, stateWith, plate } = require('../lib/harness');
++const many = (id, n) => sample({ id, name: 'R' + id, plates: Array.from({ length: n }, (_, i) => plate(id + 'q' + i, '#e5484d', 100 + i)) });
++const PLACES = [['website', {}], ['play app', { search: '?app=play' }], ['android referrer', { referrer: 'android-app://com.robsofficetips.sushitraintrack/' }]];
++
++exports.run = async t => {
++  for (const [where, how] of PLACES) {
++    // several restaurants: the pick list, with bills in progress
++    let a = await open({ ...how, state: stateWith([many('r1', 3), many('r2', 3)], { r2: { counts: { r2q0: 2 }, extras: [] } }, null) });
++    const opts = a.$$('#rest-select option').map(o => o.textContent);
++    t.check(`${where}: pick list shows both restaurants`, opts.some(o => o.startsWith('Rr1')) && opts.some(o => o.startsWith('Rr2')), opts);
++    t.check(`${where}: pick list shows a bill in progress`, opts.some(o => o.includes('so far')), opts);
++    t.check(`${where}: no Premium wording anywhere`, !/premium|unlock/i.test(a.text('#app')), a.text('#app'));
++    t.check(`${where}: version label has no edition`, !/Website|Free/.test(a.text('.ver')), a.text('.ver'));
++    a.close();
++
++    // more than 5 plates all work, and more can be added
++    a = await open({ ...how, state: stateWith([many('r1', 7)]) });
++    a.ev("go('bill')");
++    t.eq(`${where}: all 7 plates tappable`, a.$$('.plate-btn[data-act="plate"]').length, 7);
++    t.eq(`${where}: nothing locked`, a.$$('.plate-btn.locked').length, 0);
++    a.click(a.$$('.plate-btn[data-act="plate"]')[6]);
++    t.eq(`${where}: 7th plate counts`, a.S().bills.r1.counts.r1q6, 1);
++    a.act('menu');
++    t.check(`${where}: menu has Switch restaurant`, !!a.$('[data-act="pick"]'));
++    t.check(`${where}: menu has no upgrade entry`, !/premium|unlock/i.test(a.text('.menu')), a.text('.menu'));
++    a.act('edit', 'r1'); a.act('add-plate');
++    t.eq(`${where}: editor adds an 8th plate`, a.ev('ui.draft.plates.length'), 8);
++    t.check(`${where}: currency is a real choice`, !!a.$('#cur-select'));
++    t.check(`${where}: menu items can be added`, !!a.$('[data-act="add-item"]'));
++    a.close();
++
++    // a second restaurant can be created
++    a = await open({ ...how, state: stateWith([sample()]) });
++    a.ev("go('bill')"); a.act('menu'); a.act('new');
++    t.eq(`${where}: new restaurant screen opens`, a.ev('ui.view'), 'edit');
++    a.type('#rname', 'Second'); a.ev("ui.draft.name = 'Second'; ui.draft.plates[0].price = '3'");
++    a.act('save-rest');
++    t.eq(`${where}: second restaurant saved`, a.S().restaurants.length, 2);
++    a.close();
++
++    // a drink typed into the drawer is remembered as a menu item
++    a = await open({ ...how, state: stateWith([sample()]) });
++    a.ev("go('bill')"); a.act('dock-toggle');
++    a.type('#xdesc', 'Green tea'); a.type('#xprice', '3'); a.submit('#extra-form');
++    t.eq(`${where}: menu item saved`, (a.S().restaurants[0].items || []).length, 1);
++    t.eq(`${where}: no page errors`, a.errors, []);
++    a.close();
++  }
++
++  // a phone that had the old Premium unlock: its leftovers are tidied away, its data is untouched
++  const a = await open({ search: '?app=play', state: stateWith([many('r1', 7)]), storage: {
++    'plateTally.entitlement.v1': JSON.stringify({ purchased: true }), 'plateTally.acked.v1': '["tok"]', 'plateTally.pending.v1': '[]' } });
++  const keys = Object.keys(a.storage());
++  t.check('old purchase records removed', !keys.some(k => /entitlement|acked|pending/.test(k)), keys);
++  t.eq('restaurants and plates kept', a.saved().restaurants[0].plates.length, 7);
++  t.eq('no leftover purchase code', a.ev("typeof getDigitalGoodsService === 'undefined' && typeof isPremium === 'undefined' && typeof showUpgrade === 'undefined'"), true);
++  a.close();
++};
+diff --git a/tests/suites/06-billing.js b/tests/suites/06-billing.js
+deleted file mode 100644
+index bb07d66..0000000
+--- a/tests/suites/06-billing.js
++++ /dev/null
+@@ -1,112 +0,0 @@
+-const { open, sample, stateWith, wait } = require('../lib/harness');
+-
+-// A pretend Google Play: svc is the billing service, resp the payment dialog result.
+-function fakePlay({ owned = [], acknowledge = false, show = 'ok', token = 'tok-1', serverReply = { ok: true }, serverDown = false } = {}) {
+-  const log = { fetches: [], completed: [], acked: [] };
+-  const svc = { getDetails: async () => [{ itemId: 'premium_unlock', price: { currency: 'AUD', value: '1.99' } }], listPurchases: async () => owned };
+-  if (acknowledge) svc.acknowledge = async (tok, kind) => { log.acked.push([tok, kind]); };
+-  const resp = { details: show === 'notoken' ? {} : { purchaseToken: token }, complete: async r => { log.completed.push(r); } };
+-  return {
+-    log,
+-    before(w) {
+-      w.getDigitalGoodsService = async () => svc;
+-      w.PaymentRequest = class { constructor(m, d) { log.method = m; log.details = d; } async show() { if (show === 'abort') { const e = new Error('closed'); e.name = 'AbortError'; throw e; } if (show === 'fail') throw new Error('boom'); return resp; } };
+-      w.fetch = async (url, init) => { log.fetches.push({ url, body: JSON.parse(init.body) }); if (serverDown) throw new Error('offline'); return { ok: serverReply.ok === true, json: async () => serverReply }; };
+-    },
+-  };
+-}
+-const play = (p, extra = {}) => open(Object.assign({ search: '?app=play', state: stateWith([sample()]), before: p.before }, extra));
+-
+-exports.run = async t => {
+-  // normal purchase: unlock, close Google's dialog with success, acknowledge through our server
+-  let p = fakePlay(), a = await play(p);
+-  a.ev("showUpgrade('generic')"); await wait(10);
+-  t.check('shows the local price', a.text('#up-buy-label').includes('1.99'), a.text('#up-buy-label'));
+-  a.act('up-buy'); await wait(60);
+-  t.eq('premium after purchase', a.ev('isPremium()'), true);
+-  t.eq('payment dialog closed with success', p.log.completed, ['success']);
+-  t.eq('asked Play for the right product', p.log.method[0].data.sku, 'premium_unlock');
+-  t.eq('server acknowledgement sent', p.log.fetches.map(f => [f.url, f.body]), [['/api/acknowledge', { sku: 'premium_unlock', purchaseToken: 'tok-1' }]]);
+-  t.eq('token remembered as acknowledged', JSON.parse(a.window.localStorage.getItem('plateTally.acked.v1')), ['tok-1']);
+-  t.check('upgrade sheet closed', !a.$('#upgrade'));
+-  t.eq('saved so it survives a restart', JSON.parse(a.window.localStorage.getItem('plateTally.entitlement.v1')).purchased, true);
+-  a.close();
+-
+-  // an older browser that can acknowledge itself does so, without our server
+-  p = fakePlay({ acknowledge: true }); a = await play(p);
+-  a.ev("showUpgrade('generic')"); a.act('up-buy'); await wait(60);
+-  t.eq('self-acknowledged', p.log.acked, [['tok-1', 'onetime']]);
+-  t.eq('no server call needed', p.log.fetches.length, 0);
+-  a.close();
+-
+-  // server is down: still unlocked, retried later
+-  p = fakePlay({ serverDown: true }); a = await play(p);
+-  a.ev("showUpgrade('generic')"); a.act('up-buy'); await wait(60);
+-  t.eq('still unlocked', a.ev('isPremium()'), true);
+-  t.eq('queued for retry', JSON.parse(a.window.localStorage.getItem('plateTally.pending.v1')), ['tok-1']);
+-  t.eq('dialog still closed', p.log.completed, ['success']);
+-  const storage = a.storage(); a.close();
+-  p = fakePlay({ owned: [{ itemId: 'premium_unlock', purchaseToken: 'tok-1' }] });   // next launch, server back
+-  a = await play(p, { storage }); await wait(80);
+-  t.check('retry sent on next launch', p.log.fetches.some(f => f.body.purchaseToken === 'tok-1'), p.log.fetches);
+-  t.eq('retry cleared the queue', JSON.parse(a.window.localStorage.getItem('plateTally.pending.v1')), []);
+-  a.close();
+-
+-  // person closes Google's dialog: nothing happens, no scary message
+-  p = fakePlay({ show: 'abort' }); a = await play(p);
+-  a.ev("showUpgrade('generic')"); a.act('up-buy'); await wait(60);
+-  t.eq('not premium', a.ev('isPremium()'), false);
+-  t.eq('no error message', a.text('#up-msg'), '');
+-  t.eq('button usable again', a.$('#up-buy').disabled, false);
+-  a.close();
+-
+-  // a real failure tells them what to do
+-  p = fakePlay({ show: 'fail' }); a = await play(p);
+-  a.ev("showUpgrade('generic')"); a.act('up-buy'); await wait(60);
+-  t.check('error mentions Restore purchase', a.text('#up-msg').includes('Restore purchase'), a.text('#up-msg'));
+-  t.eq('still free', a.ev('isPremium()'), false);
+-  a.close();
+-
+-  // dialog result without a token: closed as failed
+-  p = fakePlay({ show: 'notoken' }); a = await play(p);
+-  a.ev("showUpgrade('generic')"); a.act('up-buy'); await wait(60);
+-  t.eq('closed as failed', p.log.completed, ['fail']);
+-  t.eq('still free (no token)', a.ev('isPremium()'), false);
+-  a.close();
+-
+-  // already owned on a new phone: Restore purchase
+-  p = fakePlay({ owned: [{ itemId: 'premium_unlock', purchaseToken: 'old-tok' }] }); a = await play(p);
+-  await wait(60);
+-  t.eq('owned purchase unlocks at launch', a.ev('isPremium()'), true);
+-  a.close();
+-  p = fakePlay({ owned: [] }); a = await play(p);
+-  a.ev("showUpgrade('generic')"); a.act('up-restore'); await wait(60);
+-  t.eq('nothing to restore message', a.text('#up-msg'), 'No purchase found for this Google account.');
+-  a.close();
+-
+-  // refund: saved as bought, but Google no longer lists it
+-  p = fakePlay({ owned: [] });
+-  a = await play(p, { storage: { 'plateTally.entitlement.v1': JSON.stringify({ purchased: true }) } });
+-  await wait(60);
+-  t.eq('refund removes premium', a.ev('isPremium()'), false);
+-  a.close();
+-
+-  // Play unavailable (offline): keep what we had
+-  a = await play({ before: w => { w.getDigitalGoodsService = async () => ({ getDetails: async () => [], listPurchases: async () => { throw new Error('offline'); } }); } },
+-    { storage: { 'plateTally.entitlement.v1': JSON.stringify({ purchased: true }) } });
+-  await wait(60);
+-  t.eq('offline keeps premium', a.ev('isPremium()'), true);
+-  a.close();
+-
+-  // no billing service at all
+-  a = await play({ before: () => {} });
+-  a.ev("showUpgrade('generic')"); a.act('up-buy'); await wait(30);
+-  t.check('clear message', a.text('#up-msg').includes('not available'), a.text('#up-msg'));
+-  a.close();
+-
+-  // website: the buy button only previews
+-  a = await open({ search: '?edition=free', state: stateWith([sample()]) });
+-  a.ev("showUpgrade('generic')"); a.act('up-buy'); await wait(20);
+-  t.eq('website preview unlocks', a.ev('isPremium()'), true);
+-  a.close();
+-};
+diff --git a/tests/suites/07-acknowledge-function.js b/tests/suites/07-acknowledge-function.js
+deleted file mode 100644
+index 9829354..0000000
+--- a/tests/suites/07-acknowledge-function.js
++++ /dev/null
+@@ -1,109 +0,0 @@
+-// Checks the server function that tells Google "this purchase was received" (functions/api/acknowledge.js).
+-// It is loaded directly and given a pretend Google, so nothing real is contacted.
+-const fs = require('fs');
+-const os = require('os');
+-const path = require('path');
+-const crypto = require('crypto');
+-const { ROOT } = require('../lib/harness');
+-
+-const { privateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
+-const PEM = privateKey.export({ type: 'pkcs8', format: 'pem' });
+-const TOKEN = 'abcdefghijklmnopqrstuvwxyz0123456789';
+-let n = 0;
+-
+-async function load() {   // a fresh copy each time, because the function remembers its Google login
+-  const f = path.join(os.tmpdir(), `ack-${process.pid}-${++n}.mjs`);
+-  fs.copyFileSync(path.join(ROOT, 'functions', 'api', 'acknowledge.js'), f);
+-  const m = await import(f); fs.unlinkSync(f); return m;
+-}
+-const env = (o = {}) => Object.assign({ GOOGLE_SERVICE_ACCOUNT_JSON: JSON.stringify({ client_email: 'svc@x.iam.gserviceaccount.com', private_key: PEM }) }, o);
+-const req = (body, headers = {}, raw) => new Request('https://sushi.test/api/acknowledge', { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: raw !== undefined ? raw : JSON.stringify(body) });
+-
+-// pretend Google: purchase = what the "get purchase" call returns; options choose failures
+-function google(purchase, o = {}) {
+-  const calls = [];
+-  globalThis.fetch = async (url, init = {}) => {
+-    calls.push({ url: String(url), method: init.method || 'GET', auth: (init.headers || {}).Authorization, body: init.body });
+-    const res = (s, b) => new Response(b === undefined ? null : JSON.stringify(b), { status: s });
+-    if (String(url).startsWith('https://oauth2.googleapis.com/token')) return o.authFails ? res(401, {}) : res(200, { access_token: 'AT', expires_in: 3600 });
+-    if (String(url).endsWith(':acknowledge')) return res(o.ackStatus || 204);
+-    return o.getStatus ? res(o.getStatus, {}) : res(200, purchase);
+-  };
+-  return calls;
+-}
+-const run = async (e, body, headers, raw) => { const m = await load(); const r = await m.onRequestPost({ request: req(body, headers, raw), env: e }); return [r.status, await r.json(), m]; };
+-
+-exports.run = async t => {
+-  const realFetch = globalThis.fetch;
+-  try {
+-    // happy path
+-    let calls = google({ purchaseState: 0, acknowledgementState: 0, purchaseType: 0 });
+-    let [s, b] = await run(env(), { sku: 'premium_unlock', purchaseToken: TOKEN });
+-    t.eq('purchase acknowledged', [s, b.ok, b.acknowledged, b.test], [200, true, true, true]);
+-    const login = calls[0];
+-    t.check('logs in with a signed request', login.url.includes('oauth2.googleapis.com') && String(login.body).includes('jwt-bearer'));
+-    const jwt = new URLSearchParams(login.body).get('assertion').split('.');
+-    t.eq('signed login header', JSON.parse(Buffer.from(jwt[0], 'base64url')), { alg: 'RS256', typ: 'JWT' });
+-    t.check('login signature is valid', crypto.verify('RSA-SHA256', Buffer.from(jwt[0] + '.' + jwt[1]), crypto.createPublicKey(privateKey), Buffer.from(jwt[2], 'base64url')));
+-    const claim = JSON.parse(Buffer.from(jwt[1], 'base64url'));
+-    t.eq('claims', [claim.iss, claim.scope], ['svc@x.iam.gserviceaccount.com', 'https://www.googleapis.com/auth/androidpublisher']);
+-    const ack = calls.find(c => c.url.endsWith(':acknowledge'));
+-    t.check('acknowledge call is for the right app, product and token', ack && ack.url.includes('/com.robsofficetips.sushitraintrack/purchases/products/premium_unlock/tokens/' + TOKEN), ack && ack.url);
+-    t.eq('acknowledge uses the access token', ack.auth, 'Bearer AT');
+-
+-    // already acknowledged: no second call
+-    calls = google({ purchaseState: 0, acknowledgementState: 1, purchaseType: 0 });
+-    [s, b] = await run(env(), { sku: 'premium_unlock', purchaseToken: TOKEN });
+-    t.eq('already acknowledged is fine', [s, b.ok, b.already], [200, true, true]);
+-    t.eq('and not acknowledged twice', calls.filter(c => c.url.endsWith(':acknowledge')).length, 0);
+-
+-    // not a completed purchase
+-    google({ purchaseState: 1 });
+-    [s, b] = await run(env(), { sku: 'premium_unlock', purchaseToken: TOKEN });
+-    t.eq('cancelled/refunded purchase', [b.ok, b.reason], [false, 'not-purchased']);
+-    google({ purchaseState: 2 });
+-    [s, b] = await run(env(), { sku: 'premium_unlock', purchaseToken: TOKEN });
+-    t.eq('pending purchase', [b.ok, b.reason], [false, 'pending']);
+-    for (const code of [400, 404, 410]) {
+-      google({}, { getStatus: code });
+-      [s, b] = await run(env(), { sku: 'premium_unlock', purchaseToken: TOKEN });
+-      t.eq(`Google says ${code}: invalid token`, [b.ok, b.reason], [false, 'invalid-token']);
+-    }
+-
+-    // Google-side trouble
+-    google({}, { getStatus: 403 });
+-    [s, b] = await run(env(), { sku: 'premium_unlock', purchaseToken: TOKEN });
+-    t.eq('permission denied', [s, b.reason], [502, 'google-denied']);
+-    google({}, { getStatus: 500 });
+-    [s, b] = await run(env(), { sku: 'premium_unlock', purchaseToken: TOKEN });
+-    t.eq('Google error', [s, b.reason], [502, 'google-error']);
+-    google({}, { authFails: true });
+-    [s, b] = await run(env(), { sku: 'premium_unlock', purchaseToken: TOKEN });
+-    t.eq('login refused', [s, b.reason], [502, 'google-auth-failed']);
+-    google({ purchaseState: 0, acknowledgementState: 0 }, { ackStatus: 500 });
+-    [s, b] = await run(env(), { sku: 'premium_unlock', purchaseToken: TOKEN });
+-    t.eq('acknowledge call fails', [s, b.reason], [502, 'google-error']);
+-
+-    // bad requests never reach Google
+-    calls = google({});
+-    for (const [label, body, raw] of [['unknown product', { sku: 'other', purchaseToken: TOKEN }], ['short token', { sku: 'premium_unlock', purchaseToken: 'short' }],
+-      ['token with odd characters', { sku: 'premium_unlock', purchaseToken: 'a/b?c=d&e'.repeat(4) }], ['missing token', { sku: 'premium_unlock' }], ['not JSON', null, '{nope']]) {
+-      [s, b] = await run(env(), body, {}, raw);
+-      t.eq(label, [s, b.reason], [400, 'bad-request']);
+-    }
+-    [s, b] = await run(env(), { sku: 'premium_unlock', purchaseToken: TOKEN }, { Origin: 'https://evil.example' });
+-    t.eq('other websites are refused', [s, b.reason], [403, 'forbidden']);
+-    [s, b] = await run(env(), { sku: 'premium_unlock', purchaseToken: TOKEN }, { Origin: 'https://sushi.test' });
+-    t.check('our own site is allowed', s !== 403);
+-    t.eq('Google never contacted for bad requests', calls.filter(c => c.url.includes('purchases/products')).length <= 1, true);
+-    [s, b] = await run({}, { sku: 'premium_unlock', purchaseToken: TOKEN });
+-    t.eq('missing secret is reported', [s, b.reason], [500, 'not-configured']);
+-
+-    // package name can be overridden; other methods are refused
+-    calls = google({ purchaseState: 0, acknowledgementState: 0 });
+-    await run(env({ PLAY_PACKAGE_NAME: 'com.example.other' }), { sku: 'premium_unlock', purchaseToken: TOKEN });
+-    t.check('package name override', calls.some(c => c.url.includes('/com.example.other/')));
+-    const m = await load(); const r = await m.onRequest();
+-    t.eq('GET etc. get 405', r.status, 405);
+-  } finally { globalThis.fetch = realFetch; }
+-};
+diff --git a/tests/suites/08-setup-and-suggestions.js b/tests/suites/08-setup-and-suggestions.js
+index 403cfb7..fcb4a49 100644
+--- a/tests/suites/08-setup-and-suggestions.js
++++ b/tests/suites/08-setup-and-suggestions.js
+@@ -34,10 +34,10 @@ exports.run = async t => {
+   t.eq('own item fills the price', a.$('#xprice').value, '3.50');
+   a.close();
+ 
+-  // free edition: nothing saved, just a nudge
+-  a = await open({ search: '?edition=free', state: stateWith([sample()]) });
++  // the Play app saves menu items and offers suggestions just like the website
++  a = await open({ search: '?app=play', state: stateWith([withItems('r1', 'Kura', [['Green tea', 300]])]) });
+   a.ev("go('bill')"); a.act('dock-toggle'); focus(a, a.$('#xdesc'));
+-  t.check('free shows the Premium nudge', a.text('#suggest').includes('Save items for next time'), a.text('#suggest'));
++  t.check('play app offers saved items', a.$$('#suggest [data-act="pick-item"]').length === 1, a.text('#suggest'));
+   a.close();
+ 
+   // ---- setup screen ----
+-- 
+2.43.0
+
