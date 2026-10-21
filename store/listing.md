@@ -37,7 +37,7 @@ Perfect for solo diners, families, and anyone who has ever lost count of the pla
 
 **App icon** (512 x 512): `store/play-icon-512.png`
 **Feature graphic** (1024 x 500): `store/feature-graphic-1024x500.png`
-**Phone screenshots** (upload all six, in this order): `store/screenshots/phone-1` to `phone-6`
+**Phone screenshots** (upload all seven, in this order): `store/screenshots/phone-1` to `phone-7`
 **App category**: Food & drink
 **Tags** (pick from Play's list): Restaurants / Food (whatever is closest is fine)
 **Contact email**: [your email, shown publicly on the listing]
