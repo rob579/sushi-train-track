@@ -7,6 +7,7 @@ cd "$(dirname "$0")/.."
 out="${1:?usage: tools/assemble.sh <output-file>}"
 {
   cat src/head.html src/styles.css src/body.html
+  cat src/vendor/*.js   # third-party code, copied in (see src/vendor/README.md)
   cat src/js/*.js
   cat src/tail.html
 } > "$out"

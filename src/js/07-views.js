@@ -61,6 +61,7 @@ function viewPick(){
     picker = `<div class="picker">
       <p class="intro">Add the sushi train you're at, set the colour and price of each plate, then tap as you grab them.</p>
       <button class="btn primary big" data-act="new">Get started</button>
+      <button class="link-btn" data-act="share-receive">Got a code from a friend? Scan it</button>
     </div>`;
   } else {
     const opts = S.restaurants.map(r => {
@@ -74,6 +75,7 @@ function viewPick(){
           <option value="" disabled selected>Choose…</option>
           ${opts}
           <option value="__new">+ Add new restaurant</option>
+          <option value="__receive">Receive from a friend (scan a code)</option>
         </select>
       </div>
     </div>`;
@@ -121,6 +123,7 @@ function viewBill(){
         ${wakeSupported() ? `<button class="toggle" data-act="keep-awake" role="switch" aria-checked="${!!S.keepAwake}">Keep screen on<span class="sw${S.keepAwake ? ' on' : ''}"></span></button>` : ''}
         <hr>
         <button data-act="edit" data-id="${r.id}">Edit this restaurant</button>
+        <button data-act="share">Share</button>
         <button data-act="new">Add a new restaurant</button>
         <button data-act="pick">Switch restaurant</button>
         <hr>

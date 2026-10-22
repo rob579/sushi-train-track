@@ -1,5 +1,9 @@
 /* ============ modal dialogs ============ */
-function hideModal(){ const m = document.getElementById('modal'); if (m) m.remove(); }
+let modalCleanup = null;   // set by a modal that has something running (a camera, a timer), called when it closes
+function hideModal(){
+  const m = document.getElementById('modal'); if (m) m.remove();
+  if (modalCleanup) { const f = modalCleanup; modalCleanup = null; f(); }
+}
 function showModal(html){
   hideModal();
   const m = document.createElement('div');

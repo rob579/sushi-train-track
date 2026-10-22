@@ -11,7 +11,11 @@ So we always mean the same thing. If a word here is not what you call it, tell m
 | **Bill screen** | The main screen: total at the top, plates, drawer at the bottom | `viewBill` |
 | **Itemised bill** | The list of every plate colour and extra with the total. Always a modal over the bill screen, opened by tapping the total or from the menu | `itemisedHtml`, `openItemised` |
 | **Setup screen** | Where you create or edit a restaurant: name, currency, plates, menu items. (Also called "edit restaurant") | `viewEdit` |
-| **Menu (top-right)** | The three-line menu on the bill screen: itemised bill, remove a plate, keep screen on, edit, new restaurant, switch restaurant, start a new bill | `data-act="menu"` |
+| **Menu (top-right)** | The three-line menu on the bill screen: itemised bill, remove a plate, keep screen on, edit, share, new restaurant, switch restaurant, start a new bill | `data-act="menu"` |
+| **Share card** | Opened by **Share** in the menu: Share this restaurant, Share all restaurants (when you have more than one), Receive from a friend | `openShareMenu` |
+| **Share code** | The QR code shown for sharing. A big share shows several codes in turn ("Code 1 of 3") | `openShareCode`, `shareParts` |
+| **Scanner** | "Receive from a friend": the camera view that reads a share code, with "Scan a photo of the code instead". Also reachable from the landing page ("Got a code from a friend? Scan it") and the pick list | `openScanner` |
+| **Clash question** | "You already have …" when a received restaurant has the same name as one of yours: **Replace mine**, **Merge**, **Keep both**, and Cancel / Skip this one | `askClash` |
 
 ## Parts of the bill screen
 
@@ -33,6 +37,14 @@ So we always mean the same thing. If a word here is not what you call it, tell m
 | **Toast** | The small message that pops up and fades ("Green tea added") |
 | **Modal** | A pop-up card over the screen (remove one plate?, add a plate, plate colour) |
 | **Colour chooser** | The swatches plus the rainbow circle for mixing your own colour |
+
+## Sharing words
+
+| Term | Meaning |
+|---|---|
+| **Replace mine** | Your restaurant takes your friend's currency, plates, prices and menu items. It keeps your name, and plates of the same colour keep their count on a bill in progress |
+| **Merge** | Yours stays as it is and any plates (by colour) and menu items (by name) you don't have are added. Only offered when both use the same currency |
+| **Keep both** | Theirs is added as a new restaurant, e.g. "Kura (2)" |
 
 ## Things on a bill
 

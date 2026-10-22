@@ -22,6 +22,11 @@ document.addEventListener('click', e => {
     case 'menu-close': ui.menu = false; render(); break;
     case 'itemised': if (ui.menu) { ui.menu = false; render(); } openItemised(); break;
     case 'keep-awake': toggleKeepAwake(); break;
+    case 'share': ui.menu = false; render(); openShareMenu(); break;
+    case 'share-one': if (rest()) openShareCode([rest()]); break;
+    case 'share-all': if (S.restaurants.length) openShareCode(S.restaurants); break;
+    case 'share-receive': if (ui.menu) { ui.menu = false; render(); } openScanner(); break;
+    case 'imp-choice': chooseImport(t.dataset.c); break;
     case 'start-remove': ui.menu = false; ui.removing = true; render(); break;
     case 'cancel-remove': ui.removing = false; render(); break;
     case 'reset':
@@ -140,6 +145,7 @@ document.addEventListener('change', e => {
   if (e.target.id !== 'rest-select') return;
   const v = e.target.value;
   if (v === '__new') startDraft(null);
+  else if (v === '__receive') { e.target.value = ''; openScanner(); }
   else if (S.restaurants.some(r => r.id === v)) { S.current = v; persist(); go('bill'); }
 });
 

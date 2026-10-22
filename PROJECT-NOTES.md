@@ -39,7 +39,8 @@ An Android re-upload is only needed when `android/twa-manifest.json` changes. Ch
 |---|---|
 | `src/head.html`, `src/body.html`, `src/tail.html` | The page skeleton |
 | `src/styles.css` | All the styling |
-| `src/js/01 … 12-*.js` | The app's code in topic order, joined by file name: config + state, currency, (03 is gone: it was editions and purchases), keep screen on, dialogs + colour chooser, plate actions, views, render + drawer, editing, events, suggestions, app update |
+| `src/js/01 … 13-*.js` | The app's code in topic order, joined by file name: config + state, currency, (03 is gone: it was editions and purchases), keep screen on, dialogs + colour chooser, plate actions, views, render + drawer, editing, events, suggestions, app update, share by QR code |
+| `src/vendor/` | Third-party code copied in so it works offline: the QR code maker and the QR reader used where the phone has none. Versions, licences and how to update are in its README |
 | `sw.js` | Service worker (offline use, update banner). Stamped with the version at build time |
 | `.well-known/assetlinks.json` | Links the website to the Android app. **Contains the real signing fingerprints. Never overwrite it with a placeholder.** Must stay at the top level |
 | `privacy.html` | The privacy policy page (your real one) |
@@ -74,6 +75,8 @@ The first run installs a small test library into `~/.cache/sushi-test-deps` (out
 | keep-awake | the "Keep screen on" switch: saved, lock taken and given back as the app is shown and hidden, refused, unsupported browsers |
 | setup-and-suggestions | suggestions from other restaurants, price tidying, Enter/Next, colour chooser |
 | browser | service worker, offline, Cloudflare-style redirects, assetlinks, phone layout |
+| share | the share card, what goes in a code (never the bill), split codes, scanning, replace / merge / keep both / skip, bad codes, camera refused |
+| share-browser | in real Chrome: the code on screen reads back; a fake camera playing the codes is scanned; clash through a real scan; scanning a photo; fits a small phone |
 
 ## Decisions already made
 
@@ -81,6 +84,7 @@ The first run installs a small test library into `~/.cache/sushi-test-deps` (out
 - Things that were locked under Free were never deleted, so extra restaurants, plates and menu items from that time simply become usable again.
 - Prices are stored in hundredths of the main unit (yen 450 is stored as 45000).
 - Package `com.robsofficetips.sushitraintrack`.
+- Sharing is by QR code only, phone to phone, nothing over the internet (22 Oct 2026). Only the setup is shared (name, currency, plates, menu items), never bills. Code format `STT1:<set>:<part>/<parts>:<json chunk>`, described at the top of `src/js/13-share.js`. NFC was looked at and not used: Web NFC cannot do phone to phone and does not exist on iPhone.
 - UI text is English only for now (translation was offered, not requested).
 - The git repo is public (github.com/rob579/sushi-train-track). There are no secrets in it (the Android signing key is never committed).
 
