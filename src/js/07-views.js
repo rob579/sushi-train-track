@@ -92,7 +92,7 @@ function viewBill(){
   }).join('');
   return `<div class="screen ${ui.removing ? 'removing' : ''}">
     <div class="bill-head">
-      <div class="total"><span class="lbl">Total:</span><b id="total">${money(totalOf(r))}</b></div>
+      <button class="total" data-act="itemised" aria-label="Total, tap for the itemised bill"><span class="lbl">Total:</span><b id="total">${money(totalOf(r))}</b></button>
       <button class="icon-btn" data-act="menu" aria-label="Menu">${ICON.menu}</button>
     </div>
     ${ui.removing ? `<div class="banner"><span>Tap a plate to remove one</span><button data-act="cancel-remove">Done</button></div>` : ''}
@@ -128,7 +128,8 @@ function viewBill(){
   </div>`;
 }
 
-function viewItemised(){
+/* the itemised bill is always a modal over the bill screen (from the total or the menu) */
+function itemisedHtml(){
   const r = rest(), b = billOf(r.id);
   const plateLines = r.plates.filter(p => (b.counts[p.id] || 0) > 0).map(p => {
     const n = b.counts[p.id];
@@ -140,14 +141,16 @@ function viewItemised(){
       <div class="desc">${e.desc ? esc(e.desc) : 'Other item'}</div>
       <span class="amt">${money(e.price)}</span>
       <button class="x" data-act="del-extra" data-id="${e.id}" aria-label="Remove item">×</button></div>`).join('');
-  return `<div class="screen narrow">
-    <div class="topbar"><button class="icon-btn" data-act="bill" aria-label="Back">${ICON.back}</button><h1>${esc(r.name)}</h1></div>
-    <div class="scroll pad">
+  return `<h2>${esc(r.name)}</h2>
+    <div class="itemised">
       ${plateLines || extraLines ? plateLines + extraLines : '<p class="muted">Nothing on the bill yet.</p>'}
       <div class="grand"><span>Total</span><b>${money(totalOf(r))}</b></div>
     </div>
-  </div>`;
+    <div class="m-row"><button class="btn" data-act="m-close">Close</button></div>`;
 }
+function openItemised(){ showModal(itemisedHtml()).classList.add('itemised-modal'); }
+/* redraw it in place (no pop-in animation) after something on the bill changes */
+function refreshItemised(){ const c = document.querySelector('#modal.itemised-modal .m-card'); if (c) c.innerHTML = itemisedHtml(); }
 
 function viewEdit(){
   const d = ui.draft;

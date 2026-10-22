@@ -1,7 +1,7 @@
 /* ============ render ============ */
 let lastView = null;
 function render(){
-  const v = { pick: viewPick, bill: viewBill, itemised: viewItemised, edit: viewEdit }[ui.view];
+  const v = { pick: viewPick, bill: viewBill, edit: viewEdit }[ui.view];
   const old = document.querySelector('.scroll'), top = old ? old.scrollTop : 0;
   document.getElementById('app').innerHTML = v();
   const now = document.querySelector('.scroll');

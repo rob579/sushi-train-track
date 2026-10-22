@@ -19,8 +19,8 @@ exports.run = async t => {
   t.eq('total after 3 taps', a.text('#total').replace(/[^\d.]/g, ''), '11.50');
   t.eq('count shown on plate', a.text(`[data-plate="${ids[0]}"] .n`), '2');
   const storage = a.storage();
-  a.act('menu'); a.act('itemised');
-  t.check('itemised bill lists the total', a.bodyText().includes('11.50'));
+  a.act('menu'); a.click('.menu [data-act="itemised"]');
+  t.check('itemised bill lists the total', a.text('#modal').includes('11.50'));
   a.close();
 
   a = await open({ storage });

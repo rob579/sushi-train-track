@@ -9,7 +9,7 @@ So we always mean the same thing. If a word here is not what you call it, tell m
 | **Landing page** | The first screen: the sushi hero picture and the restaurant pick list ("Get started" when you have none) | `viewPick` |
 | **Pick list** | The drop-down / list of your restaurants, with "add new" at the end | `#rest-select` |
 | **Bill screen** | The main screen: total at the top, plates, drawer at the bottom | `viewBill` |
-| **Itemised bill** | The list of every plate colour and extra with the total | `viewItemised` |
+| **Itemised bill** | The list of every plate colour and extra with the total. Always a modal over the bill screen, opened by tapping the total or from the menu | `itemisedHtml`, `openItemised` |
 | **Setup screen** | Where you create or edit a restaurant: name, currency, plates, menu items. (Also called "edit restaurant") | `viewEdit` |
 | **Menu (top-right)** | The three-line menu on the bill screen: itemised bill, remove a plate, edit, new restaurant, switch restaurant, start a new bill | `data-act="menu"` |
 
@@ -17,7 +17,7 @@ So we always mean the same thing. If a word here is not what you call it, tell m
 
 | Term | Meaning |
 |---|---|
-| **Total** | The big running amount at the top |
+| **Total** | The big running amount at the top. Tap it for the itemised bill |
 | **Plate / plate button** | A coloured circle with its price and how many you have taken. Tap to add one. |
 | **Plate count** | The number on a plate |
 | **+ circle** (add-plate circle) | The dotted circle after the last plate that adds a new plate |

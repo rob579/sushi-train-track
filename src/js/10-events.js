@@ -20,7 +20,7 @@ document.addEventListener('click', e => {
     case 'dock-close': setDock(false); break;
     case 'menu': ui.menu = true; render(); break;
     case 'menu-close': ui.menu = false; render(); break;
-    case 'itemised': go('itemised'); break;
+    case 'itemised': if (ui.menu) { ui.menu = false; render(); } openItemised(); break;
     case 'start-remove': ui.menu = false; ui.removing = true; render(); break;
     case 'cancel-remove': ui.removing = false; render(); break;
     case 'reset':
@@ -81,7 +81,7 @@ document.addEventListener('click', e => {
       break;
     }
     case 'del-extra': {
-      const b = billOf(S.current); b.extras = b.extras.filter(x => x.id !== id); persist(); render(); break;
+      const b = billOf(S.current); b.extras = b.extras.filter(x => x.id !== id); persist(); render(); refreshItemised(); break;
     }
     case 'add-plate':
       ui.draft.plates.push({ id: uid(), colour: SWATCHES[ui.draft.plates.length % SWATCHES.length], price: '' });
