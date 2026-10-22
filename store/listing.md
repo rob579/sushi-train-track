@@ -18,8 +18,9 @@ Set up your restaurant once: choose a colour and a price for each plate. Then, e
 
 EVERYTHING IS FREE
 • Tap a plate to add it, with a big running total at the top
-• Colour-coded plates with the price shown on each one, as many as your restaurant has
+• Colour-coded plates with the price shown on each one, as many as your restaurant has, sorted by price in one tap
 • Took one by mistake? Remove-a-plate mode takes it off again
+• Pinch to zoom: choose 2 to 6 plates across, for big easy targets or everything on one screen
 • An itemised bill showing every plate colour and the total, and End meal to clear it when you leave
 • Add drinks and other extras with a price and a short description
 • Saved menu items: pick your usual drink in one tap, with suggestions from your other restaurants
@@ -61,6 +62,12 @@ Perfect for solo diners, families, and anyone who has ever lost count of the pla
 **Data safety note.** The app collects nothing: restaurants, prices and bills stay on the phone, there are no accounts, no analytics, no ads and no purchases, and the font is bundled so there are no third-party requests. The only network traffic is loading the app's own files from your Cloudflare-hosted site, which (like any web host) sees IP addresses. Sharing by QR code does not change this: the camera picture is only read on the phone to find the code, and nothing is sent anywhere, so it is not "collected" in Google's sense. The form is a declaration you make, so read Google's definitions on the form itself and answer the way you are comfortable with. If you later add analytics, accounts or cloud backup, this answer and the privacy policy must change.
 
 ## Release notes
+
+Zoom release (22 Oct 2026):
+
+```
+Pinch the plates (or use Zoom in the menu) to choose 2 to 6 plates across. Sort your plates by price in one tap when setting up a restaurant. With lots of plates, they now scroll on behind the drawer.
+```
 
 Share and end meal release (22 Oct 2026):
 
