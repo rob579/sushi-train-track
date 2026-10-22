@@ -20,12 +20,14 @@ EVERYTHING IS FREE
 • Tap a plate to add it, with a big running total at the top
 • Colour-coded plates with the price shown on each one, as many as your restaurant has
 • Took one by mistake? Remove-a-plate mode takes it off again
-• An itemised bill showing every plate colour and the total
+• An itemised bill showing every plate colour and the total, and End meal to clear it when you leave
 • Add drinks and other extras with a price and a short description
 • Saved menu items: pick your usual drink in one tap, with suggestions from your other restaurants
 • As many restaurants as you like, each with its own bill and its own currency
 • A quick restaurant picker that shows your bills in progress
 • Your bill is saved on your phone, so it is still there if you close the app
+• Share your restaurants with a friend by QR code, phone to phone, no internet needed
+• Keep screen on, so your phone doesn't go to sleep while you eat
 • Works offline, on phones and tablets
 
 PRIVATE AND SIMPLE
@@ -51,14 +53,20 @@ Perfect for solo diners, families, and anyone who has ever lost count of the pla
 |---|---|
 | App access | All functionality is available without special access |
 | Ads | No, the app does not contain ads |
-| Content rating | Category "Utility, Productivity, Communication or Other". Answer No to every question about violence, sexual content, language, gambling, drugs, and user-generated content or sharing. Expect "Everyone". |
+| Content rating | Category "Utility, Productivity, Communication or Other". Answer No to every question about violence, sexual content, language, gambling, drugs, and user-generated content or sharing (QR sharing is phone to phone and never goes over the internet, so it is not online sharing). Expect "Everyone". |
 | Target audience | 18 and over. This keeps you clear of the Families policy, which applies if you target children. |
 | News app / COVID-19 / Government / Health / Financial features | No / No / No / No / None |
 | Data safety | Does the app collect or share any user data? No. Is data encrypted in transit? Yes (the app is loaded over HTTPS). See the note below. |
 
-**Data safety note.** The app collects nothing: restaurants, prices and bills stay on the phone, there are no accounts, no analytics, no ads and no purchases, and the font is bundled so there are no third-party requests. The only network traffic is loading the app's own files from your Cloudflare-hosted site, which (like any web host) sees IP addresses. The form is a declaration you make, so read Google's definitions on the form itself and answer the way you are comfortable with. If you later add analytics, accounts or cloud backup, this answer and the privacy policy must change.
+**Data safety note.** The app collects nothing: restaurants, prices and bills stay on the phone, there are no accounts, no analytics, no ads and no purchases, and the font is bundled so there are no third-party requests. The only network traffic is loading the app's own files from your Cloudflare-hosted site, which (like any web host) sees IP addresses. Sharing by QR code does not change this: the camera picture is only read on the phone to find the code, and nothing is sent anywhere, so it is not "collected" in Google's sense. The form is a declaration you make, so read Google's definitions on the form itself and answer the way you are comfortable with. If you later add analytics, accounts or cloud backup, this answer and the privacy policy must change.
 
 ## Release notes
+
+Share and end meal release (22 Oct 2026):
+
+```
+Share your restaurants with a friend by QR code, phone to phone (bills are never shared). Keep screen on while you eat. End meal shows your bill one last time, then clears it.
+```
 
 Everything-free release (21 Oct 2026):
 
