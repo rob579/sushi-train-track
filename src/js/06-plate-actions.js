@@ -1,24 +1,29 @@
 /* ============ add a plate from the main screen ============ */
 function openAddPlate(){
-  const r = rest(), cur = curOf(r), used = new Set(r.plates.map(p => p.colour.toLowerCase()));
-  ccInit(PALETTE.find(c => !used.has(c)) || PALETTE[0]);
+  const r = rest(), cur = curOf(r), used = r.plates.flatMap(p => [p.colour, p.colour2].filter(Boolean).map(c => c.toLowerCase()));
+  ccInit(PALETTE.find(c => !used.includes(c)) || PALETTE[0], null, { kind: 'new' }, used);
   showModal(`<h2>Add a plate</h2>
-    <p class="m-sub">Choose its colour and price.</p>
-    <div class="m-preview"><div class="plate" data-cc-preview style="--c:${CC.value};--ink:${inkFor(CC.value)}"><span class="n zero">0</span></div></div>
-    ${ccHtml()}
-    <div class="field-label" style="margin-top:18px">Price</div>
+    <p class="m-sub">Enter its price and choose its colour.</p>
+    <div class="m-preview"><div class="plate" data-cc-preview><span class="n zero">0</span></div></div>
+    <div class="field-label" style="margin-top:6px">Price</div>
     <div class="money"><span>${esc(symOf(cur))}</span><input id="np-price" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" placeholder="${plain(0, cur)}" style="padding-left:${symPad(cur)}px" aria-label="Price per plate"></div>
+    <div class="field-label" style="margin-top:18px">Colour</div>
+    ${ccHtml()}
+    <div class="cc-dual" id="cc-dual"></div>
     <div class="m-err" id="np-err" role="alert"></div>
     <div class="m-row"><button class="btn" data-act="m-close">Cancel</button><button class="btn primary" data-act="np-save">Add plate</button></div>`);
   ccRefresh();
 }
-function saveNewPlate(){
+/* split: the two colours become two separate plates at the same price */
+function saveNewPlate(split){
   const r = rest(), err = document.getElementById('np-err'), input = document.getElementById('np-price');
   const c = toCents(input.value, curOf(r));
   if (c === null) { err.textContent = 'Enter the price, for example ' + plain(450, curOf(r)) + '.'; input.focus(); return; }
-  if (r.plates.some(p => p.colour.toLowerCase() === CC.value)) { err.textContent = 'You already have a plate in this colour. Pick a different one.'; return; }
-  r.plates.push({ id: uid(), colour: CC.value, price: c });
-  persist(); hideModal(); render(); toast('Plate added');
+  const [c1, c2] = ccColours();
+  if ([c1, c2].some(x => x && CC.used.includes(x))) { err.textContent = 'You already have a plate in this colour. Pick a different one.'; return; }
+  if (split && c2) r.plates.push({ id: uid(), colour: c1, price: c }, { id: uid(), colour: c2, price: c });
+  else r.plates.push(Object.assign({ id: uid(), colour: c1, price: c }, c2 ? { colour2: c2 } : {}));
+  persist(); hideModal(); render(); toast(split && c2 ? 'Two plates added' : 'Plate added');
 }
 
 /* ============ remove one plate by pressing and holding it ============ */
@@ -30,7 +35,7 @@ function confirmRemovePlate(id){
   const lbl = money(p.price, r), pf = lbl.length <= 6 ? 10.5 : lbl.length === 7 ? 9.5 : lbl.length <= 9 ? 8 : 6.8;
   showModal(`<h2>Remove one plate?</h2>
     <p class="m-sub">This takes ${esc(lbl)} off your bill.</p>
-    <div class="m-preview"><div class="plate" style="--c:${p.colour};--ink:${inkFor(p.colour)};--pf:${pf}"><span class="n">${n}</span><span class="price">${esc(lbl)}</span></div></div>
+    <div class="m-preview"><div class="plate${plateLook(p.colour, p.colour2).cls}" style="${plateLook(p.colour, p.colour2).style};--pf:${pf}"><span class="n">${n}</span><span class="price">${esc(lbl)}</span></div></div>
     <div class="m-row"><button class="btn" data-act="m-close">Cancel</button><button class="btn danger-fill" data-act="m-remove" data-id="${p.id}">Remove one</button></div>`);
 }
 document.addEventListener('pointerdown', e => {

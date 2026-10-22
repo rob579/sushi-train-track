@@ -88,8 +88,9 @@ function viewBill(){
   const plates = r.plates.map((p, idx) => {
     const n = b.counts[p.id] || 0;
     const lbl = money(p.price, r), pf = lbl.length <= 6 ? 10.5 : lbl.length === 7 ? 9.5 : lbl.length <= 9 ? 8 : 6.8;   // longer labels get smaller type
-    return `<button class="plate-btn ${n ? 'has' : ''}" data-act="plate" data-id="${p.id}" aria-label="${esc(p.colour)} plate, ${lbl}, ${n} taken">
-      <div class="plate" data-plate="${p.id}" style="--c:${p.colour};--ink:${inkFor(p.colour)};--pf:${pf}"><span class="n ${n ? '' : 'zero'}">${n}</span><span class="price">${lbl}</span></div>
+    const look = plateLook(p.colour, p.colour2);
+    return `<button class="plate-btn ${n ? 'has' : ''}" data-act="plate" data-id="${p.id}" aria-label="${esc(plateName(p))} plate, ${lbl}, ${n} taken">
+      <div class="plate${look.cls}" data-plate="${p.id}" style="${look.style};--pf:${pf}"><span class="n ${n ? '' : 'zero'}">${n}</span><span class="price">${lbl}</span></div>
     </button>`;
   }).join('');
   return `<div class="screen ${ui.removing ? 'removing' : ''}">
@@ -139,7 +140,7 @@ function itemisedHtml(endMeal){
   const r = rest(), b = billOf(r.id);
   const plateLines = r.plates.filter(p => (b.counts[p.id] || 0) > 0).map(p => {
     const n = b.counts[p.id];
-    return `<div class="line"><span class="chip" style="background:${p.colour}"></span>
+    return `<div class="line"><span class="chip" style="background:${plateFill(p.colour, p.colour2)}"></span>
       <div class="desc">${n} × plate<small>${money(p.price)} each</small></div>
       <span class="amt">${money(n * p.price)}</span></div>`;
   }).join('');
@@ -169,7 +170,7 @@ function viewEdit(){
   const d = ui.draft;
   const cur = d.currency, sym = symOf(cur), pad = symPad(cur), ph = plain(0, cur);
   const rows = d.plates.map((p, i) => `<div class="prow">
-      <button type="button" class="cdot" data-act="edit-colour" data-i="${i}" style="--c:${p.colour}" aria-label="Plate colour, tap to change"></button>
+      <button type="button" class="cdot" data-act="edit-colour" data-i="${i}" style="--c:${plateFill(p.colour, p.colour2)}" aria-label="Plate colour, tap to change"></button>
       <div class="money"><span>${esc(sym)}</span><input type="text" inputmode="decimal" enterkeyhint="next" value="${esc(p.price)}" placeholder="${ph}" style="padding-left:${pad}px" data-field="price" data-i="${i}" aria-label="Price per plate"></div>
       <button class="x" data-act="del-plate" data-i="${i}" aria-label="Remove plate">×</button>
     </div>`).join('');

@@ -15,7 +15,9 @@ function showModal(html){
 
 /* ============ colour chooser (predefined colours plus a custom mixer that starts from the chosen colour) ============ */
 const PALETTE = ['#e5484d','#f5a524','#f2d74a','#4cb782','#2bb5b0','#3e8ef7','#8b5cf6','#ec6fb0','#ffffff','#9aa3a8','#2b2b2b','#a2673a'];
-const CC = { value: '#e5484d', custom: false };
+/* CC.value is the colour being edited right now. A plate can have a second colour (same price, either colour on the belt):
+   CC.slots holds both ([first, second or null]) and CC.active says which one the swatches are changing. */
+const CC = { value: '#e5484d', custom: false, slots: ['#e5484d', null], active: 0, used: [], target: null };
 function hexToHsl(hex){
   const n = parseInt(hex.slice(1), 16);
   const r = (n >> 16 & 255) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255;
@@ -35,7 +37,38 @@ function hslToHex(h, s, l){
   const x = v => Math.round(v * 255).toString(16).padStart(2, '0');
   return '#' + x(f(0)) + x(f(8)) + x(f(4));
 }
-function ccInit(hex){ CC.value = String(hex).toLowerCase(); CC.custom = !PALETTE.includes(CC.value); }
+function ccInit(hex, hex2, target, used){
+  CC.slots = [String(hex).toLowerCase(), hex2 ? String(hex2).toLowerCase() : null];
+  CC.active = 0; CC.target = target || null; CC.used = (used || []).map(c => c.toLowerCase());
+  ccSelect(0);
+}
+function ccSelect(i){ CC.active = i; CC.value = CC.slots[i]; CC.custom = !PALETTE.includes(CC.value); }
+/* the colours chosen, with a repeated second colour dropped */
+function ccColours(){ const [a, b] = CC.slots; return [a, b && b !== a ? b : null]; }
+/* how a plate looks: one colour, or two colours half and half with white outlined writing (readable on any pair) */
+function plateLook(c1, c2){
+  return { cls: c2 ? ' two' : '', style: `--c:${c1};${c2 ? `--c2:${c2};` : ''}--ink:${c2 ? '#ffffff' : inkFor(c1)}` };
+}
+const plateFill = (c1, c2) => c2 ? `linear-gradient(90deg,${c1} 50%,${c2} 50%)` : c1;   // for the small round chips and dots
+const plateName = p => p.colour2 ? p.colour + ' and ' + p.colour2 : p.colour;
+/* the part under the colour chooser: "Add second colour", or which colour you're changing, Remove and Split */
+function ccDualHtml(){
+  const [a, b] = CC.slots;
+  if (!b) return `<button type="button" class="link-btn" data-act="cc-add2">+ Add second colour</button>`;
+  const tab = (c, i) => `<button type="button" class="cc-slot${CC.active === i ? ' sel' : ''}" data-act="cc-slot" data-i="${i}" aria-pressed="${CC.active === i}"><span style="--c:${c}"></span>${i ? 'Second' : 'First'} colour</button>`;
+  return `<div class="cc-slots" role="group" aria-label="Which colour you are changing">${tab(a, 0)}${tab(b, 1)}</div>
+    <div class="cc-dual-acts"><button type="button" class="link-btn" data-act="cc-remove">Remove ${CC.active ? 'second' : 'first'} colour</button><button type="button" class="link-btn" data-act="cc-split">Split into two plates</button></div>`;
+}
+/* "Add second colour": starts on a colour this restaurant isn't using yet */
+function ccAddSecond(){
+  const taken = new Set([...CC.used, CC.slots[0]]);
+  CC.slots[1] = PALETTE.find(c => !taken.has(c)) || PALETTE.find(c => c !== CC.slots[0]);
+  ccSelect(1); ccRefresh();
+}
+function ccRemoveColour(){
+  CC.slots = CC.active ? [CC.slots[0], null] : [CC.slots[1], null];
+  ccSelect(0); ccRefresh();
+}
 function ccHtml(){
   const sw = PALETTE.map(c => `<button type="button" class="cc-sw" data-act="cc-pick" data-c="${c}" style="--c:${c}" aria-label="Colour ${c}"></button>`).join('');
   return `<div class="cc" id="cc">
@@ -51,6 +84,7 @@ function ccHtml(){
 /* from: 'hsl' when the sliders were just moved, 'hex' when the code was just typed, nothing otherwise */
 function ccRefresh(from){
   const root = document.getElementById('cc'); if (!root) return;
+  CC.slots[CC.active] = CC.value;
   const h = document.getElementById('cc-h'), sa = document.getElementById('cc-s'), li = document.getElementById('cc-l'), hx = document.getElementById('cc-hex');
   const hsl = hexToHsl(CC.value);
   if (from !== 'hsl') { h.value = hsl.h; sa.value = hsl.s; li.value = hsl.l; }   // the mixer always starts from the colour already chosen
@@ -63,6 +97,9 @@ function ccRefresh(from){
   h.style.setProperty('--track', 'linear-gradient(90deg,hsl(0 ' + ss + '% ' + ll + '%),hsl(60 ' + ss + '% ' + ll + '%),hsl(120 ' + ss + '% ' + ll + '%),hsl(180 ' + ss + '% ' + ll + '%),hsl(240 ' + ss + '% ' + ll + '%),hsl(300 ' + ss + '% ' + ll + '%),hsl(360 ' + ss + '% ' + ll + '%))');
   sa.style.setProperty('--track', 'linear-gradient(90deg,hsl(' + hh + ' 0% ' + ll + '%),hsl(' + hh + ' 100% ' + ll + '%))');
   li.style.setProperty('--track', 'linear-gradient(90deg,#000,hsl(' + hh + ' ' + ss + '% 50%),#fff)');
-  document.querySelectorAll('[data-cc-preview]').forEach(el => { el.style.setProperty('--c', CC.value); el.style.setProperty('--ink', inkFor(CC.value)); });
+  const [c1, c2] = ccColours();
+  document.querySelectorAll('[data-cc-preview]').forEach(el => { el.setAttribute('style', plateLook(c1, c2).style); el.classList.toggle('two', !!c2); });
+  const dual = document.getElementById('cc-dual'); if (dual) dual.innerHTML = ccDualHtml();
+  const apply = document.getElementById('cc-apply-btn'); if (apply) apply.textContent = c2 ? 'Use colours' : 'Use colour';
 }
 

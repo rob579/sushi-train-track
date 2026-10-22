@@ -40,6 +40,10 @@ So we always mean the same thing. If a word here is not what you call it, tell m
 | **Toast** | The small message that pops up and fades ("Green tea added") |
 | **Modal** | A pop-up card over the screen (remove one plate?, add a plate, plate colour) |
 | **Colour chooser** | The swatches plus the rainbow circle for mixing your own colour |
+| **Add plate card** | The modal from the **+ circle**: Price first, then the colour chooser, then **+ Add second colour**, then Cancel / Add plate (code: `openAddPlate`) |
+| **Plate colour card** | The modal from tapping a plate's colour circle on the setup screen: colour chooser, **+ Add second colour**, then Cancel / Use colour (code: `edit-colour`) |
+| **Two-colour plate** | One plate that stands for two plate colours with the same price. Shown half and half on the plate button, with white outlined writing so it reads on any pair. In the code: `colour2`, `plateLook` |
+| **First colour / Second colour** | On a two-colour plate, the two buttons under the colour chooser that pick which colour the swatches change. With them: **Remove … colour** (back to one colour) and **Split into two plates** (two separate plates at the same price; on the setup screen nothing is kept until Save) (code: `ccDualHtml`) |
 
 ## Sharing words
 

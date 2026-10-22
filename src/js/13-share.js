@@ -13,10 +13,14 @@ const SHARE_PART_MAX = 600;          // characters of JSON per code: keeps each 
 const SHARE_CYCLE_MS = 1400;         // how long each code shows when there are several
 const SHARE_LIMITS = { rests: 100, plates: 60, items: 300, text: 80, price: 1e9 };
 
+/* plates match when they have a colour in common (a plate can have two colours) */
+const plateColours = p => [p.colour, p.colour2].filter(Boolean).map(c => c.toLowerCase());
+const sharesColour = (a, b) => plateColours(a).some(c => plateColours(b).includes(c));
+
 /* ---- sending ---- */
 function shareJson(list){
   const data = { v: SHARE_VERSION, r: list.map(r => {
-    const o = { n: r.name, c: curOf(r), p: r.plates.map(p => [p.colour.replace('#', '').toLowerCase(), p.price]) };
+    const o = { n: r.name, c: curOf(r), p: r.plates.map(p => { const a = [p.colour.replace('#', '').toLowerCase(), p.price]; if (p.colour2) a.push(p.colour2.replace('#', '').toLowerCase()); return a; }) };   // [colour, price, second colour if any]
     if ((r.items || []).length) o.i = r.items.map(it => [it.desc, it.price]);
     return o;
   }) };
@@ -89,9 +93,11 @@ function parseShare(json){
     const plates = [], seen = new Set();
     for (const p of r.p) {
       if (!Array.isArray(p) || typeof p[0] !== 'string' || !/^[0-9a-f]{6}$/i.test(p[0]) || price(p[1]) === null) return bad;
-      const colour = '#' + p[0].toLowerCase();
-      if (seen.has(colour)) continue;
-      seen.add(colour); plates.push({ id: uid(), colour, price: p[1] });
+      if (p[2] !== undefined && (typeof p[2] !== 'string' || !/^[0-9a-f]{6}$/i.test(p[2]))) return bad;
+      const colour = '#' + p[0].toLowerCase(), colour2 = p[2] && p[2].toLowerCase() !== p[0].toLowerCase() ? '#' + p[2].toLowerCase() : null;
+      if (seen.has(colour) || (colour2 && seen.has(colour2))) continue;
+      seen.add(colour); if (colour2) seen.add(colour2);
+      plates.push(Object.assign({ id: uid(), colour, price: p[1] }, colour2 ? { colour2 } : {}));
     }
     const items = [], seenI = new Set();
     if (r.i !== undefined && (!Array.isArray(r.i) || r.i.length > SHARE_LIMITS.items)) return bad;
@@ -271,13 +277,14 @@ function applyImport(choice, inc, mine){
   } else if (choice === 'replace') {
     // plates of the same colour keep their place, so a bill in progress keeps its counts for them
     mine.currency = inc.currency;
-    mine.plates = inc.plates.map(p => { const old = mine.plates.find(x => x.colour.toLowerCase() === p.colour); return old ? Object.assign(p, { id: old.id }) : p; });
+    const taken = new Set();   // a two-colour plate of mine can match only one of theirs
+    mine.plates = inc.plates.map(p => { const old = mine.plates.find(x => !taken.has(x.id) && sharesColour(x, p)); if (old) { taken.add(old.id); p.id = old.id; } return p; });
     mine.items = inc.items;
     const b = S.bills[mine.id];
     if (b) for (const k of Object.keys(b.counts)) if (!mine.plates.some(p => p.id === k)) delete b.counts[k];
     imp.report.push([mine.name, 'replaced with your friend\'s', mine.id]);
   } else if (choice === 'merge') {
-    const np = inc.plates.filter(p => !mine.plates.some(x => x.colour.toLowerCase() === p.colour));
+    const np = inc.plates.filter(p => !mine.plates.some(x => sharesColour(x, p)));
     mine.items ||= [];
     const ni = inc.items.filter(it => !mine.items.some(x => sameName(x.desc, it.desc)));
     mine.plates.push(...np); mine.items.push(...ni);
