@@ -69,8 +69,9 @@ Both are the same app with everything included. (Until 21 Oct 2026 the Play app 
 
 | Term | Meaning |
 |---|---|
-| **Incremental update** | A small change. I test only what changed (plus a quick check). No release paperwork. |
-| **Release update** | A version you will publish or hand to testers. Full test, plus whatever assets, docs and zip are affected. |
+| **Enhancement** | One change you ask for. Coded, tested on its own plus a quick check of the rest (`npm run test:quick`), and pushed to `testing` for you to try. No release paperwork |
+| **Release** | When you say so: full regression on everything in `testing`, fixes, and a list of the enhancements going in, for you to test |
+| **Package it into main** | After a release passes and you're happy: version label, any affected screenshots/listing/privacy policy, zip, merge `testing` into `main`. This is what goes live |
 | **Version label** | The text on the landing page ("12 Oct 2026 · menu items handle") so you can tell which copy is running |
 | **Baseline** | The first git commit of the cleaned-up project: the app exactly as it was before the cleanup |
 | **Suite** | One file of automatic checks in `tests/suites/` |

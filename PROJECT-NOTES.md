@@ -6,28 +6,27 @@ The words we use for parts of the screen are in [`docs/GLOSSARY.md`](docs/GLOSSA
 
 ## How we work (the convention)
 
-Every change goes into the **`testing`** branch first. Nothing reaches **`main`** (the live site and the Play app) until you say to release it.
+Every enhancement is treated the same way (agreed 22 Oct 2026). Nothing reaches **`main`** (the live site and the Play app) until you say so.
 
-**Making a change.** Every request is tagged one of two ways. If it is not stated, I ask.
+**Each enhancement**
 
-| | **Incremental update** | **Release update** |
-|---|---|---|
-| What it is | Small change, tweak or fix | A change that is going out in the next release |
-| Where it goes | Committed and pushed to `testing` | Committed and pushed to `testing` |
-| Testing | That enhancement alone: the suite that covers it (`npm test drawer`) | Full regression on everything in `testing`: `npm test` (includes the real-browser checks) |
+1. You suggest it.
+2. I code it.
+3. I test it: the suite that covers it (new or updated checks), plus a quick sanity check across the rest of the app (`npm run test:quick`, everything except the real-browser suites, a few seconds). If the change touches layout, the service worker or the camera, the matching real-browser suite runs too.
+4. I push it to **`testing`**.
+5. You try it and give feedback. Changes go round steps 1 to 4 again.
+6. When you're happy, it stays in `testing`. I may ask whether you want to start a release.
 
-**Getting it live.** These are separate steps, and you say when each one happens.
+**Releasing** (two separate steps, you say when each one happens)
 
 | You say | I do |
 |---|---|
-| **Prepare for release** | Full regression on everything in `testing`, and a report of anything that changed or broke compared with the last checks. Nothing goes to `main` |
-| **Release it** (or **package and release**) | Release paperwork: version label bumped; screenshots, listing text and privacy policy updated if they are affected; new zip (`sh tools/make-zip.sh`); a note on whether an Android re-upload is needed. Then `testing` is merged into `main` and pushed. This is the step that goes live |
-
-You may test `testing` yourself between these steps, or not. Either way I wait for "release it".
+| **Release** (start the release) | Full regression on everything in `testing` (`npm test`, includes the real-browser checks) and fix anything it finds. Then a list of the enhancements in `testing` that will go into this release, and a chance for you to test that version yourself. Nothing goes to `main` yet |
+| **Package it into main** | Release paperwork: version label bumped; screenshots, listing text and privacy policy updated if they are affected; new zip (`sh tools/make-zip.sh`); a note on whether an Android re-upload is needed. Then `testing` is merged into `main` and pushed. This is the step that goes live |
 
 ### Branches
 
-- **`main`** is what is live. Cloudflare builds it to sushi.robsofficetips.com, and the Play app shows it. Only "release it" changes `main`.
+- **`main`** is what is live. Cloudflare builds it to sushi.robsofficetips.com, and the Play app shows it. Only "package it into main" changes `main`.
 - **`testing`** collects every enhancement until release. If Cloudflare preview builds are on, it also gets its own preview address to try changes on a phone first.
 - On the Mac: `git checkout testing && git pull` for the latest test version, `git checkout main` for what is live.
 
@@ -90,6 +89,6 @@ The first run installs a small test library into `~/.cache/sushi-test-deps` (out
 
 ## Habits that save time
 
-- Say whether a request is incremental or release, and say "release it" when `testing` should go live.
+- Say "release" to start the full regression on `testing`, then "package it into main" when it should go live.
 - Say "I haven't touched anything", or attach the files you changed, before I overwrite anything of yours.
 - One request per message where possible, with a screenshot and the glossary word for the part you mean.
