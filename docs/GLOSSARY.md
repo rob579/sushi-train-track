@@ -9,9 +9,10 @@ So we always mean the same thing. If a word here is not what you call it, tell m
 | **Landing page** | The first screen: the sushi hero picture and the restaurant pick list ("Get started" when you have none) | `viewPick` |
 | **Pick list** | The drop-down / list of your restaurants, with "add new" at the end | `#rest-select` |
 | **Bill screen** | The main screen: total at the top, plates, drawer at the bottom | `viewBill` |
-| **Itemised bill** | The list of every plate colour and extra with the total. Always a modal over the bill screen, opened by tapping the total or from the menu | `itemisedHtml`, `openItemised` |
+| **Itemised bill** | "Your meal at <restaurant>": the list of every plate colour and extra with the total. Always a modal over the bill screen, opened by tapping the total or from the menu | `itemisedHtml`, `openItemised` |
 | **Setup screen** | Where you create or edit a restaurant: name, currency, plates, menu items. (Also called "edit restaurant") | `viewEdit` |
-| **Menu (top-right)** | The three-line menu on the bill screen: itemised bill, remove a plate, keep screen on, edit, share, new restaurant, switch restaurant, start a new bill | `data-act="menu"` |
+| **Menu (top-right)** | The three-line menu on the bill screen: itemised bill, remove a plate, keep screen on, edit, share, new restaurant, switch restaurant, end meal | `data-act="menu"` |
+| **End meal** | The last item in the menu. Shows the itemised bill with "Hope you enjoyed your meal!" and an **End meal** button, which clears the bill and goes back to the landing page. Close leaves the bill as it is | `end-meal` |
 | **Share card** | Opened by **Share** in the menu: Share this restaurant, Share all restaurants (when you have more than one), Receive from a friend | `openShareMenu` |
 | **Share code** | The QR code shown for sharing. A big share shows several codes in turn ("Code 1 of 3") | `openShareCode`, `shareParts` |
 | **Scanner** | "Receive from a friend": the camera view that reads a share code, with "Scan a photo of the code instead". Also reachable from the landing page ("Got a code from a friend? Scan it") and the pick list | `openScanner` |

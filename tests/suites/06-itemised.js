@@ -9,7 +9,8 @@ exports.run = async t => {
   a.click('.bill-head .total');
   t.check('modal opens', !!a.$('#modal.itemised-modal'));
   t.eq('bill screen stays underneath', a.ev('ui.view'), 'bill');
-  t.eq('title is the restaurant name', a.text('#modal h2'), 'Kura');
+  t.eq('title is Your meal at the restaurant', a.text('#modal h2'), 'Your meal at Kura');
+  t.check('no goodbye or End meal button from the total', !a.$('#modal .enjoyed') && !a.$('#modal [data-act="end-meal-confirm"]'));
   t.eq('one line per plate colour and extra', a.$$('#modal .line').length, 4);
   t.check('plate line', a.text('#modal').includes('2 × plate'));
   t.check('unnamed extra shows Other item', a.text('#modal').includes('Other item'));
@@ -37,6 +38,38 @@ exports.run = async t => {
   t.eq('menu closed behind it', a.ev('ui.menu'), false);
   t.eq('still on the bill screen', a.ev('ui.view'), 'bill');
   a.act('m-close');
+
+  // End meal from the menu: the same bill, with a goodbye and an End meal button
+  a.act('menu');
+  t.check('menu says End meal', a.$$('.menu button').some(b => b.textContent.trim() === 'End meal'));
+  t.check('no Start a new bill', !a.text('.menu').includes('Start a new bill'));
+  a.click('.menu [data-act="end-meal"]');
+  t.check('itemised bill opens', !!a.$('#modal.itemised-modal.end-meal'));
+  t.eq('menu closed behind it', a.ev('ui.menu'), false);
+  t.eq('same title', a.text('#modal h2'), 'Your meal at Kura');
+  t.eq('goodbye message under the title', a.text('#modal h2 + .enjoyed'), 'Hope you enjoyed your meal!');
+  t.eq('End meal button at the bottom', a.text('#modal .m-row [data-act="end-meal-confirm"]'), 'End meal');
+  // removing an extra keeps the goodbye and the button
+  a.act('del-extra', 'x2');
+  t.check('still the End meal version after a change', !!a.$('#modal .enjoyed') && !!a.$('#modal [data-act="end-meal-confirm"]'));
+  // Close leaves the bill alone
+  a.act('m-close');
+  t.check('Close closes it', !a.$('#modal'));
+  t.eq('bill kept after Close', a.S().bills.r1.counts.p1, 2);
+  t.eq('still on the bill screen after Close', a.ev('ui.view'), 'bill');
+  // the next plain itemised bill has no goodbye
+  a.click('.bill-head .total');
+  t.check('plain itemised bill afterwards', !a.$('#modal .enjoyed'));
+  a.act('m-close');
+  // End meal clears the bill and goes to the landing page
+  a.act('menu'); a.click('.menu [data-act="end-meal"]');
+  a.click('#modal [data-act="end-meal-confirm"]');
+  t.check('modal gone', !a.$('#modal'));
+  t.eq('landing page', a.ev('ui.view'), 'pick');
+  t.eq('bill cleared', a.S().bills.r1, { counts: {}, extras: [] });
+  t.check('restaurant kept', a.S().restaurants.some(r => r.id === 'r1'));
+  t.check('no "so far" on the pick list', !a.text('#rest-select').includes('so far'));
+  a.ev("go('bill')");
 
   // empty bill
   a.ev("S.bills.r1 = { counts: {}, extras: [] }; render()");

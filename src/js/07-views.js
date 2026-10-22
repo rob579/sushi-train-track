@@ -127,13 +127,14 @@ function viewBill(){
         <button data-act="new">Add a new restaurant</button>
         <button data-act="pick">Switch restaurant</button>
         <hr>
-        <button class="danger" data-act="reset">Start a new bill</button>
+        <button data-act="end-meal">End meal</button>
       </div>` : ''}
   </div>`;
 }
 
-/* the itemised bill is always a modal over the bill screen (from the total or the menu) */
-function itemisedHtml(){
+/* the itemised bill is always a modal over the bill screen (from the total or the menu).
+   From "End meal" in the menu it also says goodbye and has an End meal button (endMeal = true). */
+function itemisedHtml(endMeal){
   const r = rest(), b = billOf(r.id);
   const plateLines = r.plates.filter(p => (b.counts[p.id] || 0) > 0).map(p => {
     const n = b.counts[p.id];
@@ -145,16 +146,23 @@ function itemisedHtml(){
       <div class="desc">${e.desc ? esc(e.desc) : 'Other item'}</div>
       <span class="amt">${money(e.price)}</span>
       <button class="x" data-act="del-extra" data-id="${e.id}" aria-label="Remove item">×</button></div>`).join('');
-  return `<h2>${esc(r.name)}</h2>
+  return `<h2>Your meal at ${esc(r.name)}</h2>
+    ${endMeal ? '<p class="m-sub enjoyed">Hope you enjoyed your meal!</p>' : ''}
     <div class="itemised">
       ${plateLines || extraLines ? plateLines + extraLines : '<p class="muted">Nothing on the bill yet.</p>'}
       <div class="grand"><span>Total</span><b>${money(totalOf(r))}</b></div>
     </div>
-    <div class="m-row"><button class="btn" data-act="m-close">Close</button></div>`;
+    <div class="m-row"><button class="btn" data-act="m-close">Close</button>${endMeal ? '<button class="btn primary" data-act="end-meal-confirm">End meal</button>' : ''}</div>`;
 }
-function openItemised(){ showModal(itemisedHtml()).classList.add('itemised-modal'); }
+function openItemised(endMeal){
+  const m = showModal(itemisedHtml(endMeal));
+  m.classList.add('itemised-modal'); if (endMeal) m.classList.add('end-meal');
+}
 /* redraw it in place (no pop-in animation) after something on the bill changes */
-function refreshItemised(){ const c = document.querySelector('#modal.itemised-modal .m-card'); if (c) c.innerHTML = itemisedHtml(); }
+function refreshItemised(){
+  const m = document.querySelector('#modal.itemised-modal'); if (!m) return;
+  m.querySelector('.m-card').innerHTML = itemisedHtml(m.classList.contains('end-meal'));
+}
 
 function viewEdit(){
   const d = ui.draft;

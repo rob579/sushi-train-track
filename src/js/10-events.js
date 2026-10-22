@@ -29,10 +29,10 @@ document.addEventListener('click', e => {
     case 'imp-choice': chooseImport(t.dataset.c); break;
     case 'start-remove': ui.menu = false; ui.removing = true; render(); break;
     case 'cancel-remove': ui.removing = false; render(); break;
-    case 'reset':
-      if (confirm('Clear all plates and items and start a new bill?')) { S.bills[S.current] = { counts: {}, extras: [] }; persist(); go('bill'); }
-      else { ui.menu = false; render(); }
-      break;
+    case 'end-meal': ui.menu = false; render(); openItemised(true); break;   // the itemised bill with a goodbye and an End meal button
+    case 'end-meal-confirm':   // clear the bill and go back to the landing page
+      if (S.current) { S.bills[S.current] = { counts: {}, extras: [] }; persist(); }
+      go('pick'); break;
     case 'plate': {
       if (Date.now() < lp.suppressUntil) break;   // this click is just the end of a long press
       const r = rest(), b = billOf(r.id);
