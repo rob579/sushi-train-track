@@ -12,7 +12,14 @@ Every request for a change is tagged one of two ways. If it is not stated, I ask
 |---|---|---|
 | What it is | Small change, tweak or fix | A version you will publish or send to testers |
 | Testing | The suite that covers the change (`npm test drawer`), plus `npm run test:quick` | Everything: `npm test` (includes the real-browser checks) |
-| Also | Commit | Version label bumped, screenshots / listing text / privacy policy updated if they are affected, new zip (`sh tools/make-zip.sh`), and a note on whether an Android re-upload is needed |
+| Where it goes | Committed and pushed to the `testing` branch. Not public | `testing` is merged into `main` and pushed. This is what goes live |
+| Also | Nothing else | Version label bumped, screenshots / listing text / privacy policy updated if they are affected, new zip (`sh tools/make-zip.sh`), and a note on whether an Android re-upload is needed |
+
+### Branches
+
+- **`main`** is what is live. Cloudflare builds it to sushi.robsofficetips.com, and the Play app shows it. Only a release update changes `main`.
+- **`testing`** collects incremental updates. If Cloudflare preview builds are on, it also gets its own preview address to try changes on a phone first.
+- To get the latest test version on the Mac: `git checkout testing && git pull`. To go back to what is live: `git checkout main`.
 
 An Android re-upload is only needed when `android/twa-manifest.json` changes. Changes to the website code reach the Play app by themselves after you push.
 
