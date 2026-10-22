@@ -39,7 +39,7 @@ An Android re-upload is only needed when `android/twa-manifest.json` changes. Ch
 |---|---|
 | `src/head.html`, `src/body.html`, `src/tail.html` | The page skeleton |
 | `src/styles.css` | All the styling |
-| `src/js/01 … 12-*.js` | The app's code in topic order, joined by file name: config + state, currency, (03 and 04 are gone: they were editions and purchases), dialogs + colour chooser, plate actions, views, render + drawer, editing, events, suggestions, app update |
+| `src/js/01 … 12-*.js` | The app's code in topic order, joined by file name: config + state, currency, (03 is gone: it was editions and purchases), keep screen on, dialogs + colour chooser, plate actions, views, render + drawer, editing, events, suggestions, app update |
 | `sw.js` | Service worker (offline use, update banner). Stamped with the version at build time |
 | `.well-known/assetlinks.json` | Links the website to the Android app. **Contains the real signing fingerprints. Never overwrite it with a placeholder.** Must stay at the top level |
 | `privacy.html` | The privacy policy page (your real one) |
@@ -71,6 +71,7 @@ The first run installs a small test library into `~/.cache/sushi-test-deps` (out
 | free-for-all | website and Play app both have everything; old purchase records tidied away |
 | drawer | the drawer: handle title, add, group, + and −, messages |
 | remove | remove mode, long-press confirm, add a plate |
+| keep-awake | the "Keep screen on" switch: saved, lock taken and given back as the app is shown and hidden, refused, unsupported browsers |
 | setup-and-suggestions | suggestions from other restaurants, price tidying, Enter/Next, colour chooser |
 | browser | service worker, offline, Cloudflare-style redirects, assetlinks, phone layout |
 

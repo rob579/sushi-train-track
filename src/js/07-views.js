@@ -118,6 +118,7 @@ function viewBill(){
       <div class="menu">
         <button data-act="itemised">See itemised bill</button>
         <button data-act="start-remove">Remove a plate</button>
+        ${wakeSupported() ? `<button class="toggle" data-act="keep-awake" role="switch" aria-checked="${!!S.keepAwake}">Keep screen on<span class="sw${S.keepAwake ? ' on' : ''}"></span></button>` : ''}
         <hr>
         <button data-act="edit" data-id="${r.id}">Edit this restaurant</button>
         <button data-act="new">Add a new restaurant</button>

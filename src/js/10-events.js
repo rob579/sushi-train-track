@@ -21,6 +21,7 @@ document.addEventListener('click', e => {
     case 'menu': ui.menu = true; render(); break;
     case 'menu-close': ui.menu = false; render(); break;
     case 'itemised': if (ui.menu) { ui.menu = false; render(); } openItemised(); break;
+    case 'keep-awake': toggleKeepAwake(); break;
     case 'start-remove': ui.menu = false; ui.removing = true; render(); break;
     case 'cancel-remove': ui.removing = false; render(); break;
     case 'reset':

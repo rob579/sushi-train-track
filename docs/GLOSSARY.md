@@ -11,7 +11,7 @@ So we always mean the same thing. If a word here is not what you call it, tell m
 | **Bill screen** | The main screen: total at the top, plates, drawer at the bottom | `viewBill` |
 | **Itemised bill** | The list of every plate colour and extra with the total. Always a modal over the bill screen, opened by tapping the total or from the menu | `itemisedHtml`, `openItemised` |
 | **Setup screen** | Where you create or edit a restaurant: name, currency, plates, menu items. (Also called "edit restaurant") | `viewEdit` |
-| **Menu (top-right)** | The three-line menu on the bill screen: itemised bill, remove a plate, edit, new restaurant, switch restaurant, start a new bill | `data-act="menu"` |
+| **Menu (top-right)** | The three-line menu on the bill screen: itemised bill, remove a plate, keep screen on, edit, new restaurant, switch restaurant, start a new bill | `data-act="menu"` |
 
 ## Parts of the bill screen
 
@@ -29,6 +29,7 @@ So we always mean the same thing. If a word here is not what you call it, tell m
 | **Item list** | Inside the drawer: grouped lines like "2 x Green tea" with − and + buttons and the price |
 | **Add row** | Inside the drawer: description box, price box and the Add button |
 | **Suggestions** | The list that appears under the description box. "other menu" means it came from another restaurant (no price) |
+| **Keep screen on** | The on/off switch in the menu that stops the phone going to sleep while the app is on screen. Remembered on that phone. Hidden in browsers that can't do it |
 | **Toast** | The small message that pops up and fades ("Green tea added") |
 | **Modal** | A pop-up card over the screen (remove one plate?, add a plate, plate colour) |
 | **Colour chooser** | The swatches plus the rainbow circle for mixing your own colour |
