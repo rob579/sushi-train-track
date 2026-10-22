@@ -85,14 +85,22 @@ document.addEventListener('focusout', e => {
 });
 document.addEventListener('mousedown', e => { if (e.target.closest('.suggest')) e.preventDefault(); });
 
-function toast(msg){
+// action (optional): { label: 'Undo', act: 'some-data-act' } adds a tappable button and keeps the toast up longer
+function toast(msg, action){
   let t = document.getElementById('toast');
   if (!t) { t = document.createElement('div'); t.id = 'toast'; document.body.appendChild(t); }
   const dock = document.getElementById('dock');
   t.style.bottom = (ui.dock && dock) ? Math.round(window.innerHeight - dock.getBoundingClientRect().top + 46) + 'px' : '';   // clear of the open drawer
-  t.textContent = msg; t.className = 'show';
-  clearTimeout(toast._t); toast._t = setTimeout(() => t.className = '', 2400);
+  t.textContent = msg;
+  if (action) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'toast-act'; b.dataset.act = action.act; b.textContent = action.label;
+    t.appendChild(b);
+  }
+  t.className = action ? 'show has-act' : 'show';
+  clearTimeout(toast._t); toast._t = setTimeout(hideToast, action ? 5000 : 2400);
 }
+function hideToast(){ clearTimeout(toast._t); const t = document.getElementById('toast'); if (t) t.className = ''; }   // the button fades with it and can no longer be tapped
 
 render();
 // tidy away what the old Premium unlock kept on the phone (everything is free now)

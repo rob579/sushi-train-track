@@ -15,7 +15,7 @@ document.addEventListener('click', e => {
     case 'bill': go('bill'); break;
     case 'new': startDraft(null); break;
     case 'edit': startDraft(id); break;
-    case 'edit-back': ui.draft = null; go(ui.prevView === 'bill' && rest() ? 'bill' : 'pick'); break;
+    case 'edit-back': dropSortUndo(); ui.draft = null; go(ui.prevView === 'bill' && rest() ? 'bill' : 'pick'); break;
     case 'dock-toggle': setDock(!ui.dock); break;
     case 'dock-close': setDock(false); break;
     case 'menu': ui.menu = true; render(); break;
@@ -122,7 +122,9 @@ document.addEventListener('click', e => {
       break;
     }
     case 'del-plate': ui.draft.plates.splice(+t.dataset.i, 1); render(); break;
-    case 'save-rest': saveDraft(); break;
+    case 'save-rest': dropSortUndo(); saveDraft(); break;
+    case 'sort-plates': sortDraftPlates(); break;
+    case 'unsort-plates': undoSortPlates(); break;
     case 'del-rest':
       if (confirm(`Delete ${ui.draft.name || 'this restaurant'} and its current bill?`)) {
         S.restaurants = S.restaurants.filter(r => r.id !== ui.draft.id);

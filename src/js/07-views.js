@@ -185,7 +185,7 @@ function viewEdit(){
       <div class="field-label">Currency</div>
       <div class="select-wrap"><select id="cur-select" aria-label="Currency">${currencyOptions(cur)}</select></div>
       ${d.isNew ? '' : '<p class="muted" style="margin:8px 2px 0;font-size:14px">Changing the currency does not convert the prices.</p>'}
-      <div class="field-label">Plates</div>
+      <div class="label-row"><div class="field-label">Plates</div>${d.plates.length > 1 ? '<button type="button" class="link-btn" data-act="sort-plates">Sort by price</button>' : ''}</div>
       <p class="muted" style="margin:-4px 0 12px;font-size:14px">Tap a circle to change the plate colour, then enter its price.</p>
       ${rows}
       <button class="btn" style="width:100%" data-act="add-plate">Add a plate</button>

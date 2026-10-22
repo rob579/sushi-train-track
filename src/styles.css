@@ -237,6 +237,12 @@ html.kb .extras{padding-bottom:16px}
   background:var(--rice);color:var(--nori);padding:10px 16px;border-radius:12px;font-weight:800;opacity:0;
   pointer-events:none;transition:opacity .2s,transform .2s;z-index:20;max-width:90vw;text-align:center}
 #toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.has-act{pointer-events:auto;display:flex;align-items:center;gap:6px;padding-right:6px}
+#toast .toast-act{background:none;border:0;color:inherit;font:inherit;font-weight:800;text-decoration:underline;padding:6px 10px;margin:-6px 0;border-radius:8px;cursor:pointer}
+#toast:not(.has-act) .toast-act{display:none}
+/* setup screen: a heading with a small action on the right */
+.label-row{display:flex;align-items:baseline;gap:12px;width:100%}
+.label-row .link-btn{margin:0 0 0 auto;background:none;border:0;color:inherit;font:inherit;font-size:14px;font-weight:700;text-decoration:underline;padding:6px 2px;cursor:pointer;opacity:.85}
 
 /* ---------- menu ---------- */
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10}

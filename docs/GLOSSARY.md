@@ -11,6 +11,7 @@ So we always mean the same thing. If a word here is not what you call it, tell m
 | **Bill screen** | The main screen: total at the top, plates, drawer at the bottom | `viewBill` |
 | **Itemised bill** | "Your meal at <restaurant>": the list of every plate colour and extra with the total. Always a modal over the bill screen, opened by tapping the total or from the menu | `itemisedHtml`, `openItemised` |
 | **Setup screen** | Where you create or edit a restaurant: name, currency, plates, menu items. (Also called "edit restaurant") | `viewEdit` |
+| **Sort by price** | The link beside "Plates" on the setup screen (shown when there are two or more plates). Puts the plates cheapest first; same-price plates keep their order. A toast offers **Undo**. Nothing is kept until you press Save | `sortDraftPlates` |
 | **Menu (top-right)** | The three-line menu on the bill screen: itemised bill, remove a plate, keep screen on, edit, share, new restaurant, switch restaurant, end meal | `data-act="menu"` |
 | **End meal** | The last item in the menu. Shows the itemised bill with "Hope you enjoyed your meal!" and an **End meal** button, which clears the bill and goes back to the landing page. Close leaves the bill as it is | `end-meal` |
 | **Share card** | Opened by **Share** in the menu: Share this restaurant, Share all restaurants (when you have more than one), Receive from a friend | `openShareMenu` |
