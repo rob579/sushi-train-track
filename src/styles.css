@@ -8,6 +8,7 @@
 :root{
   --bar:60px;   /* height of the docked restaurant-name bar */
   --tab:34px;   /* height of the pull-up tab */
+  --dockh:calc(var(--bar) + var(--tab) + env(safe-area-inset-bottom,0px));   /* the closed drawer; the plates scroll on behind it */
   --nori:#0f2a2b;        /* page background */
   --belt:#183a3b;        /* raised surfaces */
   --belt-2:#21494a;
@@ -87,8 +88,8 @@ input::placeholder{color:#6d8d88}
 .banner{margin:6px 16px 0;padding:10px 14px;background:var(--danger);color:#3a0f08;border-radius:14px;
   display:flex;align-items:center;justify-content:space-between;font-weight:800}
 .banner button{background:rgba(0,0,0,.15);border-radius:10px;padding:6px 12px;font-weight:800}
-.plates{--rg:22px;--pv:32px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--rg) 16px;padding:14px 16px 18px}
-@media (max-width:440px){.plates{--rg:14px;--pv:26px;grid-template-columns:repeat(2,1fr);gap:var(--rg) 10px;padding:12px 12px 14px}}
+.plates{--rg:22px;--pv:32px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--rg) 16px;padding:14px 16px calc(18px + var(--dockh))}
+@media (max-width:440px){.plates{--rg:14px;--pv:26px;grid-template-columns:repeat(2,1fr);gap:var(--rg) 10px;padding:12px 12px calc(14px + var(--dockh))}}
 .plate-btn{padding:0;display:flex;flex-direction:column;align-items:center;gap:8px;user-select:none;-webkit-user-select:none}
 .plate{
   --c:#fff;--ink:#111;
@@ -128,7 +129,6 @@ input::placeholder{color:#6d8d88}
 .extras label{display:block;font-size:15px;color:var(--mute);margin:0 0 8px 2px}
 .venue{height:calc(var(--bar) + env(safe-area-inset-bottom,0px));box-sizing:border-box;padding-bottom:env(safe-area-inset-bottom,0px);display:flex;align-items:center;font-weight:800;color:var(--rice);font-size:26px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px}
-.dock-space{flex:none;height:calc(var(--bar) + var(--tab) + env(safe-area-inset-bottom,0px))}
 .dock-scrim{position:absolute;inset:0;z-index:5;background:rgba(0,0,0,.42);opacity:0;pointer-events:none;transition:opacity .3s}
 .dock-scrim.on{opacity:1;pointer-events:auto}
 .dock{position:absolute;left:0;right:0;bottom:var(--kb,0px);z-index:6;margin-inline:auto;width:min(640px,calc(100% - 24px));
@@ -147,14 +147,24 @@ html.kb .extras{padding-bottom:16px}
 .dock.open .dock-tab i{transform:translateY(-2px) rotate(225deg)}
 @media (prefers-reduced-motion:reduce){.dock,.dock-scrim,.dock-tab i{transition:none}}
 
+/* Zoom: a chosen number of plates across (2 to 6), from a pinch or the menu. Same on every screen width. */
+.scroll.fit{touch-action:pan-y}   /* the plate area keeps two-finger pinches for its own zoom; scrolling still works */
+.plates.cols{grid-template-columns:repeat(var(--cols),minmax(0,1fr));column-gap:calc(24px / var(--cols))}
+@supports not (height:1cqh){
+  .plates.cols .plate .n{font-size:calc(104px / var(--cols))}
+  .plates.cols .plate .price{font-size:max(8px, calc(30px / var(--cols)))}
+  .plates.cols .plate .plus{font-size:calc(88px / var(--cols))}
+}
+
 /* Size plates from the space available: up to 3 rows fit without scrolling.
    Needs container query units, so it is skipped on older browsers. */
 @supports (height:1cqh){
   .scroll.fit{container-type:size}
-  .plates{--cap:max(96px, calc((100cqh - var(--pv) - (var(--rows,3) - 1) * var(--rg)) / var(--rows,3) - 2px))}
+  .plates{--cap:max(96px, calc((100cqh - var(--pv) - var(--dockh) - (var(--rows,3) - 1) * var(--rg)) / var(--rows,3) - 2px))}
   .plate{width:min(100%,190px,var(--cap));container-type:inline-size}
   .plate .n{font-size:31cqw}
   .plate .price{font-size:calc(var(--pf,10.5) * 1cqw)}
+  .plates.cols .plate .price{font-size:max(8px, calc(var(--pf,10.5) * 1cqw))}   /* still readable on tiny plates */
 }
 
 /* ---------- add-item suggestions ---------- */
@@ -237,6 +247,12 @@ html.kb .extras{padding-bottom:16px}
   background:var(--rice);color:var(--nori);padding:10px 16px;border-radius:12px;font-weight:800;opacity:0;
   pointer-events:none;transition:opacity .2s,transform .2s;z-index:20;max-width:90vw;text-align:center}
 #toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.has-act{pointer-events:auto;display:flex;align-items:center;gap:6px;padding-right:6px}
+#toast .toast-act{background:none;border:0;color:inherit;font:inherit;font-weight:800;text-decoration:underline;padding:6px 10px;margin:-6px 0;border-radius:8px;cursor:pointer}
+#toast:not(.has-act) .toast-act{display:none}
+/* setup screen: a heading with a small action on the right */
+.label-row{display:flex;align-items:baseline;gap:12px;width:100%}
+.label-row .link-btn{margin:0 0 0 auto;background:none;border:0;color:inherit;font:inherit;font-size:14px;font-weight:700;text-decoration:underline;padding:6px 2px;cursor:pointer;opacity:.85}
 
 /* ---------- menu ---------- */
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10}
@@ -251,6 +267,11 @@ html.kb .extras{padding-bottom:16px}
 .menu .sw::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--rice);transition:transform .2s}
 .menu .sw.on{background:#4cb782}
 .menu .sw.on::after{transform:translateX(16px)}
+.menu .zoom-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 6px 6px 14px}
+.menu .zoom-row small{display:block;font-size:13px;color:var(--mute);margin-top:2px}
+.menu .zoom-ctl{display:flex;gap:8px}
+.menu .zoom-ctl button{width:40px;height:40px;padding:0;border-radius:50%;text-align:center;font-size:22px;font-weight:700;line-height:1;background:rgba(255,255,255,.1)}
+.menu .zoom-ctl button:disabled{opacity:.3}
 
 /* ---------- itemised (shown in a modal) ---------- */
 #modal .itemised .line:first-child{padding-top:6px}

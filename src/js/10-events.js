@@ -9,19 +9,21 @@ document.addEventListener('click', e => {
     case 'open': {
       const r = S.restaurants.find(x => x.id === id);
       if (!r) break;
-      S.current = id; persist(); go('bill'); break;
+      S.current = id; persist(); go('bill'); zoomTip(); break;
     }
     case 'pick': go('pick'); break;
     case 'bill': go('bill'); break;
     case 'new': startDraft(null); break;
     case 'edit': startDraft(id); break;
-    case 'edit-back': ui.draft = null; go(ui.prevView === 'bill' && rest() ? 'bill' : 'pick'); break;
+    case 'edit-back': dropSortUndo(); ui.draft = null; go(ui.prevView === 'bill' && rest() ? 'bill' : 'pick'); break;
     case 'dock-toggle': setDock(!ui.dock); break;
     case 'dock-close': setDock(false); break;
     case 'menu': ui.menu = true; render(); break;
     case 'menu-close': ui.menu = false; render(); break;
     case 'itemised': if (ui.menu) { ui.menu = false; render(); } openItemised(); break;
     case 'keep-awake': toggleKeepAwake(); break;
+    case 'zoom-in': zoomStep('in'); break;
+    case 'zoom-out': zoomStep('out'); break;
     case 'share': ui.menu = false; render(); openShareMenu(); break;
     case 'share-one': if (rest()) openShareCode([rest()]); break;
     case 'share-all': if (S.restaurants.length) openShareCode(S.restaurants); break;
@@ -122,7 +124,9 @@ document.addEventListener('click', e => {
       break;
     }
     case 'del-plate': ui.draft.plates.splice(+t.dataset.i, 1); render(); break;
-    case 'save-rest': saveDraft(); break;
+    case 'save-rest': dropSortUndo(); saveDraft(); break;
+    case 'sort-plates': sortDraftPlates(); break;
+    case 'unsort-plates': undoSortPlates(); break;
     case 'del-rest':
       if (confirm(`Delete ${ui.draft.name || 'this restaurant'} and its current bill?`)) {
         S.restaurants = S.restaurants.filter(r => r.id !== ui.draft.id);
@@ -146,7 +150,7 @@ document.addEventListener('change', e => {
   const v = e.target.value;
   if (v === '__new') startDraft(null);
   else if (v === '__receive') { e.target.value = ''; openScanner(); }
-  else if (S.restaurants.some(r => r.id === v)) { S.current = v; persist(); go('bill'); }
+  else if (S.restaurants.some(r => r.id === v)) { S.current = v; persist(); go('bill'); zoomTip(); }
 });
 
 /* editor inputs: update draft without re-rendering (keeps keyboard open) */

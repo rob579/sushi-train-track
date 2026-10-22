@@ -38,7 +38,7 @@ An Android re-upload is only needed when `android/twa-manifest.json` changes. Ch
 |---|---|
 | `src/head.html`, `src/body.html`, `src/tail.html` | The page skeleton |
 | `src/styles.css` | All the styling |
-| `src/js/01 … 13-*.js` | The app's code in topic order, joined by file name: config + state, currency, (03 is gone: it was editions and purchases), keep screen on, dialogs + colour chooser, plate actions, views, render + drawer, editing, events, suggestions, app update, share by QR code |
+| `src/js/01 … 14-*.js` | The app's code in topic order, joined by file name: config + state, currency, (03 is gone: it was editions and purchases), keep screen on, dialogs + colour chooser, plate actions, views, render + drawer, editing, events, suggestions, app update, share by QR code, zoom (plates across) |
 | `src/vendor/` | Third-party code copied in so it works offline: the QR code maker and the QR reader used where the phone has none. Versions, licences and how to update are in its README |
 | `sw.js` | Service worker (offline use, update banner). Stamped with the version at build time |
 | `.well-known/assetlinks.json` | Links the website to the Android app. **Contains the real signing fingerprints. Never overwrite it with a placeholder.** Must stay at the top level |
@@ -72,8 +72,9 @@ The first run installs a small test library into `~/.cache/sushi-test-deps` (out
 | drawer | the drawer: handle title, add, group, + and −, messages |
 | remove | remove mode, long-press confirm, add a plate |
 | keep-awake | the "Keep screen on" switch: saved, lock taken and given back as the app is shown and hidden, refused, unsupported browsers |
+| zoom | plates across (2 to 6): pinching the plates, the menu − and +, remembered for every restaurant, pinches never add or remove plates, pinches elsewhere left to the browser, the one-off tip |
 | setup-and-suggestions | suggestions from other restaurants, price tidying, Enter/Next, colour chooser |
-| browser | service worker, offline, Cloudflare-style redirects, assetlinks, phone layout |
+| browser | service worker, offline, Cloudflare-style redirects, assetlinks, phone layout, zoom at 2 to 6 across and a real two-finger pinch |
 | share | the share card, what goes in a code (never the bill), split codes, scanning, replace / merge / keep both / skip, bad codes, camera refused |
 | share-browser | in real Chrome: the code on screen reads back; a fake camera playing the codes is scanned; clash through a real scan; scanning a photo; fits a small phone |
 
