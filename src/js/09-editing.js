@@ -47,6 +47,11 @@ function saveDraft(){
     plates.push(Object.assign({ id: p.id, colour: p.colour, price: c }, p.colour2 ? { colour2: p.colour2 } : {}));
   }
   if (!plates.length) { alert('Add at least one plate with a price.'); return; }
+  const seen = new Set();   // each colour belongs to one plate only
+  for (const p of plates) for (const c of [p.colour, p.colour2].filter(Boolean).map(c => c.toLowerCase())) {
+    if (seen.has(c)) { alert('Two plates have the same colour. Tap a circle to give one of them a different colour.'); return; }
+    seen.add(c);
+  }
   const items = [];
   for (const it of d.items) {
     const desc = it.desc.trim(), pr = it.price.trim();

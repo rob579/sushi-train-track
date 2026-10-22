@@ -1,5 +1,5 @@
 /* ============ config ============ */
-const BUILD = '22 Oct 2026 · two-colour plates';   // shown on the landing page so you can tell which copy is running
+const BUILD = '22 Oct 2026 · two-colour plates, colour check';   // shown on the landing page so you can tell which copy is running
 const BUILD_ID = 'dev';   // stamped with the git commit by update.sh
 const KEY = 'plateTally.v1';
 const SWATCHES = ['#e5484d','#f5a524','#f2d74a','#4cb782','#3e8ef7','#8b5cf6','#e8e2d4','#2b2b2b'];

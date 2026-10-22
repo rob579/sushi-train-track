@@ -59,6 +59,13 @@ function ccDualHtml(){
   return `<div class="cc-slots" role="group" aria-label="Which colour you are changing">${tab(a, 0)}${tab(b, 1)}</div>
     <div class="cc-dual-acts"><button type="button" class="link-btn" data-act="cc-remove">Remove ${CC.active ? 'second' : 'first'} colour</button><button type="button" class="link-btn" data-act="cc-split">Split into two plates</button></div>`;
 }
+/* a colour another plate already uses: says so in the card and returns true (the card stays open) */
+function ccClash(){
+  const clash = ccColours().some(c => c && CC.used.includes(c));
+  const err = document.getElementById('cc-err') || document.getElementById('np-err');
+  if (err) err.textContent = clash ? 'You already have a plate in this colour. Pick a different one.' : '';
+  return clash;
+}
 /* "Add second colour": starts on a colour this restaurant isn't using yet */
 function ccAddSecond(){
   const taken = new Set([...CC.used, CC.slots[0]]);
@@ -85,6 +92,7 @@ function ccHtml(){
 function ccRefresh(from){
   const root = document.getElementById('cc'); if (!root) return;
   CC.slots[CC.active] = CC.value;
+  const err = document.getElementById('cc-err'); if (err) err.textContent = '';   // a new pick clears "already have a plate in this colour"
   const h = document.getElementById('cc-h'), sa = document.getElementById('cc-s'), li = document.getElementById('cc-l'), hx = document.getElementById('cc-hex');
   const hsl = hexToHsl(CC.value);
   if (from !== 'hsl') { h.value = hsl.h; sa.value = hsl.s; li.value = hsl.l; }   // the mixer always starts from the colour already chosen

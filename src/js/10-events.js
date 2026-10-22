@@ -67,6 +67,7 @@ document.addEventListener('click', e => {
         <div class="m-preview"><div class="plate" data-cc-preview><span class="n zero">0</span></div></div>
         ${ccHtml()}
         <div class="cc-dual" id="cc-dual"></div>
+        <div class="m-err" id="cc-err" role="alert"></div>
         <div class="m-row"><button class="btn" data-act="m-close">Cancel</button><button class="btn primary" id="cc-apply-btn" data-act="cc-apply" data-i="${i}">Use colour</button></div>`);
       ccRefresh(); break;
     }
@@ -79,6 +80,7 @@ document.addEventListener('click', e => {
       if (!CC.target) break;
       if (CC.target.kind === 'new') { saveNewPlate(true); break; }
       // setup screen: the plate becomes two plates at the same price, the second right after it (nothing is kept until Save)
+      if (ccClash()) break;
       const i = CC.target.i, p = ui.draft.plates[i], [c1, c2] = ccColours();
       p.colour = c1; p.colour2 = null;
       if (c2) ui.draft.plates.splice(i + 1, 0, { id: uid(), colour: c2, colour2: null, price: p.price });
@@ -86,6 +88,7 @@ document.addEventListener('click', e => {
       break;
     }
     case 'cc-apply': {
+      if (ccClash()) break;
       const i = +t.dataset.i, [c1, c2] = ccColours();
       Object.assign(ui.draft.plates[i], { colour: c1, colour2: c2 });
       hideModal(); render();
@@ -108,7 +111,11 @@ document.addEventListener('click', e => {
       const b = billOf(S.current); b.extras = b.extras.filter(x => x.id !== id); persist(); render(); refreshItemised(); break;
     }
     case 'add-plate':
-      ui.draft.plates.push({ id: uid(), colour: SWATCHES[ui.draft.plates.length % SWATCHES.length], price: '' });
+      {   // a new row starts on a colour none of the other plates use
+        const taken = new Set(ui.draft.plates.flatMap(p => [p.colour, p.colour2].filter(Boolean).map(c => c.toLowerCase())));
+        const colour = [...SWATCHES, ...PALETTE].find(c => !taken.has(c)) || SWATCHES[ui.draft.plates.length % SWATCHES.length];
+        ui.draft.plates.push({ id: uid(), colour, price: '' });
+      }
       render();
       { const inputs = document.querySelectorAll('[data-field="price"]'); inputs[inputs.length - 1]?.focus(); }
       break;

@@ -108,6 +108,43 @@ exports.run = async t => {
   t.eq('repeated colour dropped', a.ev('ui.draft.plates[0].colour2'), null);
   a.close();
 
+  // ---- the plate colour card refuses a colour another plate uses (bug found 22 Oct 2026) ----
+  a = await open({ state: stateWith([sample({ plates: [plate('p1', '#e5484d', 500), plate('p2', '#f5a524', 600), two('p3', '#3e8ef7', '#8b5cf6', 700)] })]) });
+  a.ev("startDraft('r1')");
+  a.click('[data-act="edit-colour"][data-i="1"]');
+  a.click('.cc-sw[data-c="#e5484d"]');
+  a.click('[data-act="cc-apply"]');
+  t.check('first colour clash refused', a.text('#cc-err').includes('already have a plate in this colour'), a.text('#cc-err'));
+  t.check('card stays open', !!a.$('#modal'));
+  t.eq('plate unchanged', a.ev('ui.draft.plates[1].colour'), '#f5a524');
+  a.click('.cc-sw[data-c="#2bb5b0"]');
+  t.eq('picking another colour clears the message', a.text('#cc-err'), '');
+  a.act('cc-add2'); a.click('.cc-sw[data-c="#8b5cf6"]');
+  a.click('[data-act="cc-apply"]');
+  t.check('second colour clash refused (other plate\'s second colour)', a.text('#cc-err').includes('already have'), a.text('#cc-err'));
+  a.act('cc-split');
+  t.check('split with a clash refused too', !!a.$('#modal') && a.ev('ui.draft.plates.length') === 3);
+  a.click('.cc-sw[data-c="#a2673a"]');
+  a.click('[data-act="cc-apply"]');
+  t.eq('a free pair is used', a.ev('[ui.draft.plates[1].colour, ui.draft.plates[1].colour2]'), ['#2bb5b0', '#a2673a']);
+  a.click('[data-act="edit-colour"][data-i="2"]');
+  a.click('[data-act="cc-apply"]');
+  t.check('keeping a plate\'s own colours is fine', !a.$('#modal'));
+  // a new row starts on an unused colour
+  a.act('add-plate');
+  const used = ['#e5484d', '#2bb5b0', '#a2673a', '#3e8ef7', '#8b5cf6'];
+  t.check('new row colour is free', !used.includes(a.ev('ui.draft.plates[3].colour')), a.ev('ui.draft.plates[3].colour'));
+  a.close();
+
+  // Save refuses two plates with the same colour (e.g. already saved that way before this fix)
+  a = await open({ state: stateWith([sample({ plates: [plate('p1', '#e5484d', 500), plate('p2', '#f5a524', 600), plate('p3', '#e5484d', 700)] })]) });
+  a.ev("startDraft('r1')");
+  a.act('save-rest');
+  t.check('save refused', a.window.alerts.some(m => m.includes('Two plates have the same colour')), a.window.alerts);
+  t.eq('still on the setup screen', a.ev('ui.view'), 'edit');
+  t.eq('nothing saved', a.saved().restaurants[0].plates.map(p => p.price), [500, 600, 700]);
+  a.close();
+
   // ---- sharing ----
   a = await open({ state: stateWith([sample({ plates: [two('p1', '#e5484d', '#ffffff', 350), plate('p2', '#4cb782', 450)] })]) });
   const json = a.ev("shareJson([rest()])");
