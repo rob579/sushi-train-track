@@ -99,7 +99,6 @@ function viewBill(){
     </div>
     ${ui.removing ? `<div class="banner"><span>Tap a plate to remove one</span><button data-act="cancel-remove">Done</button></div>` : ''}
     <div class="scroll fit"><div class="plates" style="--rows:${Math.min(3, Math.max(1, Math.ceil((r.plates.length + 1) / 2)))}">${r.plates.length ? '' : '<p class="muted" style="grid-column:1/-1;text-align:center">No plates yet. Tap the + to add one.</p>'}${plates}<button class="plate-btn add-plate" data-act="add-plate-modal" aria-label="Add a plate"><div class="plate"><span class="plus">+</span></div></button></div></div>
-    <div class="dock-space"></div>
     <div class="dock-scrim ${ui.dock ? 'on' : ''}" id="dock-scrim" data-act="dock-close"></div>
     <div class="dock ${ui.dock ? 'open' : ''}" id="dock">
       <button class="dock-tab" data-act="dock-toggle" aria-expanded="${ui.dock}" aria-controls="dock-body"><span class="lbl">${ui.dock ? 'Close' : dockTitle(b)}</span><i></i></button>

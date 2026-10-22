@@ -74,6 +74,24 @@ exports.run = async t => {
     t.check('plates sit above the drawer bar', m.lowest <= m.dockTop + 1, m);
     t.check('drawer bar is on screen', m.dockBottom <= m.vh + 1 && m.dockTop < m.vh, m);
     t.check('total is visible', m.total.top >= 0 && m.total.bottom < m.vh && m.total.width > 20, m.total);
+    // more plates than fit: the plates carry on behind the drawer (no dark band beside it), and scrolling to the end brings the last one above the handle
+    const many = sample({ plates: ['#e5484d', '#f5a524', '#a0522d', '#ffffff', '#8b5cf6', '#9ca3af', '#4cb782'].map((c, i) => plate('m' + i, c, 300 + i * 100)) });
+    const p3 = await browser.newPage();
+    await p3.setViewport({ width: 375, height: 667, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    await p3.evaluateOnNewDocument(s => { if (!localStorage.getItem('plateTally.v1')) localStorage.setItem('plateTally.v1', s); }, JSON.stringify(stateWith([many], {})));
+    await p3.goto(url + '/', { waitUntil: 'networkidle0' });
+    await p3.evaluate(() => go('bill'));
+    const behind = await p3.evaluate(() => {
+      const sc = document.querySelector('.scroll'), r = e => e.getBoundingClientRect();
+      const before = { scrollBottom: r(sc).bottom, tabTop: r(document.querySelector('.dock-tab')).top, vh: innerHeight, scrolls: sc.scrollHeight > sc.clientHeight };
+      sc.scrollTop = sc.scrollHeight;
+      const last = Math.max(...[...document.querySelectorAll('.plate-btn')].map(b => r(b).bottom));
+      return { ...before, last, tabTopAfter: r(document.querySelector('.dock-tab')).top };
+    });
+    t.check('the plate area runs on down behind the drawer', behind.scrollBottom >= behind.vh - 1, behind);
+    t.check('with 7 plates the list scrolls', behind.scrolls, behind);
+    t.check('scrolled to the end, the + circle clears the handle', behind.last <= behind.tabTopAfter + 1, behind);
+    await p3.close();
     await p2.tap('.plate-btn[data-id="q1"]');
     t.eq('a real tap adds a plate', await p2.evaluate(() => S.bills.r1.counts.q1), 1);
     // open the drawer: it rises, the field is on screen, and the screen does not scroll

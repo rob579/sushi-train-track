@@ -8,6 +8,7 @@
 :root{
   --bar:60px;   /* height of the docked restaurant-name bar */
   --tab:34px;   /* height of the pull-up tab */
+  --dockh:calc(var(--bar) + var(--tab) + env(safe-area-inset-bottom,0px));   /* the closed drawer; the plates scroll on behind it */
   --nori:#0f2a2b;        /* page background */
   --belt:#183a3b;        /* raised surfaces */
   --belt-2:#21494a;
@@ -87,8 +88,8 @@ input::placeholder{color:#6d8d88}
 .banner{margin:6px 16px 0;padding:10px 14px;background:var(--danger);color:#3a0f08;border-radius:14px;
   display:flex;align-items:center;justify-content:space-between;font-weight:800}
 .banner button{background:rgba(0,0,0,.15);border-radius:10px;padding:6px 12px;font-weight:800}
-.plates{--rg:22px;--pv:32px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--rg) 16px;padding:14px 16px 18px}
-@media (max-width:440px){.plates{--rg:14px;--pv:26px;grid-template-columns:repeat(2,1fr);gap:var(--rg) 10px;padding:12px 12px 14px}}
+.plates{--rg:22px;--pv:32px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--rg) 16px;padding:14px 16px calc(18px + var(--dockh))}
+@media (max-width:440px){.plates{--rg:14px;--pv:26px;grid-template-columns:repeat(2,1fr);gap:var(--rg) 10px;padding:12px 12px calc(14px + var(--dockh))}}
 .plate-btn{padding:0;display:flex;flex-direction:column;align-items:center;gap:8px;user-select:none;-webkit-user-select:none}
 .plate{
   --c:#fff;--ink:#111;
@@ -128,7 +129,6 @@ input::placeholder{color:#6d8d88}
 .extras label{display:block;font-size:15px;color:var(--mute);margin:0 0 8px 2px}
 .venue{height:calc(var(--bar) + env(safe-area-inset-bottom,0px));box-sizing:border-box;padding-bottom:env(safe-area-inset-bottom,0px);display:flex;align-items:center;font-weight:800;color:var(--rice);font-size:26px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px}
-.dock-space{flex:none;height:calc(var(--bar) + var(--tab) + env(safe-area-inset-bottom,0px))}
 .dock-scrim{position:absolute;inset:0;z-index:5;background:rgba(0,0,0,.42);opacity:0;pointer-events:none;transition:opacity .3s}
 .dock-scrim.on{opacity:1;pointer-events:auto}
 .dock{position:absolute;left:0;right:0;bottom:var(--kb,0px);z-index:6;margin-inline:auto;width:min(640px,calc(100% - 24px));
@@ -151,7 +151,7 @@ html.kb .extras{padding-bottom:16px}
    Needs container query units, so it is skipped on older browsers. */
 @supports (height:1cqh){
   .scroll.fit{container-type:size}
-  .plates{--cap:max(96px, calc((100cqh - var(--pv) - (var(--rows,3) - 1) * var(--rg)) / var(--rows,3) - 2px))}
+  .plates{--cap:max(96px, calc((100cqh - var(--pv) - var(--dockh) - (var(--rows,3) - 1) * var(--rg)) / var(--rows,3) - 2px))}
   .plate{width:min(100%,190px,var(--cap));container-type:inline-size}
   .plate .n{font-size:31cqw}
   .plate .price{font-size:calc(var(--pf,10.5) * 1cqw)}
