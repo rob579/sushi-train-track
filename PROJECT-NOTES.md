@@ -31,7 +31,7 @@ You may test `testing` yourself between these steps, or not. Either way I wait f
 - **`testing`** collects every enhancement until release. If Cloudflare preview builds are on, it also gets its own preview address to try changes on a phone first.
 - On the Mac: `git checkout testing && git pull` for the latest test version, `git checkout main` for what is live.
 
-An Android re-upload is only needed when `android/twa-manifest.json` changes. Changes to the website code reach the Play app by themselves after you push.
+An Android re-upload is only needed when `android/twa-manifest.json` changes. Changes to the website code reach the Play app by themselves once they are released to `main`.
 
 ## Where things live
 
