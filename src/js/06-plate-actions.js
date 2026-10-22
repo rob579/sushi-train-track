@@ -35,6 +35,7 @@ function confirmRemovePlate(id){
 }
 document.addEventListener('pointerdown', e => {
   const b = e.target.closest && e.target.closest('.plate-btn[data-act="plate"]');
+  if (e.isPrimary === false) { lpCancel(); return; }   // a second finger: a pinch, not a long press
   if (!b || ui.removing || e.button > 0) return;
   lpCancel(); lp.x = e.clientX; lp.y = e.clientY;
   lp.timer = setTimeout(() => {

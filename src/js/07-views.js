@@ -98,7 +98,7 @@ function viewBill(){
       <button class="icon-btn" data-act="menu" aria-label="Menu">${ICON.menu}</button>
     </div>
     ${ui.removing ? `<div class="banner"><span>Tap a plate to remove one</span><button data-act="cancel-remove">Done</button></div>` : ''}
-    <div class="scroll fit"><div class="plates" style="--rows:${Math.min(3, Math.max(1, Math.ceil((r.plates.length + 1) / 2)))}">${r.plates.length ? '' : '<p class="muted" style="grid-column:1/-1;text-align:center">No plates yet. Tap the + to add one.</p>'}${plates}<button class="plate-btn add-plate" data-act="add-plate-modal" aria-label="Add a plate"><div class="plate"><span class="plus">+</span></div></button></div></div>
+    <div class="scroll fit"><div class="plates${S.cols ? ' cols' : ''}" style="--rows:${rowsFor(r.plates.length + 1, S.cols || 2)}${S.cols ? ';--cols:' + S.cols : ''}">${r.plates.length ? '' : '<p class="muted" style="grid-column:1/-1;text-align:center">No plates yet. Tap the + to add one.</p>'}${plates}<button class="plate-btn add-plate" data-act="add-plate-modal" aria-label="Add a plate"><div class="plate"><span class="plus">+</span></div></button></div></div>
     <div class="dock-scrim ${ui.dock ? 'on' : ''}" id="dock-scrim" data-act="dock-close"></div>
     <div class="dock ${ui.dock ? 'open' : ''}" id="dock">
       <button class="dock-tab" data-act="dock-toggle" aria-expanded="${ui.dock}" aria-controls="dock-body"><span class="lbl">${ui.dock ? 'Close' : dockTitle(b)}</span><i></i></button>
@@ -120,6 +120,8 @@ function viewBill(){
         <button data-act="itemised">See itemised bill</button>
         <button data-act="start-remove">Remove a plate</button>
         ${wakeSupported() ? `<button class="toggle" data-act="keep-awake" role="switch" aria-checked="${!!S.keepAwake}">Keep screen on<span class="sw${S.keepAwake ? ' on' : ''}"></span></button>` : ''}
+        <div class="zoom-row" role="group" aria-label="Zoom"><span>Zoom<small>${colsNow()} plates across</small></span>
+          <span class="zoom-ctl"><button data-act="zoom-out" aria-label="Zoom out, more plates across" ${colsNow() >= COLS_MAX ? 'disabled' : ''}>−</button><button data-act="zoom-in" aria-label="Zoom in, bigger plates" ${colsNow() <= COLS_MIN ? 'disabled' : ''}>+</button></span></div>
         <hr>
         <button data-act="edit" data-id="${r.id}">Edit this restaurant</button>
         <button data-act="share">Share</button>

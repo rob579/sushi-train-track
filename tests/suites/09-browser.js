@@ -78,7 +78,7 @@ exports.run = async t => {
     const many = sample({ plates: ['#e5484d', '#f5a524', '#a0522d', '#ffffff', '#8b5cf6', '#9ca3af', '#4cb782'].map((c, i) => plate('m' + i, c, 300 + i * 100)) });
     const p3 = await browser.newPage();
     await p3.setViewport({ width: 375, height: 667, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
-    await p3.evaluateOnNewDocument(s => { if (!localStorage.getItem('plateTally.v1')) localStorage.setItem('plateTally.v1', s); }, JSON.stringify(stateWith([many], {})));
+    await p3.evaluateOnNewDocument(s => { localStorage.setItem('plateTally.v1', s); }, JSON.stringify(stateWith([many], {})));
     await p3.goto(url + '/', { waitUntil: 'networkidle0' });
     await p3.evaluate(() => go('bill'));
     const behind = await p3.evaluate(() => {
@@ -101,6 +101,50 @@ exports.run = async t => {
     t.check('open drawer shows the add field', d.input.top > d.dockTop && d.input.bottom <= d.vh, d);
     t.check('opening does not focus a field (keyboard stays down)', d.active !== 'xdesc', d.active);
     t.eq('page itself did not scroll', d.scrollY, 0);
+
+    // zoom: 2 to 6 plates across on a small phone, each one tidy; and a real two-finger pinch
+    const p4 = await browser.newPage();
+    await p4.setViewport({ width: 360, height: 640, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    const pricey = sample({ currency: 'JPY', plates: many.plates.map((p, i) => plate(p.id, p.colour, 125000 + i * 10000)) });   // long labels like ¥1,250
+    await p4.evaluateOnNewDocument(s => { localStorage.setItem('plateTally.v1', s); }, JSON.stringify(stateWith([pricey], { r1: { counts: { m0: 12 }, extras: [] } })));
+    await p4.goto(url + '/', { waitUntil: 'networkidle0' });
+    await p4.evaluate(() => go('bill'));
+    t.eq('plate area keeps pinches for itself', await p4.evaluate(() => getComputedStyle(document.querySelector('.scroll.fit')).touchAction), 'pan-y');
+    t.eq('screen picks 2 across on a phone until chosen', await p4.evaluate(() => colsNow()), 2);
+    for (let n = 2; n <= 6; n++) {
+      const z = await p4.evaluate(n => {
+        setCols(n); render();
+        const r = e => e.getBoundingClientRect();
+        const btns = [...document.querySelectorAll('.plate-btn')];
+        const firstRow = btns.filter(b => Math.abs(r(b).top - r(btns[0]).top) < 2).length;
+        const fits = btns.filter(b => !b.classList.contains('add-plate')).every(b => {
+          const pl = r(b.querySelector('.plate')), pr = b.querySelector('.price'), nm = b.querySelector('.n');
+          const text = pr.scrollWidth, fs = parseFloat(getComputedStyle(pr).fontSize);
+          return text <= pl.width + 1 && r(nm).bottom <= r(pr).top + fs * 0.4 && fs >= 8;
+        });
+        const plates = btns.map(b => r(b.querySelector('.plate')));
+        const overlap = plates.some((a, i) => plates.some((b, j) => i < j && a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1));
+        return { firstRow, fits, overlap, overflowX: document.documentElement.scrollWidth - innerWidth, size: Math.round(plates[0].width) };
+      }, n);
+      t.eq(`${n} across: ${n} plates in the first row`, z.firstRow, n);
+      t.check(`${n} across: prices fit inside the plates (${z.size}px plates)`, z.fits, z);
+      t.check(`${n} across: plates don't overlap and nothing scrolls sideways`, !z.overlap && z.overflowX <= 0, z);
+    }
+    // a real pinch with two fingers on the plates (sent the way the phone sends it)
+    await p4.evaluate(() => { setCols(2); render(); });
+    const cdp = await p4.target().createCDPSession();
+    const fingers = (type, gap) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x: 180 - gap / 2, y: 260, id: 1 }, { x: 180 + gap / 2, y: 260, id: 2 }] });
+    const zoom0 = await p4.evaluate(() => visualViewport.scale);
+    await fingers('touchStart', 220);
+    for (const g of [200, 170, 140, 110]) { await fingers('touchMove', g); await wait(30); }
+    await fingers('touchEnd');
+    await wait(300);
+    const after = await p4.evaluate(() => ({ cols: S.cols, saved: JSON.parse(localStorage.getItem('plateTally.v1')).cols, scale: visualViewport.scale, counts: S.bills.r1.counts, modal: !!document.querySelector('#modal:not([hidden]) .m-card') }));
+    t.eq('real pinch in: 4 across', after.cols, 4);
+    t.eq('real pinch: saved', after.saved, 4);
+    t.eq('real pinch: the page itself did not zoom', after.scale, zoom0);
+    t.eq('real pinch: the bill is unchanged', after.counts, { m0: 12 });
+    await p4.close();
     // the privacy page has no icon link, so browsers ask for /favicon.ico and get a harmless 404
     const real = problems.filter(x => !x.includes('/favicon.ico') && !x.includes('Failed to load resource'));
     t.eq('no errors in the page', real, []);

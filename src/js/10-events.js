@@ -9,7 +9,7 @@ document.addEventListener('click', e => {
     case 'open': {
       const r = S.restaurants.find(x => x.id === id);
       if (!r) break;
-      S.current = id; persist(); go('bill'); break;
+      S.current = id; persist(); go('bill'); zoomTip(); break;
     }
     case 'pick': go('pick'); break;
     case 'bill': go('bill'); break;
@@ -22,6 +22,8 @@ document.addEventListener('click', e => {
     case 'menu-close': ui.menu = false; render(); break;
     case 'itemised': if (ui.menu) { ui.menu = false; render(); } openItemised(); break;
     case 'keep-awake': toggleKeepAwake(); break;
+    case 'zoom-in': zoomStep('in'); break;
+    case 'zoom-out': zoomStep('out'); break;
     case 'share': ui.menu = false; render(); openShareMenu(); break;
     case 'share-one': if (rest()) openShareCode([rest()]); break;
     case 'share-all': if (S.restaurants.length) openShareCode(S.restaurants); break;
@@ -148,7 +150,7 @@ document.addEventListener('change', e => {
   const v = e.target.value;
   if (v === '__new') startDraft(null);
   else if (v === '__receive') { e.target.value = ''; openScanner(); }
-  else if (S.restaurants.some(r => r.id === v)) { S.current = v; persist(); go('bill'); }
+  else if (S.restaurants.some(r => r.id === v)) { S.current = v; persist(); go('bill'); zoomTip(); }
 });
 
 /* editor inputs: update draft without re-rendering (keeps keyboard open) */

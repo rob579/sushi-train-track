@@ -147,6 +147,15 @@ html.kb .extras{padding-bottom:16px}
 .dock.open .dock-tab i{transform:translateY(-2px) rotate(225deg)}
 @media (prefers-reduced-motion:reduce){.dock,.dock-scrim,.dock-tab i{transition:none}}
 
+/* Zoom: a chosen number of plates across (2 to 6), from a pinch or the menu. Same on every screen width. */
+.scroll.fit{touch-action:pan-y}   /* the plate area keeps two-finger pinches for its own zoom; scrolling still works */
+.plates.cols{grid-template-columns:repeat(var(--cols),minmax(0,1fr));column-gap:calc(24px / var(--cols))}
+@supports not (height:1cqh){
+  .plates.cols .plate .n{font-size:calc(104px / var(--cols))}
+  .plates.cols .plate .price{font-size:max(8px, calc(30px / var(--cols)))}
+  .plates.cols .plate .plus{font-size:calc(88px / var(--cols))}
+}
+
 /* Size plates from the space available: up to 3 rows fit without scrolling.
    Needs container query units, so it is skipped on older browsers. */
 @supports (height:1cqh){
@@ -155,6 +164,7 @@ html.kb .extras{padding-bottom:16px}
   .plate{width:min(100%,190px,var(--cap));container-type:inline-size}
   .plate .n{font-size:31cqw}
   .plate .price{font-size:calc(var(--pf,10.5) * 1cqw)}
+  .plates.cols .plate .price{font-size:max(8px, calc(var(--pf,10.5) * 1cqw))}   /* still readable on tiny plates */
 }
 
 /* ---------- add-item suggestions ---------- */
@@ -257,6 +267,11 @@ html.kb .extras{padding-bottom:16px}
 .menu .sw::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--rice);transition:transform .2s}
 .menu .sw.on{background:#4cb782}
 .menu .sw.on::after{transform:translateX(16px)}
+.menu .zoom-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 6px 6px 14px}
+.menu .zoom-row small{display:block;font-size:13px;color:var(--mute);margin-top:2px}
+.menu .zoom-ctl{display:flex;gap:8px}
+.menu .zoom-ctl button{width:40px;height:40px;padding:0;border-radius:50%;text-align:center;font-size:22px;font-weight:700;line-height:1;background:rgba(255,255,255,.1)}
+.menu .zoom-ctl button:disabled{opacity:.3}
 
 /* ---------- itemised (shown in a modal) ---------- */
 #modal .itemised .line:first-child{padding-top:6px}
