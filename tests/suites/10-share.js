@@ -120,9 +120,11 @@ exports.run = async t => {
     ['USD', [['#e5484d', 350], ['#4cb782', 450], ['#3e8ef7', 600]], [['Green tea', 300], ['Miso soup', 450]]]);
   t.check('given new ids', got.id !== 'r1' && got.plates.every(p => !/^p\d$/.test(p.id)));
   t.eq('saved', a.saved().restaurants.length, 1);
-  t.check('report says added', /Kura\s*added/.test(a.text('#modal .imp-report')), a.text('#modal'));
-  a.act('m-close');
-  t.check('pick list now shows it', [...a.$$('#rest-select option')].some(o => o.textContent.includes('Kura')));
+  // one restaurant received from the landing page: straight to its bill screen
+  t.eq('landing + one restaurant: opens its bill screen', [a.ev('ui.view'), a.S().current === got.id, a.text('.venue').trim()], ['bill', true, 'Kura']);
+  t.check('no summary card in the way', !a.$('#modal'));
+  t.eq('says it was added', a.text('#toast'), 'Kura added');
+  t.eq('the open restaurant is remembered', a.saved().current, got.id);
   t.eq('no errors (receive)', a.errors, []);
   a.close();
 
@@ -189,7 +191,7 @@ exports.run = async t => {
   t.eq('merge: your prices stay, new colour added', k.plates.map(p => [p.colour, p.price]), [['#e5484d', 350], ['#4cb782', 450], ['#3e8ef7', 600], ['#8b5cf6', 700]]);
   t.eq('merge: new menu item added', k.items.map(i => i.desc), ['Green tea', 'Miso soup', 'Asahi']);
   t.eq('merge: bill untouched', a.S().bills.r1.counts, { p1: 2, p2: 5 });
-  t.check('merge: reported', /merged: 1 plate and 1 menu item added/.test(a.text('#modal .imp-report')), a.text('#modal .imp-report'));
+  t.eq('merge from the landing page: opens Kura\'s bill', [a.ev('ui.view'), a.S().current, a.text('#toast')], ['bill', 'r1', 'Kura merged']);
   a.close();
 
   // keep both
@@ -250,6 +252,45 @@ exports.run = async t => {
   t.check('report mentions the skip', /Kura\s*skipped/.test(a.text('#modal .imp-report')));
   a.close();
 
+  // ---- when it does not go to the bill screen ----
+  // received from the bill screen menu: stays put and shows the summary
+  a = await open({ state: stateWith([hub()]), before: fakeCamera() });
+  a.ev("go('bill')"); a.act('menu'); a.act('share'); a.act('share-receive'); await wait(10);
+  a.window.showCode(kuraCode); await tick();
+  t.eq('from the bill screen: stays on Sushi Hub', [a.ev('ui.view'), a.S().current, a.text('.venue').trim()], ['bill', 'r2', 'Sushi Hub']);
+  t.check('from the bill screen: summary shown', /Kura\s*added/.test(a.text('#modal .imp-report')), a.text('#modal'));
+  a.close();
+  // several restaurants from the landing page: summary, stays on the landing page
+  a = await open({ state: stateWith([]), before: fakeCamera() });
+  await receive(a);
+  a.window.showCode(await sharedCodes([kura(), hub()])); await tick();
+  t.eq('landing + two restaurants: stays on the landing page', a.ev('ui.view'), 'pick');
+  t.eq('landing + two restaurants: summary lists both', a.$$('#modal .imp-report li').length, 2);
+  a.act('m-close');
+  t.check('pick list now shows them', ['Kura', 'Sushi Hub'].every(n => a.$$('#rest-select option').some(o => o.textContent.includes(n))));
+  a.close();
+  // one restaurant, but cancelled at the clash question: stays on the landing page
+  a = await open({ state: mineState(), before: fakeCamera() });
+  await receive(a);
+  a.window.showCode(theirCode); await tick();
+  a.click('#modal [data-c="skip"]');
+  t.eq('landing + cancelled: stays on the landing page', [a.ev('ui.view'), a.text('#toast')], ['pick', 'Nothing was changed']);
+  a.close();
+  // keep both from the landing page opens the new copy
+  a = await open({ state: mineState(), before: fakeCamera() });
+  await receive(a);
+  a.window.showCode(theirCode); await tick();
+  a.click('#modal [data-c="new"]');
+  t.eq('landing + keep both: opens the copy', [a.ev('ui.view'), a.text('.venue').trim(), a.text('#toast')], ['bill', 'kura (2)', 'kura (2) added']);
+  a.close();
+  // replace from the landing page
+  a = await open({ state: mineState(), before: fakeCamera() });
+  await receive(a);
+  a.window.showCode(theirCode); await tick();
+  a.click('#modal [data-c="replace"]');
+  t.eq('landing + replace: opens Kura', [a.ev('ui.view'), a.S().current, a.text('#toast')], ['bill', 'r1', 'Kura replaced']);
+  a.close();
+
   // ---- bad and unusual codes are refused politely ----
   a = await open({ state: stateWith([]) });
   const parse = j => a.ev(`parseShare(${JSON.stringify(j)})`);
@@ -269,7 +310,7 @@ exports.run = async t => {
   a = await open({ state: stateWith([]), before: fakeCamera() });
   await receive(a);
   a.window.showCode('STT1:abcd:1/1:{"v":1,"r":[{"n":"<b id=pwn>x</b>","c":"AUD","p":[["ffffff",1]]}]}'); await tick();
-  t.check('markup shown as text', !a.$('#pwn') && /<b id=pwn>x<\/b>/.test(a.text('#modal .imp-report')));
+  t.check('markup shown as text', !a.$('#pwn') && a.text('.venue').trim() === '<b id=pwn>x</b>' && a.text('#toast') === '<b id=pwn>x</b> added', a.text('.venue'));
   a.close();
   // a damaged code is reported and scanning carries on
   a = await open({ state: stateWith([]), before: fakeCamera() });

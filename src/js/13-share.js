@@ -267,7 +267,7 @@ function applyImport(choice, inc, mine){
   if (choice === 'new') {
     const name = freeName(inc.name);
     S.restaurants.push(Object.assign({}, inc, { name }));
-    imp.report.push([name, 'added']);
+    imp.report.push([name, 'added', inc.id]);
   } else if (choice === 'replace') {
     // plates of the same colour keep their place, so a bill in progress keeps its counts for them
     mine.currency = inc.currency;
@@ -275,7 +275,7 @@ function applyImport(choice, inc, mine){
     mine.items = inc.items;
     const b = S.bills[mine.id];
     if (b) for (const k of Object.keys(b.counts)) if (!mine.plates.some(p => p.id === k)) delete b.counts[k];
-    imp.report.push([mine.name, 'replaced with your friend\'s']);
+    imp.report.push([mine.name, 'replaced with your friend\'s', mine.id]);
   } else if (choice === 'merge') {
     const np = inc.plates.filter(p => !mine.plates.some(x => x.colour.toLowerCase() === p.colour));
     mine.items ||= [];
@@ -283,13 +283,20 @@ function applyImport(choice, inc, mine){
     mine.plates.push(...np); mine.items.push(...ni);
     imp.report.push([mine.name, np.length || ni.length
       ? 'merged: ' + [np.length && counted(np.length, 'plate'), ni.length && counted(ni.length, 'menu item')].filter(Boolean).join(' and ') + ' added'
-      : 'merged: you already had everything']);
+      : 'merged: you already had everything', mine.id]);
   }
 }
 function finishImport(){
   persist();
   const changed = imp.report.filter(([, what]) => what !== 'skipped');
   if (!changed.length) { hideModal(); render(); toast('Nothing was changed'); return; }
+  // received on the landing page and it was just one restaurant: go straight to its bill
+  if (ui.view === 'pick' && imp.report.length === 1) {
+    const [name, what, id] = imp.report[0];
+    S.current = id; persist(); go('bill');
+    toast(what === 'added' ? name + ' added' : name + ' ' + what.replace(/^merged: .*/, 'merged').replace(/ with your friend's$/, ''));
+    return;
+  }
   const lines = imp.report.map(([name, what]) => `<li><b>${esc(name)}</b> ${esc(what)}</li>`).join('');
   render();
   showModal(`<h2>${changed.length === 1 && imp.report.length === 1 ? 'Got it' : 'All done'}</h2>
