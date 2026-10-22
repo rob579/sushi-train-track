@@ -102,6 +102,13 @@ input::placeholder{color:#6d8d88}
   box-shadow:0 7px 0 rgba(0,0,0,.35), inset 0 0 0 4px rgba(255,255,255,.2);
   transition:transform .08s;
 }
+.plate.two{background:
+    radial-gradient(circle at 50% 50%, transparent 0 36%, rgba(0,0,0,.22) 36% 38.5%, rgba(255,255,255,.3) 38.5% 41%, transparent 41%),
+    radial-gradient(circle at 35% 28%, rgba(255,255,255,.35), transparent 45%),
+    linear-gradient(90deg, var(--c) 50%, var(--c2) 50%)}
+/* two colours: white writing with a dark outline, readable whatever the two colours are */
+.plate.two .n,.plate.two .price{color:#fff;text-shadow:0 0 2px rgba(0,0,0,.95),0 0 2px rgba(0,0,0,.95),0 1px 3px rgba(0,0,0,.8)}
+.plate.two .n.zero{opacity:.6}
 .plate-btn:active .plate{transform:translateY(3px) scale(.97);box-shadow:0 3px 0 rgba(0,0,0,.35), inset 0 0 0 4px rgba(255,255,255,.2)}
 .plate .n{font-size:52px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1}
 .plate .n.zero{opacity:.35}
@@ -212,6 +219,14 @@ html.kb .extras{padding-bottom:16px}
 #modal .btn.danger-fill{background:var(--danger);color:#3a0f08;font-weight:800}
 #modal .m-preview{--cap:104px;display:flex;justify-content:center;margin:4px 0 6px}
 #modal input[type=text]{background:var(--belt-2)}
+/* second colour, under the colour chooser */
+#modal .cc-dual{margin-top:12px}
+#modal .cc-dual .link-btn{display:inline-block;margin:0;padding:6px 2px;font-size:15px;color:var(--rice);opacity:.85}
+#modal .cc-slots{display:flex;gap:8px}
+#modal .cc-slot{flex:1;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:var(--belt-2);border:2px solid transparent;font-weight:700;font-size:14px}
+#modal .cc-slot.sel{border-color:var(--rice)}
+#modal .cc-slot span{width:22px;height:22px;border-radius:50%;flex:none;background:var(--c);box-shadow:inset 0 0 0 2px rgba(255,255,255,.3)}
+#modal .cc-dual-acts{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px 12px;margin-top:8px}
 #modal .m-err{min-height:18px;color:var(--danger);font-size:14px;margin:6px 2px 0}
 #modal .money{position:relative}
 #modal .money span{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--mute);pointer-events:none}

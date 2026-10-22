@@ -3,7 +3,7 @@ function startDraft(id){
   const r = S.restaurants.find(x => x.id === id);
   ui.draft = r
     ? { id: r.id, isNew: false, name: r.name, currency: curOf(r),
-      plates: r.plates.map(p => ({ id: p.id, colour: p.colour, price: plain(p.price, curOf(r)) })),
+      plates: r.plates.map(p => ({ id: p.id, colour: p.colour, colour2: p.colour2 || null, price: plain(p.price, curOf(r)) })),
       items: (r.items || []).map(it => ({ id: it.id, desc: it.desc, price: plain(it.price, curOf(r)) })) }
     : { id: uid(), isNew: true, name: '', currency: S.lastCurrency || defaultCurrency(),
       plates: [{ id: uid(), colour: SWATCHES[0], price: '' }], items: [] };
@@ -44,9 +44,14 @@ function saveDraft(){
     if (p.price.trim() === '') continue;               // ignore blank rows
     const c = toCents(p.price, d.currency);
     if (c === null) { alert('One of the plate prices is not a valid number.'); return; }
-    plates.push({ id: p.id, colour: p.colour, price: c });
+    plates.push(Object.assign({ id: p.id, colour: p.colour, price: c }, p.colour2 ? { colour2: p.colour2 } : {}));
   }
   if (!plates.length) { alert('Add at least one plate with a price.'); return; }
+  const seen = new Set();   // each colour belongs to one plate only
+  for (const p of plates) for (const c of [p.colour, p.colour2].filter(Boolean).map(c => c.toLowerCase())) {
+    if (seen.has(c)) { alert('Two plates have the same colour. Tap a circle to give one of them a different colour.'); return; }
+    seen.add(c);
+  }
   const items = [];
   for (const it of d.items) {
     const desc = it.desc.trim(), pr = it.price.trim();

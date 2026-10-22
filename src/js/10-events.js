@@ -60,19 +60,38 @@ document.addEventListener('click', e => {
       break;
     }
     case 'edit-colour': {
-      const i = +t.dataset.i; ccInit(ui.draft.plates[i].colour);
+      const i = +t.dataset.i, p = ui.draft.plates[i];
+      ccInit(p.colour, p.colour2, { kind: 'draft', i }, ui.draft.plates.filter((x, j) => j !== i).flatMap(x => [x.colour, x.colour2].filter(Boolean)));
       showModal(`<h2>Plate colour</h2>
         <p class="m-sub">Pick a colour, or tap the rainbow circle to mix your own starting from it.</p>
-        <div class="m-preview"><div class="plate" data-cc-preview style="--c:${CC.value};--ink:${inkFor(CC.value)}"><span class="n zero">0</span></div></div>
+        <div class="m-preview"><div class="plate" data-cc-preview><span class="n zero">0</span></div></div>
         ${ccHtml()}
-        <div class="m-row"><button class="btn" data-act="m-close">Cancel</button><button class="btn primary" data-act="cc-apply" data-i="${i}">Use colour</button></div>`);
+        <div class="cc-dual" id="cc-dual"></div>
+        <div class="m-err" id="cc-err" role="alert"></div>
+        <div class="m-row"><button class="btn" data-act="m-close">Cancel</button><button class="btn primary" id="cc-apply-btn" data-act="cc-apply" data-i="${i}">Use colour</button></div>`);
       ccRefresh(); break;
     }
     case 'cc-pick': CC.value = t.dataset.c; CC.custom = false; ccRefresh(); break;
     case 'cc-custom': CC.custom = true; ccRefresh(); break;
+    case 'cc-add2': ccAddSecond(); break;
+    case 'cc-slot': ccSelect(+t.dataset.i); ccRefresh(); break;
+    case 'cc-remove': ccRemoveColour(); break;
+    case 'cc-split': {
+      if (!CC.target) break;
+      if (CC.target.kind === 'new') { saveNewPlate(true); break; }
+      // setup screen: the plate becomes two plates at the same price, the second right after it (nothing is kept until Save)
+      if (ccClash()) break;
+      const i = CC.target.i, p = ui.draft.plates[i], [c1, c2] = ccColours();
+      p.colour = c1; p.colour2 = null;
+      if (c2) ui.draft.plates.splice(i + 1, 0, { id: uid(), colour: c2, colour2: null, price: p.price });
+      hideModal(); render(); if (c2) toast('Split into two plates');
+      break;
+    }
     case 'cc-apply': {
-      const i = +t.dataset.i; ui.draft.plates[i].colour = CC.value; hideModal();
-      const dot = document.querySelector(`.cdot[data-i="${i}"]`); if (dot) dot.style.setProperty('--c', CC.value);
+      if (ccClash()) break;
+      const i = +t.dataset.i, [c1, c2] = ccColours();
+      Object.assign(ui.draft.plates[i], { colour: c1, colour2: c2 });
+      hideModal(); render();
       break;
     }
     case 'item-plus': {   // one more of this item (the drawer stays open, no message)
@@ -92,7 +111,11 @@ document.addEventListener('click', e => {
       const b = billOf(S.current); b.extras = b.extras.filter(x => x.id !== id); persist(); render(); refreshItemised(); break;
     }
     case 'add-plate':
-      ui.draft.plates.push({ id: uid(), colour: SWATCHES[ui.draft.plates.length % SWATCHES.length], price: '' });
+      {   // a new row starts on a colour none of the other plates use
+        const taken = new Set(ui.draft.plates.flatMap(p => [p.colour, p.colour2].filter(Boolean).map(c => c.toLowerCase())));
+        const colour = [...SWATCHES, ...PALETTE].find(c => !taken.has(c)) || SWATCHES[ui.draft.plates.length % SWATCHES.length];
+        ui.draft.plates.push({ id: uid(), colour, price: '' });
+      }
       render();
       { const inputs = document.querySelectorAll('[data-field="price"]'); inputs[inputs.length - 1]?.focus(); }
       break;

@@ -72,6 +72,7 @@ The first run installs a small test library into `~/.cache/sushi-test-deps` (out
 | drawer | the drawer: handle title, add, group, + and −, messages |
 | remove | remove mode, long-press confirm, add a plate |
 | keep-awake | the "Keep screen on" switch: saved, lock taken and given back as the app is shown and hidden, refused, unsupported browsers |
+| two-colour | two-colour plates: add plate card order, add / change / remove the second colour, split into two plates, half-and-half plate button, sharing, replace and merge by any shared colour |
 | zoom | plates across (2 to 6): pinching the plates, the menu − and +, remembered for every restaurant, pinches never add or remove plates, pinches elsewhere left to the browser, the one-off tip |
 | setup-and-suggestions | suggestions from other restaurants, price tidying, Enter/Next, colour chooser |
 | browser | service worker, offline, Cloudflare-style redirects, assetlinks, phone layout, zoom at 2 to 6 across and a real two-finger pinch |
